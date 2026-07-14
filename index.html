@@ -8,21 +8,26 @@
     <style>
         :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9; }
 
-        html, body { height: 100%; margin: 0; font-family: 'Montserrat', sans-serif; overflow: hidden; }
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
+            overflow: hidden; overflow-x: hidden; max-width: 100vw;
+        }
 
         .scroll-container {
-            height: 100vh; width: 100vw; overflow-y: scroll;
+            height: 100dvh; width: 100%; overflow-y: scroll; overflow-x: hidden;
             scroll-snap-type: y mandatory; overscroll-behavior-y: contain;
         }
 
         section {
-            height: 100vh; width: 100vw; scroll-snap-align: start;
+            height: 100dvh; width: 100%; scroll-snap-align: start;
             display: flex; flex-direction: column; justify-content: center; padding: 0 10%;
         }
 
         /* Navbar */
         .navbar {
-            position: fixed; top: 0; width: 100%; display: flex;
+            position: fixed; top: 0; left: 0; width: 100%; display: flex;
             justify-content: space-between; align-items: center; padding: 20px 5%;
             z-index: 1000; background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(15px); color: var(--black); font-weight: 600;
@@ -45,10 +50,12 @@
 
         /* Hero */
         .hero { background: var(--black); color: var(--white); justify-content: space-between; padding: 120px 10% 80px 10%; }
-        .Hero-Logo { display: flex; align-items: stretch; gap: 20px; }
-        .vertical-line { width: 3px; background-color: var(--gold); }
+        .Hero-Logo { display: flex; align-items: stretch; gap: 20px; max-width: 100%; }
+        .vertical-line { width: 3px; flex-shrink: 0; background-color: var(--gold); }
         .Hero-Logo-left h1 { font-size: 80px; margin: 0; color: var(--gold); line-height: 1; }
+        .Hero-Logo-Right { min-width: 0; }
         .Hero-Logo-Right h1 { font-size: 40px; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+        .Hero-Logo-Right h4 { margin: 0 0 4px 0; max-width: 100%; }
 
         /* Benefits Grid */
         .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; }
@@ -64,7 +71,14 @@
             #nav-toggle:checked ~ .nav-group { display: flex; }
             .Hero-Logo-left h1 { font-size: 50px; }
             .Hero-Logo-Right h1 { font-size: 28px; }
+            .Hero-Logo-Right h4 { font-size: 12px; letter-spacing: 0.5px; }
             .benefits-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 420px) {
+            .Hero-Logo { gap: 12px; }
+            .Hero-Logo-left h1 { font-size: 36px; }
+            .Hero-Logo-Right h1 { font-size: 20px; }
         }
     </style>
 </head>
