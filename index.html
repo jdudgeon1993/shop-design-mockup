@@ -84,11 +84,16 @@
         .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; }
         .benefit-item h4 { margin: 0 0 10px 0; color: var(--gold); }
 
+        /* DIY vs Curated: one full-screen row split 50/50 on desktop */
+        .compare-row { display: flex; flex-direction: row; }
+        .compare-row .half { width: 50%; padding-left: 8%; padding-right: 8%; }
+        .compare-row .section-diy { border-right: 1px solid rgba(255,255,255,0.15); }
+
         /* Mobile */
         @media (max-width: 768px) {
             .hamburger { display: flex; }
-            .nav-group { 
-                display: none; flex-direction: column; position: absolute; top: 75px; left: 0; 
+            .nav-group {
+                display: none; flex-direction: column; position: absolute; top: 75px; left: 0;
                 width: 100%; background: white; padding: 20px; border-bottom: 1px solid #ddd;
             }
             #nav-toggle:checked ~ .nav-group { display: flex; }
@@ -96,6 +101,11 @@
             .Hero-Logo-Right h1 { font-size: 28px; }
             .Hero-Logo-Right h4 { font-size: 12px; letter-spacing: 0.5px; }
             .benefits-grid { grid-template-columns: 1fr; }
+
+            /* Split back into two separate full-screen sections */
+            .compare-row { flex-direction: column; }
+            .compare-row .half { width: 100%; padding-left: 10%; padding-right: 10%; }
+            .compare-row .section-diy { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.15); }
         }
 
         @media (max-width: 420px) {
@@ -133,17 +143,19 @@
             </div>
         </section>
 
-        <section class="section-diy">
-            <h2>DIY Shop</h2>
-            <p>For experienced buyers who know exactly what they need.</p>
-            <button class="btn">Shop now</button>
-        </section>
+        <div class="compare-row">
+            <section class="section-diy half">
+                <h2>DIY Shop</h2>
+                <p>For experienced buyers who know exactly what they need.</p>
+                <button class="btn">Shop now</button>
+            </section>
 
-        <section class="section-lab">
-            <h2>Designed in the Lab</h2>
-            <p>Explore curated collections designed by our best designers.</p>
-            <button class="btn">Shop now</button>
-        </section>
+            <section class="section-lab half">
+                <h2>Designed in the Lab</h2>
+                <p>Explore curated collections designed by our best designers.</p>
+                <button class="btn">Shop now</button>
+            </section>
+        </div>
 
         <section class="section-benefits">
             <h2>Why Homeowners Choose Us</h2>
