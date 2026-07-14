@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Labs - Complete Storefront</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9; }
+
+        html, body { height: 100%; margin: 0; font-family: 'Montserrat', sans-serif; overflow: hidden; }
+
+        .scroll-container {
+            height: 100vh; width: 100vw; overflow-y: scroll;
+            scroll-snap-type: y mandatory; overscroll-behavior-y: contain;
+        }
+
+        section {
+            height: 100vh; width: 100vw; scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center; padding: 0 10%;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed; top: 0; width: 100%; display: flex;
+            justify-content: space-between; align-items: center; padding: 20px 5%;
+            z-index: 1000; background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px); color: var(--black); font-weight: 600;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        #nav-toggle { display: none; }
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
+        .hamburger span { width: 25px; height: 3px; background: var(--black); }
+
+        .nav-group { display: flex; gap: 20px; align-items: center; }
+
+        /* Unified Button */
+        .btn {
+            padding: 15px 40px; background: var(--gold); color: var(--black);
+            border: none; cursor: pointer; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; width: fit-content; transition: 0.3s; margin-top: 20px;
+        }
+        .btn:hover { background: var(--white); transform: scale(1.05); }
+
+        /* Hero */
+        .hero { background: var(--black); color: var(--white); justify-content: space-between; padding: 120px 10% 80px 10%; }
+        .Hero-Logo { display: flex; align-items: stretch; gap: 20px; }
+        .vertical-line { width: 3px; background-color: var(--gold); }
+        .Hero-Logo-left h1 { font-size: 80px; margin: 0; color: var(--gold); line-height: 1; }
+        .Hero-Logo-Right h1 { font-size: 40px; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Benefits Grid */
+        .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; }
+        .benefit-item h4 { margin: 0 0 10px 0; color: var(--gold); }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-group { 
+                display: none; flex-direction: column; position: absolute; top: 75px; left: 0; 
+                width: 100%; background: white; padding: 20px; border-bottom: 1px solid #ddd;
+            }
+            #nav-toggle:checked ~ .nav-group { display: flex; }
+            .Hero-Logo-left h1 { font-size: 50px; }
+            .Hero-Logo-Right h1 { font-size: 28px; }
+            .benefits-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <input type="checkbox" id="nav-toggle">
+        <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
+        <div class="nav-group"><strong>DL</strong></div>
+        <div class="nav-group">Home | Catalog | Contact</div>
+        <div class="nav-group">Search | Account | Cart</div>
+    </nav>
+
+    <div class="scroll-container">
+        <section class="hero">
+            <div class="Hero-Logo">
+                <div class="Hero-Logo-left"><h1>DL</h1></div>
+                <div class="vertical-line"></div>
+                <div class="Hero-Logo-Right">
+                    <h1>Design Lab</h1>
+                    <h4>ONLINE CABINETRY.</h4>
+                    <h4>CUSTOMER FOCUSED.</h4>
+                    <h4>BEST FLIPPIN' HOUSE ON THE BLOCK.</h4>
+                </div>
+            </div>
+            <div>
+                <h2>Cabinetry for Every Room in the House.</h2>
+                <button class="btn">Shop now</button>
+            </div>
+        </section>
+
+        <section style="background: var(--bg-light)">
+            <h2>DIY Shop</h2>
+            <p>For experienced buyers who know exactly what they need.</p>
+            <button class="btn">Shop now</button>
+        </section>
+
+        <section>
+            <h2>Designed in the Lab</h2>
+            <p>Explore curated collections designed by our best designers.</p>
+            <button class="btn">Shop now</button>
+        </section>
+
+        <section style="background: var(--bg-light)">
+            <h2>Why Homeowners Choose Us</h2>
+            <div class="benefits-grid">
+                <div class="benefit-item"><h4>Extreme Experience</h4><p>Decades of industry experience.</p></div>
+                <div class="benefit-item"><h4>Convenient</h4><p>Shop our designers' packages from your home.</p></div>
+                <div class="benefit-item"><h4>Variety</h4><p>Kitchens, baths, closets, garage, and more.</p></div>
+                <div class="benefit-item"><h4>All Budgets</h4><p>Vetted options from entry-level to full custom.</p></div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
