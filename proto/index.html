@@ -1,0 +1,161 @@
+<!-- Unlisted prototype playground: not linked from the live site, safe to break. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Design Labs - Prototype</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
+
+            /* PLACEHOLDER IMAGES — swap each url() for the real asset when it's ready. */
+            --img-hero: url('https://picsum.photos/seed/dl-hero/1920/1080');
+            --img-diy: url('https://picsum.photos/seed/dl-diy/1920/1080');
+            --img-lab: url('https://picsum.photos/seed/dl-lab/1920/1080');
+            --img-benefits: url('https://picsum.photos/seed/dl-benefits/1920/1080');
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
+            overflow: hidden; overflow-x: hidden; max-width: 100vw;
+        }
+
+        .scroll-container {
+            height: 100dvh; width: 100%; overflow-y: scroll; overflow-x: hidden;
+            scroll-snap-type: y mandatory; overscroll-behavior-y: contain;
+        }
+
+        section {
+            height: 100dvh; width: 100%; scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center; padding: 0 10%;
+            position: relative; color: var(--white);
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+        }
+
+        /* Dark scrim so text stays legible over any photo */
+        section::before {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.65));
+        }
+
+        section > * { position: relative; z-index: 1; }
+
+        /* Navbar */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; display: flex;
+            justify-content: space-between; align-items: center; padding: 20px 5%;
+            z-index: 1000; background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px); color: var(--black); font-weight: 600;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        #nav-toggle { display: none; }
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
+        .hamburger span { width: 25px; height: 3px; background: var(--black); }
+
+        .nav-group { display: flex; gap: 20px; align-items: center; }
+
+        /* Unified Button */
+        .btn {
+            padding: 15px 40px; background: var(--gold); color: var(--black);
+            border: none; cursor: pointer; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; width: fit-content; transition: 0.3s; margin-top: 20px;
+        }
+        .btn:hover { background: var(--white); transform: scale(1.05); }
+
+        /* Hero */
+        .hero { background-color: var(--black); background-image: var(--img-hero); justify-content: space-between; padding: 120px 10% 80px 10%; }
+
+        /* Section photo backgrounds (background-color shows while the photo loads, or if it 404s) */
+        .section-diy { background-color: var(--black); background-image: var(--img-diy); }
+        .section-lab { background-color: var(--black); background-image: var(--img-lab); }
+        .section-benefits { background-color: var(--black); background-image: var(--img-benefits); }
+        .Hero-Logo { display: flex; align-items: stretch; gap: 20px; max-width: 100%; }
+        .vertical-line { width: 3px; flex-shrink: 0; background-color: var(--gold); }
+        .Hero-Logo-left h1 { font-size: 80px; margin: 0; color: var(--gold); line-height: 1; }
+        .Hero-Logo-Right { min-width: 0; }
+        .Hero-Logo-Right h1 { font-size: 40px; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+        .Hero-Logo-Right h4 { margin: 0 0 4px 0; max-width: 100%; }
+
+        /* Benefits Grid */
+        .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; }
+        .benefit-item h4 { margin: 0 0 10px 0; color: var(--gold); }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-group { 
+                display: none; flex-direction: column; position: absolute; top: 75px; left: 0; 
+                width: 100%; background: white; padding: 20px; border-bottom: 1px solid #ddd;
+            }
+            #nav-toggle:checked ~ .nav-group { display: flex; }
+            .Hero-Logo-left h1 { font-size: 50px; }
+            .Hero-Logo-Right h1 { font-size: 28px; }
+            .Hero-Logo-Right h4 { font-size: 12px; letter-spacing: 0.5px; }
+            .benefits-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 420px) {
+            .Hero-Logo { gap: 12px; }
+            .Hero-Logo-left h1 { font-size: 36px; }
+            .Hero-Logo-Right h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <input type="checkbox" id="nav-toggle">
+        <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
+        <div class="nav-group"><strong>DL</strong></div>
+        <div class="nav-group">Home | Catalog | Contact</div>
+        <div class="nav-group">Search | Account | Cart</div>
+    </nav>
+
+    <div class="scroll-container">
+        <section class="hero">
+            <div class="Hero-Logo">
+                <div class="Hero-Logo-left"><h1>DL</h1></div>
+                <div class="vertical-line"></div>
+                <div class="Hero-Logo-Right">
+                    <h1>Design Lab</h1>
+                    <h4>ONLINE CABINETRY.</h4>
+                    <h4>CUSTOMER FOCUSED.</h4>
+                    <h4>BEST FLIPPIN' HOUSE ON THE BLOCK.</h4>
+                </div>
+            </div>
+            <div>
+                <h2>Cabinetry for Every Room in the House.</h2>
+                <button class="btn">Shop now</button>
+            </div>
+        </section>
+
+        <section class="section-diy">
+            <h2>DIY Shop</h2>
+            <p>For experienced buyers who know exactly what they need.</p>
+            <button class="btn">Shop now</button>
+        </section>
+
+        <section class="section-lab">
+            <h2>Designed in the Lab</h2>
+            <p>Explore curated collections designed by our best designers.</p>
+            <button class="btn">Shop now</button>
+        </section>
+
+        <section class="section-benefits">
+            <h2>Why Homeowners Choose Us</h2>
+            <div class="benefits-grid">
+                <div class="benefit-item"><h4>Extreme Experience</h4><p>Decades of industry experience.</p></div>
+                <div class="benefit-item"><h4>Convenient</h4><p>Shop our designers' packages from your home.</p></div>
+                <div class="benefit-item"><h4>Variety</h4><p>Kitchens, baths, closets, garage, and more.</p></div>
+                <div class="benefit-item"><h4>All Budgets</h4><p>Vetted options from entry-level to full custom.</p></div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
