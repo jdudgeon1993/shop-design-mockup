@@ -6,7 +6,15 @@
     <title>Design Labs - Complete Storefront</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9; }
+        :root {
+            --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
+
+            /* PLACEHOLDER IMAGES — swap each url() for the real asset when it's ready. */
+            --img-hero: url('https://picsum.photos/seed/dl-hero/1920/1080');
+            --img-diy: url('https://picsum.photos/seed/dl-diy/1920/1080');
+            --img-lab: url('https://picsum.photos/seed/dl-lab/1920/1080');
+            --img-benefits: url('https://picsum.photos/seed/dl-benefits/1920/1080');
+        }
 
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -23,7 +31,17 @@
         section {
             height: 100dvh; width: 100%; scroll-snap-align: start;
             display: flex; flex-direction: column; justify-content: center; padding: 0 10%;
+            position: relative; color: var(--white);
+            background-size: cover; background-position: center; background-repeat: no-repeat;
         }
+
+        /* Dark scrim so text stays legible over any photo */
+        section::before {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.65));
+        }
+
+        section > * { position: relative; z-index: 1; }
 
         /* Navbar */
         .navbar {
@@ -49,7 +67,12 @@
         .btn:hover { background: var(--white); transform: scale(1.05); }
 
         /* Hero */
-        .hero { background: var(--black); color: var(--white); justify-content: space-between; padding: 120px 10% 80px 10%; }
+        .hero { background-color: var(--black); background-image: var(--img-hero); justify-content: space-between; padding: 120px 10% 80px 10%; }
+
+        /* Section photo backgrounds (background-color shows while the photo loads, or if it 404s) */
+        .section-diy { background-color: var(--black); background-image: var(--img-diy); }
+        .section-lab { background-color: var(--black); background-image: var(--img-lab); }
+        .section-benefits { background-color: var(--black); background-image: var(--img-benefits); }
         .Hero-Logo { display: flex; align-items: stretch; gap: 20px; max-width: 100%; }
         .vertical-line { width: 3px; flex-shrink: 0; background-color: var(--gold); }
         .Hero-Logo-left h1 { font-size: 80px; margin: 0; color: var(--gold); line-height: 1; }
@@ -110,19 +133,19 @@
             </div>
         </section>
 
-        <section style="background: var(--bg-light)">
+        <section class="section-diy">
             <h2>DIY Shop</h2>
             <p>For experienced buyers who know exactly what they need.</p>
             <button class="btn">Shop now</button>
         </section>
 
-        <section>
+        <section class="section-lab">
             <h2>Designed in the Lab</h2>
             <p>Explore curated collections designed by our best designers.</p>
             <button class="btn">Shop now</button>
         </section>
 
-        <section style="background: var(--bg-light)">
+        <section class="section-benefits">
             <h2>Why Homeowners Choose Us</h2>
             <div class="benefits-grid">
                 <div class="benefit-item"><h4>Extreme Experience</h4><p>Decades of industry experience.</p></div>
