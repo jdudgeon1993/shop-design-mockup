@@ -1,0 +1,64 @@
+{
+    "tax_rate": 0.029,
+    "delivery_rate": 0.25,
+    "steps": [
+        {
+            "number": 1,
+            "title": "Cabinet Type",
+            "field": "cabinetType",
+            "kind": "choice",
+            "options": [
+                { "label": "Base", "price": 700 },
+                { "label": "Wall", "price": 550 },
+                { "label": "Tall", "price": 900 },
+                { "label": "Pantry", "price": 1050 }
+            ]
+        },
+        {
+            "number": 2,
+            "title": "Finish",
+            "field": "finish",
+            "kind": "choice",
+            "options": [
+                { "label": "Jasper", "price": 0 },
+                { "label": "Weathered Gray", "price": 45 },
+                { "label": "Espresso Stain", "price": 90 }
+            ]
+        },
+        {
+            "number": 3,
+            "title": "Dimensions",
+            "field": "dimensions",
+            "kind": "dimensions"
+        },
+        {
+            "number": 4,
+            "title": "Door Style",
+            "field": "doorStyle",
+            "kind": "choice",
+            "options": [
+                { "label": "Single Slab", "price": 0 },
+                { "label": "3-Piece", "price": 35 },
+                { "label": "Thin Shaker", "price": 75 },
+                { "label": "Thick 5-Piece", "price": 110 }
+            ]
+        },
+        {
+            "number": 5,
+            "title": "Hardware",
+            "field": "hardware",
+            "kind": "choice",
+            "options": [
+                { "label": "Standard Black Pull", "price": 0 },
+                { "label": "Upgraded Nickel", "price": 25 },
+                { "label": "Brass Designer Pull", "price": 45 }
+            ]
+        },
+        {
+            "number": 6,
+            "title": "Naming Convention",
+            "field": "name",
+            "kind": "text"
+        }
+    ]
+}
