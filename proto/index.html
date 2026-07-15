@@ -45,37 +45,30 @@
 
         section > * { position: relative; z-index: 1; }
 
-        /* Navbar */
+        /* Navbar: transparent overlay, not a separate bar — sits directly on the dark page */
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%; display: flex;
             justify-content: space-between; align-items: center; padding: 20px 5%;
-            z-index: 1000; background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px); color: var(--black); font-weight: 600;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            z-index: 1000; background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px); color: var(--white); font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
+        .nav-logo { color: var(--gold); }
 
         #nav-toggle { display: none; }
         .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
-        .hamburger span { width: 25px; height: 3px; background: var(--black); }
+        .hamburger span { width: 25px; height: 3px; background: var(--white); }
 
         .nav-group { display: flex; gap: 20px; align-items: center; }
 
-        /* Unified Button */
-        .btn {
-            display: inline-block; padding: 15px 40px; background: var(--gold); color: var(--black);
-            border: none; cursor: pointer; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 2px; width: fit-content; transition: 0.3s; margin-top: 20px;
-            text-decoration: none;
-        }
-        .btn:hover { background: var(--white); transform: scale(1.05); }
-
         /* Hero */
-        .hero { background-color: var(--black); background-image: var(--img-hero); justify-content: space-between; padding: 120px 10% 80px 10%; }
+        .hero { background-color: var(--black); justify-content: space-between; padding: 120px 10% 80px 10%; }
 
-        /* Section photo backgrounds (background-color shows while the photo loads, or if it 404s) */
-        .section-diy { background-color: var(--black); background-image: var(--img-diy); }
-        .section-lab { background-color: var(--black); background-image: var(--img-lab); }
-        .section-benefits { background-color: var(--black); background-image: var(--img-benefits); }
+        /* Solid black for now — swap in background-image: var(--img-*) once real
+           photography replaces the placeholder photos defined in :root. */
+        .section-diy { background-color: var(--black); }
+        .section-lab { background-color: var(--black); }
+        .section-benefits { background-color: var(--black); }
         .Hero-Logo { display: flex; align-items: stretch; gap: 20px; max-width: 100%; }
         .vertical-line { width: 3px; flex-shrink: 0; background-color: var(--gold); }
         .Hero-Logo-left h1 { font-size: 80px; margin: 0; color: var(--gold); line-height: 1; }
@@ -110,7 +103,7 @@
             .hamburger { display: flex; }
             .nav-group {
                 display: none; flex-direction: column; position: absolute; top: 75px; left: 0;
-                width: 100%; background: white; padding: 20px; border-bottom: 1px solid #ddd;
+                width: 100%; background: var(--black); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
             }
             #nav-toggle:checked ~ .nav-group { display: flex; }
             .Hero-Logo-left h1 { font-size: 50px; }
@@ -136,7 +129,7 @@
     <nav class="navbar">
         <input type="checkbox" id="nav-toggle">
         <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
-        <div class="nav-group"><strong>DL</strong></div>
+        <div class="nav-group"><strong class="nav-logo">DL</strong></div>
         <div class="nav-group">Home | Catalog | Contact</div>
         <div class="nav-group">Search | Account | Cart</div>
     </nav>
@@ -154,8 +147,8 @@
                 </div>
             </div>
             <div>
-                <h2>Cabinetry for Every Room in the House.</h2>
-                <button class="btn">Shop now</button>
+                <h2>Cabinetry for Every Room in the House</h2>
+                <button class="btn-pill">Shop now</button>
             </div>
         </section>
 
