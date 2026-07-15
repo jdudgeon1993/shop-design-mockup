@@ -94,13 +94,22 @@
         .Hero-Logo-Right h4 { margin: 0 0 4px 0; max-width: 100%; }
 
         /* Benefits Grid */
-        .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1000px; }
-        .benefit-item h4 { margin: 0 0 10px 0; color: var(--gold); }
+        .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1000px; }
+        .benefit-item h4 { margin: 0 0 8px 0; color: var(--gold); }
 
-        /* DIY vs Curated: one full-screen row split 50/50 on desktop */
-        .compare-row { display: flex; flex-direction: row; }
-        .compare-row .half { width: 50%; padding-left: 8%; padding-right: 8%; }
+        /* DIY/Curated + Why Choose Us share one scroll-snap screen, split top/bottom,
+           so neither has to inflate to fill a full screen on its own */
+        .resource-section {
+            height: 100dvh; width: 100%; scroll-snap-align: start;
+            display: flex; flex-direction: column;
+        }
+        .compare-row { display: flex; flex-direction: row; flex: 1; min-height: 0; }
+        .compare-row .half {
+            width: 50%; height: 100%; padding-left: 8%; padding-right: 8%;
+            scroll-snap-align: none;
+        }
         .compare-row .section-diy { border-right: 1px solid rgba(255,255,255,0.35); }
+        .section-benefits { height: auto; flex: 1; min-height: 0; scroll-snap-align: none; }
 
         .btn-pill {
             display: inline-block; padding: 14px 36px; background: var(--white); color: var(--black);
@@ -129,10 +138,17 @@
             .Hero-Logo-Right h4 { font-size: 12px; letter-spacing: 0.5px; }
             .benefits-grid { grid-template-columns: 1fr; }
 
-            /* Split back into two separate full-screen sections */
-            .compare-row { flex-direction: column; }
-            .compare-row .half { width: 100%; padding-left: 10%; padding-right: 10%; }
+            /* DIY/Curated stay paired as one compact screen, but Why Choose Us goes
+               back to its own full screen — four items need more room than a shared
+               half can give them. */
+            .resource-section { display: contents; }
+            .compare-row {
+                height: 100dvh; flex: none; flex-direction: column;
+                scroll-snap-align: start;
+            }
+            .compare-row .half { width: 100%; height: 50%; padding-left: 10%; padding-right: 10%; }
             .compare-row .section-diy { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.15); }
+            .section-benefits { height: 100dvh; flex: none; scroll-snap-align: start; }
         }
 
         @media (max-width: 420px) {
@@ -187,28 +203,30 @@
             </div>
         </section>
 
-        <div class="compare-row">
-            <section class="section-diy half">
-                <h2>DIY Shop</h2>
-                <p>For experienced buyers who know exactly what they need.</p>
-                <a class="btn-pill" href="diy-wizard/">Shop now</a>
-            </section>
+        <section class="resource-section">
+            <div class="compare-row">
+                <section class="section-diy half">
+                    <h2>DIY Shop</h2>
+                    <p>For experienced buyers who know exactly what they need.</p>
+                    <a class="btn-pill" href="diy-wizard/">Shop now</a>
+                </section>
 
-            <section class="section-lab half">
-                <h2>Designed in the Lab</h2>
-                <p>Explore &amp; purchase our Curated Collections designed by our best Designers.</p>
-                <button class="btn-pill">Shop now</button>
-            </section>
-        </div>
-
-        <section class="section-benefits">
-            <h2>Why Homeowners Choose Us</h2>
-            <div class="benefits-grid">
-                <div class="benefit-item"><h4>Extreme Experience</h4><p>Decades of industry experience.</p></div>
-                <div class="benefit-item"><h4>Convenient</h4><p>Shop our designers' packages from your home.</p></div>
-                <div class="benefit-item"><h4>Variety</h4><p>Kitchens, baths, closets, garage, and more.</p></div>
-                <div class="benefit-item"><h4>All Budgets</h4><p>Vetted options from entry-level to full custom.</p></div>
+                <section class="section-lab half">
+                    <h2>Designed in the Lab</h2>
+                    <p>Explore &amp; purchase our Curated Collections designed by our best Designers.</p>
+                    <button class="btn-pill">Shop now</button>
+                </section>
             </div>
+
+            <section class="section-benefits">
+                <h2>Why Homeowners Choose Us</h2>
+                <div class="benefits-grid">
+                    <div class="benefit-item"><h4>Extreme Experience</h4><p>Decades of industry experience.</p></div>
+                    <div class="benefit-item"><h4>Convenient</h4><p>Shop our designers' packages from your home.</p></div>
+                    <div class="benefit-item"><h4>Variety</h4><p>Kitchens, baths, closets, garage, and more.</p></div>
+                    <div class="benefit-item"><h4>All Budgets</h4><p>Vetted options from entry-level to full custom.</p></div>
+                </div>
+            </section>
         </section>
     </div>
 </body>
