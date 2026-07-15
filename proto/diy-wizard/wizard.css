@@ -50,6 +50,24 @@ html, body {
     letter-spacing: 1px; font-size: 13px; color: var(--gold);
 }
 
+/* Steps use <details>/<summary> so only one can be open at a time (native
+   browser behavior via the shared name="wizard-accordion" attribute) — no JS. */
+details.wizard-step { padding: 0; overflow: hidden; }
+details.wizard-step summary {
+    margin: 0; padding: 16px 20px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; font-size: 13px; color: var(--gold);
+    cursor: pointer; list-style: none; user-select: none;
+    display: flex; justify-content: space-between; align-items: center;
+}
+details.wizard-step summary::-webkit-details-marker { display: none; }
+details.wizard-step summary::after {
+    content: ""; width: 8px; height: 8px; flex-shrink: 0; margin-left: 12px;
+    border-right: 2px solid var(--gold); border-bottom: 2px solid var(--gold);
+    transform: rotate(45deg); transition: transform 0.2s;
+}
+details.wizard-step[open] summary::after { transform: rotate(-135deg); }
+.wizard-step-body { padding: 0 20px 16px; }
+
 .wizard-option {
     display: flex; align-items: center; gap: 12px; padding: 10px 8px;
     border-radius: 4px; cursor: pointer;

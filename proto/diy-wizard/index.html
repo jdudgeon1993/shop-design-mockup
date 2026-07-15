@@ -22,8 +22,9 @@
         </div>
 
         <form class="wizard-panel" id="wizard-form">
-            <fieldset class="wizard-step">
-                <legend>Step 1: Cabinet Type</legend>
+            <details class="wizard-step" name="wizard-accordion" open>
+                <summary>Step 1: Cabinet Type</summary>
+                <div class="wizard-step-body">
                 <label class="wizard-option">
                     <input type="radio" name="cabinetType" value="Base" data-price="700" checked>
                     <span class="wizard-option-label">Base</span>
@@ -44,9 +45,11 @@
                     <span class="wizard-option-label">Pantry</span>
                     <span class="wizard-option-price">+$1050.00</span>
                 </label>
-            </fieldset>
-            <fieldset class="wizard-step">
-                <legend>Step 2: Finish</legend>
+                </div>
+            </details>
+            <details class="wizard-step" name="wizard-accordion">
+                <summary>Step 2: Finish</summary>
+                <div class="wizard-step-body">
                 <label class="wizard-option">
                     <input type="radio" name="finish" value="Jasper" data-price="0" checked>
                     <span class="wizard-option-label">Jasper</span>
@@ -62,18 +65,22 @@
                     <span class="wizard-option-label">Espresso Stain</span>
                     <span class="wizard-option-price">+$90.00</span>
                 </label>
-            </fieldset>
-            <fieldset class="wizard-step">
-                <legend>Step 3: Dimensions</legend>
+                </div>
+            </details>
+            <details class="wizard-step" name="wizard-accordion">
+                <summary>Step 3: Dimensions</summary>
+                <div class="wizard-step-body">
                 <div class="wizard-dims">
                     <label>Width (in)<input type="number" name="width" min="1" step="0.25" value="24" required></label>
                     <label>Height (in)<input type="number" name="height" min="1" step="0.25" value="30" required></label>
                     <label>Depth (in)<input type="number" name="depth" min="1" step="0.25" value="24" required></label>
                 </div>
                 <span class="wizard-option-price">Included</span>
-            </fieldset>
-            <fieldset class="wizard-step">
-                <legend>Step 4: Door Style</legend>
+                </div>
+            </details>
+            <details class="wizard-step" name="wizard-accordion">
+                <summary>Step 4: Door Style</summary>
+                <div class="wizard-step-body">
                 <label class="wizard-option">
                     <input type="radio" name="doorStyle" value="Single Slab" data-price="0" checked>
                     <span class="wizard-option-label">Single Slab</span>
@@ -94,9 +101,11 @@
                     <span class="wizard-option-label">Thick 5-Piece</span>
                     <span class="wizard-option-price">+$110.00</span>
                 </label>
-            </fieldset>
-            <fieldset class="wizard-step">
-                <legend>Step 5: Hardware</legend>
+                </div>
+            </details>
+            <details class="wizard-step" name="wizard-accordion">
+                <summary>Step 5: Hardware</summary>
+                <div class="wizard-step-body">
                 <label class="wizard-option">
                     <input type="radio" name="hardware" value="Standard Black Pull" data-price="0" checked>
                     <span class="wizard-option-label">Standard Black Pull</span>
@@ -112,11 +121,14 @@
                     <span class="wizard-option-label">Brass Designer Pull</span>
                     <span class="wizard-option-price">+$45.00</span>
                 </label>
-            </fieldset>
-            <fieldset class="wizard-step">
-                <legend>Step 6: Naming Convention</legend>
+                </div>
+            </details>
+            <details class="wizard-step" name="wizard-accordion">
+                <summary>Step 6: Naming Convention</summary>
+                <div class="wizard-step-body">
                 <input type="text" class="wizard-text" name="name" placeholder="e.g. Kitchen, Left of Sink" required>
-            </fieldset>
+                </div>
+            </details>
 
             <fieldset class="wizard-step">
                 <legend>Quantity</legend>

@@ -57,7 +57,24 @@
             };
         };
 
+        // The browser's native pre-submit validation (triggered by clicking the
+        // type="submit" button) runs before any 'submit' listener does, so a
+        // required field hidden inside a closed step would otherwise block
+        // submission with zero visible feedback. The 'invalid' event still
+        // fires on each bad field even then — use it to open that step.
+        form.addEventListener('invalid', function (e) {
+            var details = e.target.closest('details.wizard-step');
+            if (details) details.open = true;
+        }, true);
+
+        var revealFirstInvalidStep = function () {
+            var invalid = form.querySelector(':invalid');
+            var details = invalid && invalid.closest('details.wizard-step');
+            if (details) details.open = true;
+        };
+
         var saveCabinet = function () {
+            revealFirstInvalidStep();
             if (!form.reportValidity()) return false;
             var cart = readCart();
             cart.push(buildCabinetRecord());

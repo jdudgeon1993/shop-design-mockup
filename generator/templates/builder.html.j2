@@ -23,8 +23,9 @@
 
         <form class="wizard-panel" id="wizard-form">
 {% for step in steps %}
-            <fieldset class="wizard-step">
-                <legend>Step {{ step.number }}: {{ step.title }}</legend>
+            <details class="wizard-step" name="wizard-accordion"{% if loop.first %} open{% endif %}>
+                <summary>Step {{ step.number }}: {{ step.title }}</summary>
+                <div class="wizard-step-body">
 {% if step.kind == 'choice' %}
 {% for option in step.options %}
                 <label class="wizard-option">
@@ -43,7 +44,8 @@
 {% elif step.kind == 'text' %}
                 <input type="text" class="wizard-text" name="{{ step.field }}" placeholder="e.g. Kitchen, Left of Sink" required>
 {% endif %}
-            </fieldset>
+                </div>
+            </details>
 {% endfor %}
 
             <fieldset class="wizard-step">
