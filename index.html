@@ -9,11 +9,13 @@
         :root {
             --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
 
-            /* PLACEHOLDER IMAGES — swap each url() for the real asset when it's ready. */
-            --img-hero: url('https://picsum.photos/seed/dl-hero/1920/1080');
-            --img-diy: url('https://picsum.photos/seed/dl-diy/1920/1080');
-            --img-lab: url('https://picsum.photos/seed/dl-lab/1920/1080');
-            --img-benefits: url('https://picsum.photos/seed/dl-benefits/1920/1080');
+            /* REFERENCE IMAGES — hotlinked from other companies' sites / a stock
+               preview for mockup purposes only. Swap for owned/licensed photography
+               before this is shown outside the team or shared anywhere public. */
+            --img-hero: url('https://blog.kitchenmagic.com/hs-fs/hubfs/blog-files/5-steps-farmhouse-kitchen.jpg?width=600&name=5-steps-farmhouse-kitchen.jpg');
+            --img-diy: url('https://www.performancekitchens.com/wp-content/uploads/2024/10/performance-kitchens-and-home-has-the-number-1-kitchen-design-showroom-in-philadelphia.jpg');
+            --img-lab: url('https://as2.ftcdn.net/jpg/03/20/87/41/1000_F_320874178_NfeNVxYKbrbefr3eoqYXdkpSpL8j7SuL.jpg');
+            --img-benefits: url('https://inspiredclosetsmediafiles.s3.amazonaws.com/wp-content/uploads/2024/12/30110608/InspiredClosets-january-2025-blog-header.jpg');
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -46,18 +48,34 @@
         /* Navbar: transparent overlay, not a separate bar — sits directly on the dark page */
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%; display: flex;
-            justify-content: space-between; align-items: center; padding: 20px 5%;
+            justify-content: space-between; align-items: center; padding: 18px 5%;
             z-index: 1000; background: rgba(0, 0, 0, 0.25);
             backdrop-filter: blur(10px); color: var(--white); font-weight: 600;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .nav-logo { color: var(--gold); }
+        .nav-brand { display: flex; align-items: center; }
+        .nav-logo { color: var(--gold); font-size: 22px; letter-spacing: 1px; }
 
         #nav-toggle { display: none; }
-        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
-        .hamburger span { width: 25px; height: 3px; background: var(--white); }
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; z-index: 1001; }
+        .hamburger span { width: 25px; height: 3px; background: var(--white); transition: 0.3s; }
+        #nav-toggle:checked ~ .hamburger span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        #nav-toggle:checked ~ .hamburger span:nth-child(2) { opacity: 0; }
+        #nav-toggle:checked ~ .hamburger span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
-        .nav-group { display: flex; gap: 20px; align-items: center; }
+        .nav-menu { display: flex; align-items: center; gap: 48px; }
+
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a {
+            color: var(--white); text-decoration: none; font-weight: 600;
+            font-size: 14px; letter-spacing: 0.5px; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--gold); }
+
+        .nav-icons { display: flex; gap: 20px; align-items: center; }
+        .nav-icon { color: var(--white); display: inline-flex; transition: color 0.2s; }
+        .nav-icon:hover { color: var(--gold); }
+        .nav-icon svg { width: 20px; height: 20px; display: block; }
 
         /* Unified Button */
         .btn-pill {
@@ -69,13 +87,12 @@
         .btn-pill:hover { background: var(--gold); transform: scale(1.05); }
 
         /* Hero */
-        .hero { background-color: var(--black); justify-content: space-between; padding: 120px 10% 80px 10%; }
+        .hero { background-color: var(--black); background-image: var(--img-hero); justify-content: space-between; padding: 120px 10% 80px 10%; }
 
-        /* Solid black for now — swap in background-image: var(--img-*) once real
-           photography replaces the placeholder photos defined in :root. */
-        .section-diy { background-color: var(--black); }
-        .section-lab { background-color: var(--black); }
-        .section-benefits { background-color: var(--black); }
+        /* background-color shows while the photo loads, or if a hotlinked URL ever breaks */
+        .section-diy { background-color: var(--black); background-image: var(--img-diy); }
+        .section-lab { background-color: var(--black); background-image: var(--img-lab); }
+        .section-benefits { background-color: var(--black); background-image: var(--img-benefits); }
         .Hero-Logo { display: flex; align-items: stretch; gap: 20px; max-width: 100%; }
         .vertical-line { width: 3px; flex-shrink: 0; background-color: var(--gold); }
         .Hero-Logo-left h1 { font-size: 80px; margin: 0; color: var(--gold); line-height: 1; }
@@ -94,14 +111,23 @@
 
         /* Lighter, more photographic treatment than the other sections: text-shadow
            carries legibility instead of a heavy dark scrim over the photo. */
+        .compare-row .half::before { background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.4)); }
+        .compare-row .half h2, .compare-row .half p { text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
+
         /* Mobile */
         @media (max-width: 768px) {
             .hamburger { display: flex; }
-            .nav-group {
-                display: none; flex-direction: column; position: absolute; top: 75px; left: 0;
-                width: 100%; background: var(--black); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+
+            /* Logo stays visible; the links + icons collapse into one dropdown panel */
+            .nav-menu {
+                display: none; flex-direction: column; align-items: flex-start; gap: 20px;
+                position: absolute; top: 68px; left: 0; width: 100%;
+                background: var(--black); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
             }
-            #nav-toggle:checked ~ .nav-group { display: flex; }
+            #nav-toggle:checked ~ .nav-menu { display: flex; }
+            .nav-links { flex-direction: column; gap: 16px; align-items: flex-start; }
+            .nav-icons { flex-direction: row; gap: 24px; }
+
             .Hero-Logo-left h1 { font-size: 50px; }
             .Hero-Logo-Right h1 { font-size: 28px; }
             .Hero-Logo-Right h4 { font-size: 12px; letter-spacing: 0.5px; }
@@ -124,10 +150,27 @@
 
     <nav class="navbar">
         <input type="checkbox" id="nav-toggle">
+        <div class="nav-brand"><strong class="nav-logo">DL</strong></div>
         <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
-        <div class="nav-group"><strong class="nav-logo">DL</strong></div>
-        <div class="nav-group">Home | Catalog | Contact</div>
-        <div class="nav-group">Search | Account | Cart</div>
+
+        <div class="nav-menu">
+            <div class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">Catalog</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="nav-icons">
+                <a href="#" class="nav-icon" aria-label="Search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                </a>
+                <a href="#" class="nav-icon" aria-label="Account">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"></path></svg>
+                </a>
+                <a href="#" class="nav-icon" aria-label="Cart">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5L6 7Z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
+                </a>
+            </div>
+        </div>
     </nav>
 
     <div class="scroll-container">
@@ -152,7 +195,7 @@
             <section class="section-diy half">
                 <h2>DIY Shop</h2>
                 <p>For experienced buyers who know exactly what they need.</p>
-                <button class="btn-pill">Shop now</button>
+                <a class="btn-pill" href="diy-wizard/">Shop now</a>
             </section>
 
             <section class="section-lab half">
