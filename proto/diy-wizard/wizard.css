@@ -2,7 +2,8 @@
     --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
     --border: rgba(255,255,255,0.15);
 
-    /* PLACEHOLDER IMAGE — swap for the real asset when it's ready. */
+    /* PLACEHOLDER IMAGE — not applied yet (see wizard-image / quote-item-thumb
+       below); swap in once real photography replaces the solid-black boxes. */
     --img-wizard: url('https://picsum.photos/seed/dl-wizard/900/900');
 }
 
@@ -35,8 +36,7 @@ html, body {
 
 .wizard-image {
     width: 100%; aspect-ratio: 1 / 1; border-radius: 4px;
-    background-color: #2a2a2a; background-image: var(--img-wizard);
-    background-size: cover; background-position: center;
+    background-color: #2a2a2a; border: 1px solid var(--border);
 }
 
 /* Form / panel column */
@@ -91,13 +91,13 @@ html, body {
 .wizard-actions .btn { grid-column: 1 / -1; }
 
 .btn, .btn-secondary {
-    padding: 15px 20px; border: none; cursor: pointer; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 1px; font-family: inherit;
-    font-size: 14px; transition: 0.3s; border-radius: 2px; text-align: center;
+    padding: 14px 28px; border: none; cursor: pointer; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px; font-family: inherit;
+    font-size: 14px; transition: 0.3s; border-radius: 999px; text-align: center;
     text-decoration: none; display: inline-block;
 }
-.btn { background: var(--gold); color: var(--black); }
-.btn:hover { background: var(--white); }
+.btn { background: var(--white); color: var(--black); }
+.btn:hover { background: var(--gold); }
 .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
 .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
@@ -111,8 +111,7 @@ html, body {
 }
 .quote-item-thumb {
     width: 84px; height: 84px; border-radius: 4px; flex-shrink: 0;
-    background-color: #2a2a2a; background-image: var(--img-wizard);
-    background-size: cover; background-position: center;
+    background-color: #2a2a2a; border: 1px solid var(--border);
 }
 .quote-item-body { flex: 1; min-width: 0; }
 .quote-item-body h4 { margin: 0 0 6px; }
