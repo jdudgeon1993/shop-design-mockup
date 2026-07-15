@@ -87,7 +87,20 @@
         /* DIY vs Curated: one full-screen row split 50/50 on desktop */
         .compare-row { display: flex; flex-direction: row; }
         .compare-row .half { width: 50%; padding-left: 8%; padding-right: 8%; }
-        .compare-row .section-diy { border-right: 1px solid rgba(255,255,255,0.15); }
+        .compare-row .section-diy { border-right: 1px solid rgba(255,255,255,0.35); }
+
+        /* Lighter, more photographic treatment than the other sections: text-shadow
+           carries legibility instead of a heavy dark scrim over the photo. */
+        .compare-row .half::before { background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.4)); }
+        .compare-row .half h2, .compare-row .half p { text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
+
+        .btn-pill {
+            display: inline-block; padding: 14px 36px; background: var(--white); color: var(--black);
+            border: none; cursor: pointer; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; border-radius: 999px; margin-top: 24px; transition: 0.3s;
+            text-decoration: none;
+        }
+        .btn-pill:hover { background: var(--gold); transform: scale(1.05); }
 
         /* Mobile */
         @media (max-width: 768px) {
@@ -147,13 +160,13 @@
             <section class="section-diy half">
                 <h2>DIY Shop</h2>
                 <p>For experienced buyers who know exactly what they need.</p>
-                <button class="btn">Shop now</button>
+                <button class="btn-pill">Shop now</button>
             </section>
 
             <section class="section-lab half">
                 <h2>Designed in the Lab</h2>
-                <p>Explore curated collections designed by our best designers.</p>
-                <button class="btn">Shop now</button>
+                <p>Explore &amp; purchase our Curated Collections designed by our best Designers.</p>
+                <button class="btn-pill">Shop now</button>
             </section>
         </div>
 
