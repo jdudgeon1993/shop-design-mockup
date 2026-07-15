@@ -79,12 +79,23 @@
 
         /* Unified Button */
         .btn-pill {
-            display: inline-block; padding: 14px 36px; background: var(--white); color: var(--black);
-            border: none; cursor: pointer; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 2px; border-radius: 999px; margin-top: 24px; transition: 0.3s;
-            text-decoration: none;
+            /* Reset native <button> form-control chrome so it renders identically
+               to an <a> — browsers don't inherit font/appearance into buttons by
+               default, which is why these looked different from each other. */
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+
+            display: inline-block; margin: 24px 0 0; padding: 14px 36px;
+            border: none; border-radius: 999px;
+            background: var(--white); color: var(--black);
+
+            font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
+            text-align: center; text-decoration: none;
+            text-transform: uppercase; letter-spacing: 2px;
+
+            cursor: pointer; transition: 0.3s;
         }
-        .btn-pill:hover { background: var(--gold); transform: scale(1.05); }
+        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); transform: scale(1.05); }
 
         /* Hero */
         .hero { background-color: var(--black); background-image: var(--img-hero); justify-content: space-between; padding: 120px 10% 80px 10%; }
@@ -198,7 +209,7 @@
             </div>
             <div>
                 <h2>Cabinetry for Every Room in the House</h2>
-                <button class="btn-pill">Shop now</button>
+                <a class="btn-pill" href="#">Shop now</a>
             </div>
         </section>
 
@@ -213,7 +224,7 @@
                 <section class="section-lab half">
                     <h2>Designed in the Lab</h2>
                     <p>Explore &amp; purchase our Curated Collections designed by our best Designers.</p>
-                    <button class="btn-pill">Shop now</button>
+                    <a class="btn-pill" href="#">Shop now</a>
                 </section>
             </div>
 
