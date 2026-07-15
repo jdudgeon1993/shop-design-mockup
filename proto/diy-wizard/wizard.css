@@ -90,16 +90,21 @@ html, body {
 .wizard-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
 .wizard-actions .btn { grid-column: 1 / -1; }
 
+/* Reset native <button> form-control chrome so it renders identically to an
+   <a> — browsers don't inherit font/appearance into buttons by default. */
 .btn, .btn-secondary {
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    outline: none; box-shadow: none; box-sizing: border-box;
+
     padding: 14px 28px; border: none; cursor: pointer; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 1.5px; font-family: inherit;
-    font-size: 14px; transition: 0.3s; border-radius: 999px; text-align: center;
-    text-decoration: none; display: inline-block;
+    text-transform: uppercase; letter-spacing: 1.5px; font: inherit;
+    font-size: 14px; line-height: 1; transition: 0.3s; border-radius: 999px;
+    text-align: center; text-decoration: none; display: inline-block;
 }
 .btn { background: var(--white); color: var(--black); }
-.btn:hover { background: var(--gold); }
+.btn:hover, .btn:focus-visible { background: var(--gold); }
 .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
-.btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+.btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
 
 /* Quote review list */
 .empty-msg { color: rgba(255,255,255,0.6); }
