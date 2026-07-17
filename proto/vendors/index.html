@@ -1,0 +1,291 @@
+<!-- Unlisted prototype exploration: not linked from the live site or the main proto page.
+     Random placeholder vendors/collections — visualizing the Brand -> Curated -> Customize flow. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Vendor Partners - Prototype</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37; --white: #ffffff; --black: #1a1a1a;
+            --border: rgba(255,255,255,0.15);
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); }
+
+        .back-link { display: inline-block; margin: 20px 5%; color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+
+        .page-head { padding: 0 5% 40px; max-width: 800px; }
+        .page-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 13px; margin: 0 0 8px; }
+        .page-head h1 { margin: 0 0 12px; font-size: 36px; }
+        .page-head p { margin: 0; color: rgba(255,255,255,0.65); line-height: 1.6; }
+
+        .vendor-section { padding: 40px 5%; border-top: 1px solid var(--border); }
+        .vendor-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+        .vendor-head h2 { margin: 0; font-size: 26px; }
+        .vendor-location { color: rgba(255,255,255,0.5); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .collection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+        .collection-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.03); }
+        .collection-photo { width: 100%; aspect-ratio: 4 / 3; background-color: #2a2a2a; background-size: cover; background-position: center; }
+        .collection-body { padding: 18px; }
+        .collection-number { color: rgba(255,255,255,0.45); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px; }
+        .collection-body h3 { margin: 0 0 8px; font-size: 19px; }
+        .collection-price { color: var(--gold); font-weight: 700; font-size: 14px; margin: 0 0 16px; }
+        .collection-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+        .btn-pill {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+            display: inline-block; padding: 10px 24px; border: none; border-radius: 999px;
+            background: var(--white); color: var(--black);
+            font: inherit; font-size: 13px; font-weight: 700; line-height: 1;
+            text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1.5px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); }
+
+        .customize-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 38px; height: 38px; border-radius: 50%;
+            border: 1px solid var(--border); color: var(--white);
+            text-decoration: none; transition: 0.2s; flex-shrink: 0;
+        }
+        .customize-icon:hover { border-color: var(--gold); color: var(--gold); }
+        .customize-icon svg { width: 18px; height: 18px; }
+
+        @media (max-width: 640px) {
+            .page-head h1 { font-size: 28px; }
+            .vendor-head h2 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a class="back-link" href="../index.html">&larr; Back to storefront</a>
+
+    <div class="page-head">
+        <p class="page-kicker">Vendor Partners</p>
+        <h1>Shop by Curated Collection</h1>
+        <p>Every collection is designed in the lab, then built on one partner cabinet line — never mixed across vendors, so freight stays simple and finishes stay consistent. Pick a look, then customize it to your space.</p>
+    </div>
+
+    <section class="vendor-section">
+        <div class="vendor-head">
+            <h2>Northridge Cabinetry</h2>
+            <span class="vendor-location">Denver, CO</span>
+        </div>
+        <div class="collection-grid">
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/copper-ridge/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 101</p>
+                    <h3>Copper Ridge</h3>
+                    <p class="collection-price">Starting at $840</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Northridge+Cabinetry&collection=Copper+Ridge&no=101&price=840&img=copper-ridge">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Northridge+Cabinetry&collection=Copper+Ridge&no=101&price=840&img=copper-ridge" aria-label="Customize Copper Ridge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/quiet-hour/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 104</p>
+                    <h3>Quiet Hour</h3>
+                    <p class="collection-price">Starting at $915</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Northridge+Cabinetry&collection=Quiet+Hour&no=104&price=915&img=quiet-hour">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Northridge+Cabinetry&collection=Quiet+Hour&no=104&price=915&img=quiet-hour" aria-label="Customize Quiet Hour">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="vendor-section">
+        <div class="vendor-head">
+            <h2>Marlowe &amp; Ash</h2>
+            <span class="vendor-location">Charlotte, NC</span>
+        </div>
+        <div class="collection-grid">
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/ash-and-oak/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 112</p>
+                    <h3>Ash &amp; Oak</h3>
+                    <p class="collection-price">Starting at $760</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Marlowe+%26+Ash&collection=Ash+%26+Oak&no=112&price=760&img=ash-and-oak">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Marlowe+%26+Ash&collection=Ash+%26+Oak&no=112&price=760&img=ash-and-oak" aria-label="Customize Ash & Oak">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/southern-comfort/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 115</p>
+                    <h3>Southern Comfort</h3>
+                    <p class="collection-price">Starting at $1,020</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Marlowe+%26+Ash&collection=Southern+Comfort&no=115&price=1020&img=southern-comfort">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Marlowe+%26+Ash&collection=Southern+Comfort&no=115&price=1020&img=southern-comfort" aria-label="Customize Southern Comfort">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/carolina-blue/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 118</p>
+                    <h3>Carolina Blue</h3>
+                    <p class="collection-price">Starting at $695</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Marlowe+%26+Ash&collection=Carolina+Blue&no=118&price=695&img=carolina-blue">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Marlowe+%26+Ash&collection=Carolina+Blue&no=118&price=695&img=carolina-blue" aria-label="Customize Carolina Blue">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="vendor-section">
+        <div class="vendor-head">
+            <h2>Cascade Woodworks</h2>
+            <span class="vendor-location">Portland, OR</span>
+        </div>
+        <div class="collection-grid">
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/evergreen-fold/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 122</p>
+                    <h3>Evergreen Fold</h3>
+                    <p class="collection-price">Starting at $1,180</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Cascade+Woodworks&collection=Evergreen+Fold&no=122&price=1180&img=evergreen-fold">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Cascade+Woodworks&collection=Evergreen+Fold&no=122&price=1180&img=evergreen-fold" aria-label="Customize Evergreen Fold">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/rainier-grey/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 126</p>
+                    <h3>Rainier Grey</h3>
+                    <p class="collection-price">Starting at $875</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Cascade+Woodworks&collection=Rainier+Grey&no=126&price=875&img=rainier-grey">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Cascade+Woodworks&collection=Rainier+Grey&no=126&price=875&img=rainier-grey" aria-label="Customize Rainier Grey">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="vendor-section">
+        <div class="vendor-head">
+            <h2>Birchgate Cabinet Co.</h2>
+            <span class="vendor-location">Grand Rapids, MI</span>
+        </div>
+        <div class="collection-grid">
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/harbor-light/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 131</p>
+                    <h3>Harbor Light</h3>
+                    <p class="collection-price">Starting at $730</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Birchgate+Cabinet+Co.&collection=Harbor+Light&no=131&price=730&img=harbor-light">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Birchgate+Cabinet+Co.&collection=Harbor+Light&no=131&price=730&img=harbor-light" aria-label="Customize Harbor Light">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/birchwood-lane/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 134</p>
+                    <h3>Birchwood Lane</h3>
+                    <p class="collection-price">Starting at $890</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Birchgate+Cabinet+Co.&collection=Birchwood+Lane&no=134&price=890&img=birchwood-lane">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Birchgate+Cabinet+Co.&collection=Birchwood+Lane&no=134&price=890&img=birchwood-lane" aria-label="Customize Birchwood Lane">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/great-lakes/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 137</p>
+                    <h3>Great Lakes</h3>
+                    <p class="collection-price">Starting at $1,045</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Birchgate+Cabinet+Co.&collection=Great+Lakes&no=137&price=1045&img=great-lakes">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Birchgate+Cabinet+Co.&collection=Great+Lakes&no=137&price=1045&img=great-lakes" aria-label="Customize Great Lakes">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="vendor-section">
+        <div class="vendor-head">
+            <h2>Solstice Kitchens</h2>
+            <span class="vendor-location">Austin, TX</span>
+        </div>
+        <div class="collection-grid">
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/desert-bloom/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 142</p>
+                    <h3>Desert Bloom</h3>
+                    <p class="collection-price">Starting at $965</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Solstice+Kitchens&collection=Desert+Bloom&no=142&price=965&img=desert-bloom">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Solstice+Kitchens&collection=Desert+Bloom&no=142&price=965&img=desert-bloom" aria-label="Customize Desert Bloom">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="collection-card">
+                <div class="collection-photo" style="background-image: url('https://picsum.photos/seed/amber-hour/800/600')"></div>
+                <div class="collection-body">
+                    <p class="collection-number">Collection No. 145</p>
+                    <h3>Amber Hour</h3>
+                    <p class="collection-price">Starting at $705</p>
+                    <div class="collection-actions">
+                        <a class="btn-pill" href="customize.html?vendor=Solstice+Kitchens&collection=Amber+Hour&no=145&price=705&img=amber-hour">View</a>
+                        <a class="customize-icon" href="customize.html?vendor=Solstice+Kitchens&collection=Amber+Hour&no=145&price=705&img=amber-hour" aria-label="Customize Amber Hour">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
