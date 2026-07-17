@@ -107,8 +107,30 @@
         .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; }
 
         /* Benefits Grid */
-        .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1000px; }
-        .benefit-item h4 { margin: 0 0 8px 0; color: var(--gold); }
+        .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1000px; }
+        .benefit-item {
+            padding: 28px; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+        }
+        .benefit-icon {
+            width: 44px; height: 44px; margin-bottom: 16px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(212,175,55,0.12); color: var(--gold);
+        }
+        .benefit-icon svg { width: 22px; height: 22px; }
+        .benefit-item h4 { margin: 0 0 8px 0; color: var(--gold); font-size: 20px; }
+        .benefit-item p { margin: 0; color: rgba(255,255,255,0.75); }
+
+        /* Scroll-triggered entrance — progressive enhancement, browsers without
+           animation-timeline support just show the end state immediately. */
+        @keyframes benefit-in { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: no-preference) {
+            .benefit-item {
+                animation: benefit-in linear both;
+                animation-timeline: view();
+                animation-range: entry 0% entry 60%;
+            }
+        }
 
         /* DIY vs Curated: one full-screen row split 50/50 on desktop */
         .compare-row { display: flex; flex-direction: row; }
@@ -179,6 +201,32 @@
             </div>
         </section>
 
+        <section class="section-benefits">
+            <h2>Why Homeowners Choose Us</h2>
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.9 6.4 6.9.6-5.2 4.6 1.6 6.8L12 17l-6.2 3.4 1.6-6.8L2.2 9l6.9-.6Z"></path></svg></div>
+                    <h4>Extreme Experience</h4>
+                    <p>Decades of industry experience.</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg></div>
+                    <h4>Convenient</h4>
+                    <p>Shop our designers' packages from your home.</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 13 9 5 9-5"></path></svg></div>
+                    <h4>Variety</h4>
+                    <p>Kitchens, baths, closets, garage, and more.</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v10M9.5 9.5c0-1.2 1-2 2.5-2s2.5.8 2.5 2-1 1.5-2.5 2-2.5.8-2.5 2 1 2 2.5 2 2.5-.8 2.5-2"></path></svg></div>
+                    <h4>All Budgets</h4>
+                    <p>Vetted options from entry-level to full custom.</p>
+                </div>
+            </div>
+        </section>
+
         <div class="compare-row">
             <section class="section-diy half">
                 <h2>DIY Shop</h2>
@@ -192,16 +240,6 @@
                 <a class="btn-pill" href="#">Shop now</a>
             </section>
         </div>
-
-        <section class="section-benefits">
-            <h2>Why Homeowners Choose Us</h2>
-            <div class="benefits-grid">
-                <div class="benefit-item"><h4>Extreme Experience</h4><p>Decades of industry experience.</p></div>
-                <div class="benefit-item"><h4>Convenient</h4><p>Shop our designers' packages from your home.</p></div>
-                <div class="benefit-item"><h4>Variety</h4><p>Kitchens, baths, closets, garage, and more.</p></div>
-                <div class="benefit-item"><h4>All Budgets</h4><p>Vetted options from entry-level to full custom.</p></div>
-            </div>
-        </section>
     </div>
 </body>
 </html>
