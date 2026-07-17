@@ -86,12 +86,7 @@
         .section-diy { background-color: var(--black); background-image: var(--img-diy); }
         .section-lab { background-color: var(--black); background-image: var(--img-lab); }
         .section-benefits { background-color: var(--black); background-image: var(--img-benefits); }
-        .Hero-Logo { display: flex; align-items: stretch; gap: 20px; max-width: 100%; }
-        .vertical-line { width: 3px; flex-shrink: 0; background-color: var(--gold); }
-        .Hero-Logo-left h1 { font-size: 80px; margin: 0; color: var(--gold); line-height: 1; }
-        .Hero-Logo-Right { min-width: 0; }
-        .Hero-Logo-Right h1 { font-size: 40px; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
-        .Hero-Logo-Right h4 { margin: 0 0 4px 0; max-width: 100%; color: var(--gold); }
+        .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; }
 
         /* Benefits Grid */
         .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1000px; }
@@ -144,9 +139,7 @@
             .nav-links { flex-direction: column; gap: 16px; align-items: flex-start; }
             .nav-icons { flex-direction: row; gap: 24px; }
 
-            .Hero-Logo-left h1 { font-size: 50px; }
-            .Hero-Logo-Right h1 { font-size: 28px; }
-            .Hero-Logo-Right h4 { font-size: 12px; letter-spacing: 0.5px; }
+            .hero-logo-img { max-width: 320px; }
             .benefits-grid { grid-template-columns: 1fr; }
 
             /* DIY/Curated stay paired as one compact screen, but Why Choose Us goes
@@ -163,9 +156,7 @@
         }
 
         @media (max-width: 420px) {
-            .Hero-Logo { gap: 12px; }
-            .Hero-Logo-left h1 { font-size: 36px; }
-            .Hero-Logo-Right h1 { font-size: 20px; }
+            .hero-logo-img { max-width: 260px; }
         }
     </style>
 </head>
@@ -198,16 +189,7 @@
 
     <div class="scroll-container">
         <section class="hero">
-            <div class="Hero-Logo">
-                <div class="Hero-Logo-left"><h1>DL</h1></div>
-                <div class="vertical-line"></div>
-                <div class="Hero-Logo-Right">
-                    <h1>Design Lab</h1>
-                    <h4>ONLINE CABINETRY.</h4>
-                    <h4>CUSTOMER FOCUSED.</h4>
-                    <h4>BEST FLIPPIN' HOUSE ON THE BLOCK.</h4>
-                </div>
-            </div>
+            <img class="hero-logo-img" src="../Assets/Images/Hero-Logo.svg" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
             <div>
                 <h2>Cabinetry for Every Room in the House</h2>
                 <a class="btn-pill" href="#">Shop now</a>
