@@ -1,0 +1,184 @@
+<!-- Unlisted prototype exploration: not linked from the live site or the main proto page.
+     Standalone customize screen for a single vendor collection — separate from the DIY
+     wizard/generator on purpose, so this experiment stays fully contained to /proto/vendors/. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Customize - Prototype</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37; --white: #ffffff; --black: #1a1a1a;
+            --border: rgba(255,255,255,0.15);
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); }
+
+        .back-link { display: inline-block; margin: 20px 5%; color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+
+        .layout { display: flex; flex-wrap: wrap; gap: 40px; max-width: 1200px; margin: 0 auto; padding: 0 5% 80px; }
+
+        .visual { flex: 1 1 340px; min-width: 0; }
+        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 13px; margin: 0 0 8px; }
+        .visual h1 { margin: 0 0 4px; font-size: 32px; }
+        .vendor-line { color: rgba(255,255,255,0.6); margin: 0 0 20px; }
+        .photo { width: 100%; aspect-ratio: 4 / 3; border-radius: 6px; background-color: #2a2a2a; background-size: cover; background-position: center; }
+
+        .panel { flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+
+        .mod-step { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+        .mod-step summary {
+            margin: 0; padding: 16px 20px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; font-size: 13px; color: var(--gold);
+            cursor: pointer; list-style: none; user-select: none;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .mod-step summary::-webkit-details-marker { display: none; }
+        .mod-step summary::after {
+            content: ""; width: 8px; height: 8px; flex-shrink: 0; margin-left: 12px;
+            border-right: 2px solid var(--gold); border-bottom: 2px solid var(--gold);
+            transform: rotate(45deg); transition: transform 0.2s;
+        }
+        .mod-step[open] summary::after { transform: rotate(-135deg); }
+        .mod-step-body { padding: 0 20px 16px; }
+
+        .mod-option {
+            display: flex; align-items: center; gap: 12px; padding: 10px 8px;
+            border-radius: 4px; cursor: pointer;
+        }
+        .mod-option:hover { background: rgba(255,255,255,0.06); }
+        .mod-option:has(input:checked) { background: rgba(212,175,55,0.12); }
+        .mod-option input { accent-color: var(--gold); width: 16px; height: 16px; flex-shrink: 0; }
+        .mod-option-label { flex: 1; }
+        .mod-option-price { color: rgba(255,255,255,0.6); font-variant-numeric: tabular-nums; }
+        .mod-option:has(input:checked) .mod-option-price { color: var(--gold); }
+
+        .totals {
+            border: 1px solid var(--border); border-radius: 4px; padding: 16px 20px;
+            display: flex; justify-content: space-between; align-items: baseline;
+        }
+        .totals strong { font-size: 20px; color: var(--gold); font-variant-numeric: tabular-nums; }
+
+        .btn-pill {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+            display: inline-block; padding: 14px 28px; border: none; border-radius: 999px;
+            background: var(--white); color: var(--black);
+            font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
+            text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1.5px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); }
+
+        .note { margin: 0; padding: 10px 14px; border-radius: 4px; background: rgba(212,175,55,0.12); color: var(--gold); font-size: 13px; }
+
+        @media (max-width: 640px) {
+            .layout { flex-direction: column; }
+            .visual h1 { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a class="back-link" href="index.html">&larr; Back to Vendors</a>
+
+    <div class="layout">
+        <div class="visual">
+            <p class="kicker" id="collection-no">Collection No.</p>
+            <h1 id="collection-name">Collection</h1>
+            <p class="vendor-line">by <span id="vendor-name">Vendor</span></p>
+            <div class="photo" id="collection-photo"></div>
+            <p class="note" style="margin-top: 20px;">Prototype — random placeholder vendor/collection, not a real product.</p>
+        </div>
+
+        <form class="panel" id="customize-form">
+            <details class="mod-step" open>
+                <summary>Size</summary>
+                <div class="mod-step-body">
+                    <label class="mod-option"><input type="radio" name="size" value="Compact" data-price="-40"><span class="mod-option-label">Compact</span><span class="mod-option-price">&minus;$40.00</span></label>
+                    <label class="mod-option"><input type="radio" name="size" value="Standard" data-price="0" checked><span class="mod-option-label">Standard (as shown)</span><span class="mod-option-price">Included</span></label>
+                    <label class="mod-option"><input type="radio" name="size" value="Oversized" data-price="140"><span class="mod-option-label">Oversized</span><span class="mod-option-price">+$140.00</span></label>
+                </div>
+            </details>
+
+            <details class="mod-step" open>
+                <summary>Species</summary>
+                <div class="mod-step-body">
+                    <label class="mod-option"><input type="radio" name="species" value="As Shown" data-price="0" checked><span class="mod-option-label">As shown</span><span class="mod-option-price">Included</span></label>
+                    <label class="mod-option"><input type="radio" name="species" value="Upgraded Species" data-price="85"><span class="mod-option-label">Upgraded species</span><span class="mod-option-price">+$85.00</span></label>
+                </div>
+            </details>
+
+            <details class="mod-step" open>
+                <summary>Finish</summary>
+                <div class="mod-step-body">
+                    <label class="mod-option"><input type="radio" name="finish" value="As Shown" data-price="0" checked><span class="mod-option-label">As shown</span><span class="mod-option-price">Included</span></label>
+                    <label class="mod-option"><input type="radio" name="finish" value="Alternate Finish" data-price="65"><span class="mod-option-label">Alternate finish</span><span class="mod-option-price">+$65.00</span></label>
+                </div>
+            </details>
+
+            <details class="mod-step" open>
+                <summary>Door Style</summary>
+                <div class="mod-step-body">
+                    <label class="mod-option"><input type="radio" name="doorStyle" value="As Shown" data-price="0" checked><span class="mod-option-label">As shown</span><span class="mod-option-price">Included</span></label>
+                    <label class="mod-option"><input type="radio" name="doorStyle" value="Upgraded Door Style" data-price="95"><span class="mod-option-label">Upgraded door style</span><span class="mod-option-price">+$95.00</span></label>
+                </div>
+            </details>
+
+            <details class="mod-step" open>
+                <summary>Accessories</summary>
+                <div class="mod-step-body">
+                    <label class="mod-option"><input type="checkbox" name="accessory-softclose" value="Soft-Close Hinges" data-price="25"><span class="mod-option-label">Soft-close hinges</span><span class="mod-option-price">+$25.00</span></label>
+                    <label class="mod-option"><input type="checkbox" name="accessory-pullout" value="Pull-Out Trash Bin" data-price="45"><span class="mod-option-label">Pull-out trash bin</span><span class="mod-option-price">+$45.00</span></label>
+                    <label class="mod-option"><input type="checkbox" name="accessory-lighting" value="Interior Lighting" data-price="60"><span class="mod-option-label">Interior lighting</span><span class="mod-option-price">+$60.00</span></label>
+                </div>
+            </details>
+
+            <div class="totals">
+                <span>Customized Total</span>
+                <strong id="running-total">$0.00</strong>
+            </div>
+
+            <a class="btn-pill" href="index.html" style="text-align:center;">Back to Collections</a>
+        </form>
+    </div>
+
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var vendor = params.get('vendor') || 'Vendor Partner';
+            var collection = params.get('collection') || 'Collection';
+            var no = params.get('no') || '';
+            var basePrice = parseFloat(params.get('price')) || 0;
+            var imgSeed = params.get('img') || 'placeholder';
+
+            document.getElementById('vendor-name').textContent = vendor;
+            document.getElementById('collection-name').textContent = collection;
+            document.getElementById('collection-no').textContent = 'Collection No. ' + no;
+            document.getElementById('collection-photo').style.backgroundImage =
+                "url('https://picsum.photos/seed/" + encodeURIComponent(imgSeed) + "/900/700')";
+            document.title = collection + ' — Customize';
+
+            var form = document.getElementById('customize-form');
+            var totalEl = document.getElementById('running-total');
+
+            function currency(n) { return '$' + n.toFixed(2); }
+
+            function refreshTotal() {
+                var total = basePrice;
+                form.querySelectorAll('input[type=radio]:checked, input[type=checkbox]:checked').forEach(function (input) {
+                    total += parseFloat(input.dataset.price || '0');
+                });
+                totalEl.textContent = currency(total);
+            }
+
+            form.addEventListener('change', refreshTotal);
+            refreshTotal();
+        })();
+    </script>
+</body>
+</html>
