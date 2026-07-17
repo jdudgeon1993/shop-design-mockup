@@ -56,7 +56,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         .nav-brand { display: flex; align-items: center; }
-        .nav-logo { color: var(--gold); font-size: 22px; letter-spacing: 1px; }
+        .nav-logo { display: block; height: 30px; width: auto; }
 
         #nav-toggle { display: none; }
         .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; z-index: 1001; }
@@ -164,7 +164,7 @@
 
     <nav class="navbar">
         <input type="checkbox" id="nav-toggle">
-        <div class="nav-brand"><strong class="nav-logo">DL</strong></div>
+        <div class="nav-brand"><img class="nav-logo" src="../Assets/Logos/DL-Logo%20White.png" alt="Design Lab"></div>
         <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
 
         <div class="nav-menu">
