@@ -9,24 +9,31 @@
     <style>
         :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); }
         *, *::before, *::after { box-sizing: border-box; }
-        html, body { margin: 0; min-height: 100%; font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); }
+        html, body {
+            height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
+            background: var(--black); color: var(--white); overflow: hidden;
+        }
 
-        .back-link { display: inline-block; margin: 20px 5%; color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
+        /* Fills the viewport exactly — no page-level scrolling needed at any step */
+        .page { display: flex; flex-direction: column; height: 100dvh; width: 100%; }
+
+        .top-bar {
+            flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 5%; border-bottom: 1px solid var(--border);
+        }
+        .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
         .back-link:hover { text-decoration: underline; }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
 
-        .consult-wrap { max-width: 1000px; margin: 0 auto; padding: 0 5% 80px; }
-        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 13px; margin: 0 0 8px; }
-        h1 { margin: 0 0 12px; font-size: 34px; }
-        .sub { color: rgba(255,255,255,0.65); max-width: 640px; line-height: 1.6; margin: 0 0 32px; }
-
+        /* The call frame takes all remaining space — this is the whole point */
         .call-frame {
-            width: 100%; min-height: 420px; border-radius: 8px;
-            border: 1px solid var(--border); background: #000;
+            flex: 1; min-height: 0; width: 100%; background: #000;
             display: flex; align-items: center; justify-content: center; position: relative;
         }
-        .call-frame.in-call { aspect-ratio: 16 / 9; min-height: 0; overflow: hidden; }
-        .stage { text-align: center; padding: 32px 20px; width: 100%; }
+
+        .stage { text-align: center; padding: 24px 20px; width: 100%; max-height: 100%; overflow-y: auto; }
         .stage p { color: rgba(255,255,255,0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
+        .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.5; }
 
         .choice-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; max-width: 640px; margin: 0 auto; }
         .choice-card {
@@ -59,28 +66,34 @@
         .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
         .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
 
-        .note { margin: 20px 0 0; padding: 12px 16px; border-radius: 4px; background: rgba(212,175,55,0.1); color: var(--gold); font-size: 13px; max-width: 640px; }
+        .note { margin: 20px 0 0; padding: 12px 16px; border-radius: 4px; background: rgba(212,175,55,0.1); color: var(--gold); font-size: 13px; max-width: 500px; margin-left: auto; margin-right: auto; }
         .error-note { background: rgba(220,80,80,0.15); color: #ff9a9a; }
 
-        [hidden] { display: none !important; }
-
-        @media (max-width: 640px) {
-            h1 { font-size: 26px; }
+        .privacy-caption {
+            flex-shrink: 0; padding: 8px 5% 12px; font-size: 12px; text-align: center;
+            color: rgba(255,255,255,0.4);
         }
+        .privacy-caption strong { color: var(--gold); font-weight: 600; }
+
+        /* Once the call is live, the caption steps aside — every pixel goes to the call */
+        body.in-call .privacy-caption { display: none; }
+        body.in-call .top-bar { padding: 10px 5%; }
+
+        [hidden] { display: none !important; }
     </style>
 </head>
 <body>
 
-    <a class="back-link" href="../index.html">&larr; Back to storefront</a>
-
-    <div class="consult-wrap">
-        <p class="kicker">Design Lab</p>
-        <h1>Video Consultation</h1>
-        <p class="sub">Create a new private room, or join one someone sent you. This runs on Jitsi Meet's video service, hosted on their own servers — nothing is recorded or stored by us.</p>
+    <div class="page">
+        <div class="top-bar">
+            <a class="back-link" href="../index.html">&larr; Back to storefront</a>
+            <span class="page-title">Video Consultation</span>
+        </div>
 
         <div class="call-frame" id="call-frame">
             <!-- Step 1: create or join -->
             <div class="stage" id="stage-choice">
+                <p class="intro-line">Create a new private room, or join one someone sent you. Runs on Jitsi Meet, hosted on their own servers — nothing recorded or stored by us.</p>
                 <div class="choice-grid">
                     <div class="choice-card">
                         <h3>Create a Room</h3>
@@ -105,7 +118,7 @@
             </div>
         </div>
 
-        <p class="note" id="privacy-note">Each room is a random, unlisted code — only people you send the link to can find it. Once you're in as the first (host) participant, you can lock it with a password from Jitsi's in-call menu for extra privacy.</p>
+        <p class="privacy-caption" id="privacy-note">Each room is a random, unlisted code. Once you're hosting, <strong>lock it with a password</strong> from Jitsi's in-call menu for extra privacy.</p>
     </div>
 
     <script>
@@ -184,7 +197,7 @@
                     stageReady.innerHTML = '<p class="note error-note">Could not load the video service. Check your connection and try again.</p>';
                     return;
                 }
-                callFrame.classList.add('in-call');
+                document.body.classList.add('in-call');
                 stageReady.remove();
                 new JitsiMeetExternalAPI(JITSI_DOMAIN, {
                     roomName: roomName,
