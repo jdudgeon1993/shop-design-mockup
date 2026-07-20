@@ -20,31 +20,52 @@
         .sub { color: rgba(255,255,255,0.65); max-width: 640px; line-height: 1.6; margin: 0 0 32px; }
 
         .call-frame {
-            width: 100%; aspect-ratio: 16 / 9; max-height: 70vh; border-radius: 8px;
-            border: 1px solid var(--border); background: #000; overflow: hidden;
+            width: 100%; min-height: 420px; border-radius: 8px;
+            border: 1px solid var(--border); background: #000;
             display: flex; align-items: center; justify-content: center; position: relative;
         }
-        .join-screen { text-align: center; padding: 20px; }
-        .join-screen p { color: rgba(255,255,255,0.6); max-width: 380px; margin: 0 auto 24px; font-size: 14px; }
+        .call-frame.in-call { aspect-ratio: 16 / 9; min-height: 0; overflow: hidden; }
+        .stage { text-align: center; padding: 32px 20px; width: 100%; }
+        .stage p { color: rgba(255,255,255,0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
 
-        .btn-pill {
+        .choice-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; max-width: 640px; margin: 0 auto; }
+        .choice-card {
+            flex: 1 1 240px; max-width: 280px; border: 1px solid var(--border); border-radius: 8px;
+            padding: 24px; background: rgba(255,255,255,0.03);
+        }
+        .choice-card h3 { margin: 0 0 8px; font-size: 17px; }
+        .choice-card p { margin: 0 0 18px; font-size: 13px; }
+
+        .room-input {
+            width: 100%; background: #242424; border: 1px solid var(--border); color: var(--white);
+            padding: 10px 12px; border-radius: 4px; font-family: inherit; font-size: 14px;
+            margin-bottom: 14px; text-align: center;
+        }
+
+        .room-label { color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin: 0 0 6px; }
+        .room-code { color: var(--gold); font-size: 20px; font-weight: 700; margin: 0 0 20px; word-break: break-all; }
+
+        .btn-pill, .btn-secondary {
             appearance: none; -webkit-appearance: none; -moz-appearance: none;
             outline: none; box-shadow: none; box-sizing: border-box;
-            display: inline-block; padding: 14px 36px; border: none; border-radius: 999px;
-            background: var(--white); color: var(--black);
+            display: inline-block; padding: 14px 32px; border: none; border-radius: 999px;
             font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
-            text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 2px;
-            cursor: pointer; transition: 0.3s;
+            text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1.5px;
+            cursor: pointer; transition: 0.3s; margin: 4px;
         }
+        .btn-pill { background: var(--white); color: var(--black); }
         .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); }
         .btn-pill:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
+        .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
 
         .note { margin: 20px 0 0; padding: 12px 16px; border-radius: 4px; background: rgba(212,175,55,0.1); color: var(--gold); font-size: 13px; max-width: 640px; }
         .error-note { background: rgba(220,80,80,0.15); color: #ff9a9a; }
 
+        [hidden] { display: none !important; }
+
         @media (max-width: 640px) {
             h1 { font-size: 26px; }
-            .call-frame { aspect-ratio: 3 / 4; max-height: none; }
         }
     </style>
 </head>
@@ -55,26 +76,95 @@
     <div class="consult-wrap">
         <p class="kicker">Design Lab</p>
         <h1>Video Consultation</h1>
-        <p class="sub">Meet face-to-face with one of our designers. This runs on Jitsi Meet's video service — click Join, allow camera/microphone access when prompted, and you're in.</p>
+        <p class="sub">Create a new private room, or join one someone sent you. This runs on Jitsi Meet's video service, hosted on their own servers — nothing is recorded or stored by us.</p>
 
         <div class="call-frame" id="call-frame">
-            <div class="join-screen" id="join-screen">
-                <p>Nothing is recorded or stored by us — this call is hosted entirely on Jitsi's own servers.</p>
+            <!-- Step 1: create or join -->
+            <div class="stage" id="stage-choice">
+                <div class="choice-grid">
+                    <div class="choice-card">
+                        <h3>Create a Room</h3>
+                        <p>Start a new private meeting and send the link to a coworker.</p>
+                        <button class="btn-pill" id="create-btn">Create Room</button>
+                    </div>
+                    <div class="choice-card">
+                        <h3>Join a Room</h3>
+                        <p>Enter the room code someone sent you.</p>
+                        <input type="text" id="join-input" class="room-input" placeholder="e.g. dl-amber-oak-482">
+                        <button class="btn-secondary" id="join-existing-btn">Join Room</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: room ready, not yet in-call -->
+            <div class="stage" id="stage-ready" hidden>
+                <p class="room-label">Room</p>
+                <p class="room-code" id="room-code-display"></p>
+                <button class="btn-secondary" id="copy-link-btn">Copy Invite Link</button>
                 <button class="btn-pill" id="join-btn">Join Video Call</button>
             </div>
         </div>
 
-        <p class="note">This is a single shared consultation room — anyone with this page's link can join, the same way an unlocked conference line works. Fine for a scheduled 1:1 call; not a substitute for real access control if this ever needs to stay private.</p>
+        <p class="note" id="privacy-note">Each room is a random, unlisted code — only people you send the link to can find it. Once you're in as the first (host) participant, you can lock it with a password from Jitsi's in-call menu for extra privacy.</p>
     </div>
 
     <script>
         (function () {
-            var ROOM_NAME = 'DesignLabConsultationRoom';
             var JITSI_DOMAIN = 'meet.jit.si';
+            var ADJECTIVES = ['Amber', 'Copper', 'Cedar', 'Quiet', 'Golden', 'Northern', 'Quartz', 'Walnut', 'Marble', 'Alpine'];
+            var NOUNS = ['Oak', 'Maple', 'Harbor', 'Ridge', 'Meadow', 'Birch', 'Lantern', 'Cabin', 'Studio', 'Loft'];
 
-            var joinBtn = document.getElementById('join-btn');
-            var joinScreen = document.getElementById('join-screen');
             var callFrame = document.getElementById('call-frame');
+            var stageChoice = document.getElementById('stage-choice');
+            var stageReady = document.getElementById('stage-ready');
+            var roomCodeDisplay = document.getElementById('room-code-display');
+            var createBtn = document.getElementById('create-btn');
+            var joinInput = document.getElementById('join-input');
+            var joinExistingBtn = document.getElementById('join-existing-btn');
+            var copyLinkBtn = document.getElementById('copy-link-btn');
+            var joinBtn = document.getElementById('join-btn');
+
+            var roomName = null;
+
+            function randomRoomCode() {
+                var adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+                var noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+                var num = Math.floor(100 + Math.random() * 900);
+                return 'dl-' + adj.toLowerCase() + '-' + noun.toLowerCase() + '-' + num;
+            }
+
+            function showReadyStage(name) {
+                roomName = name;
+                roomCodeDisplay.textContent = name;
+
+                var url = new URL(window.location.href);
+                url.searchParams.set('room', name);
+                window.history.replaceState({}, '', url);
+
+                stageChoice.hidden = true;
+                stageReady.hidden = false;
+            }
+
+            createBtn.addEventListener('click', function () {
+                showReadyStage(randomRoomCode());
+            });
+
+            joinExistingBtn.addEventListener('click', function () {
+                var code = joinInput.value.trim();
+                if (!code) {
+                    joinInput.focus();
+                    return;
+                }
+                showReadyStage(code);
+            });
+
+            copyLinkBtn.addEventListener('click', function () {
+                navigator.clipboard.writeText(window.location.href).then(function () {
+                    var original = copyLinkBtn.textContent;
+                    copyLinkBtn.textContent = 'Copied!';
+                    setTimeout(function () { copyLinkBtn.textContent = original; }, 1800);
+                });
+            });
 
             joinBtn.addEventListener('click', function () {
                 joinBtn.disabled = true;
@@ -84,24 +174,31 @@
                 script.src = 'https://' + JITSI_DOMAIN + '/external_api.js';
                 script.onload = startCall;
                 script.onerror = function () {
-                    joinScreen.innerHTML = '<p class="note error-note">Could not reach the video service. Check your connection and try again.</p>';
+                    stageReady.innerHTML = '<p class="note error-note">Could not reach the video service. Check your connection and try again.</p>';
                 };
                 document.body.appendChild(script);
             });
 
             function startCall() {
                 if (typeof JitsiMeetExternalAPI === 'undefined') {
-                    joinScreen.innerHTML = '<p class="note error-note">Could not load the video service. Check your connection and try again.</p>';
+                    stageReady.innerHTML = '<p class="note error-note">Could not load the video service. Check your connection and try again.</p>';
                     return;
                 }
-                joinScreen.remove();
+                callFrame.classList.add('in-call');
+                stageReady.remove();
                 new JitsiMeetExternalAPI(JITSI_DOMAIN, {
-                    roomName: ROOM_NAME,
+                    roomName: roomName,
                     parentNode: callFrame,
                     width: '100%',
                     height: '100%',
                     configOverwrite: { prejoinPageEnabled: true }
                 });
+            }
+
+            // Arrived via a shared invite link — skip straight to "ready to join"
+            var sharedRoom = new URLSearchParams(window.location.search).get('room');
+            if (sharedRoom) {
+                showReadyStage(sharedRoom);
             }
         })();
     </script>
