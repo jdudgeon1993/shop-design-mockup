@@ -137,6 +137,37 @@
         .compare-row .half { width: 50%; padding-left: 8%; padding-right: 8%; }
         .compare-row .section-diy { border-right: 1px solid rgba(255,255,255,0.35); }
 
+        /* Footer: min-height instead of a fixed height so it can grow past one
+           screen if a narrow viewport needs more room for the sitemap columns */
+        .site-footer {
+            min-height: 100dvh; width: 100%; scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center;
+            background: var(--black); color: var(--white);
+            padding: 120px 10% 40px;
+        }
+        .footer-top { display: flex; flex-wrap: wrap; gap: 60px; justify-content: space-between; }
+        .footer-brand { flex: 1 1 220px; max-width: 300px; }
+        .footer-logo { height: 34px; width: auto; display: block; margin-bottom: 16px; }
+        .footer-tagline { color: rgba(255,255,255,0.6); margin: 0 0 20px; line-height: 1.5; }
+        .footer-social { display: flex; gap: 16px; }
+        .footer-social a { color: var(--white); display: inline-flex; transition: color 0.2s; }
+        .footer-social a:hover { color: var(--gold); }
+        .footer-social svg { width: 20px; height: 20px; }
+
+        .footer-sitemap { display: flex; flex-wrap: wrap; gap: 48px; flex: 2 1 500px; }
+        .footer-col { display: flex; flex-direction: column; gap: 12px; min-width: 140px; }
+        .footer-col h4 {
+            margin: 0 0 4px; color: var(--gold); text-transform: uppercase;
+            letter-spacing: 1px; font-size: 13px;
+        }
+        .footer-col a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-col a:hover { color: var(--gold); }
+
+        .footer-bottom {
+            margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5); font-size: 13px;
+        }
+
         /* Mobile */
         @media (max-width: 768px) {
             .hamburger { display: flex; }
@@ -158,6 +189,9 @@
             .compare-row { flex-direction: column; }
             .compare-row .half { width: 100%; padding-left: 10%; padding-right: 10%; }
             .compare-row .section-diy { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.15); }
+
+            .site-footer { padding: 100px 10% 30px; }
+            .footer-top { gap: 40px; }
         }
 
         @media (max-width: 420px) {
@@ -240,6 +274,56 @@
                 <a class="btn-pill" href="#">Shop now</a>
             </section>
         </div>
+
+        <footer class="site-footer">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <img class="footer-logo" src="Assets/Logos/DL-Logo%20White.png" alt="Design Lab">
+                    <p class="footer-tagline">Online cabinetry. Customer focused. Best flippin' home on the block.</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Instagram">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line></svg>
+                        </a>
+                        <a href="#" aria-label="Facebook">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"></path></svg>
+                        </a>
+                        <a href="#" aria-label="Pinterest">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 20c1-3 1.8-6 2.5-9M12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0-2.4 3.2"></path></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <nav class="footer-sitemap" aria-label="Sitemap">
+                    <div class="footer-col">
+                        <h4>Shop</h4>
+                        <a href="#">Home</a>
+                        <a href="diy-wizard/">DIY Shop</a>
+                        <a href="#">Designed in the Lab</a>
+                        <a href="#">Why Homeowners Choose Us</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Company</h4>
+                        <a href="#">About Us</a>
+                        <a href="#">Contact</a>
+                        <a href="consultation/">Video Consultation</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Legal</h4>
+                        <a href="#">Privacy Policy</a>
+                        <a href="#">Terms of Service</a>
+                        <a href="#">Accessibility</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Contact</h4>
+                        <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Design Lab. All rights reserved.</p>
+            </div>
+        </footer>
     </div>
 </body>
 </html>
