@@ -33,6 +33,18 @@
             display: flex; align-items: center; justify-content: center; position: relative;
         }
 
+        /* Jitsi's script sets its own inline width/height on the iframe it injects.
+           Because .call-frame's height comes from flex-grow rather than an explicit
+           height, a plain "height: 100%" on the iframe doesn't reliably resolve
+           against it (confirmed by testing — width honors 100%, height doesn't,
+           leaving the iframe shrink-wrapped small with black space around it).
+           Taking the iframe out of flow with absolute positioning sidesteps that
+           entirely: inset:0 pins it to fill .call-frame exactly, regardless of
+           whatever inline sizing Jitsi's own script applies. */
+        .call-frame iframe {
+            position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0;
+        }
+
         .stage { text-align: center; padding: 24px 20px; width: 100%; max-height: 100%; overflow-y: auto; }
         .stage p { color: rgba(255,255,255,0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
         .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.5; }
@@ -210,8 +222,11 @@
                     // Jitsi's own prejoin screen (name entry + device check) is redundant
                     // with our own Create/Join Room step, and its name field auto-focusing
                     // is what triggered the mobile keyboard that broke the layout — skip
-                    // straight into the call instead.
-                    configOverwrite: { prejoinPageEnabled: false }
+                    // straight into the call instead. Also suppress the auto-shown
+                    // "invite others / dial-in PIN" overlay, which was appearing as a
+                    // small floating panel instead of the actual call filling the frame.
+                    configOverwrite: { prejoinPageEnabled: false, disableInviteFunctions: true },
+                    interfaceConfigOverwrite: { DISABLE_INVITE_FUNCTIONS: true }
                 });
             }
 
