@@ -33,18 +33,6 @@
             display: flex; align-items: center; justify-content: center; position: relative;
         }
 
-        /* Jitsi's script sets its own inline width/height on the iframe it injects.
-           Because .call-frame's height comes from flex-grow rather than an explicit
-           height, a plain "height: 100%" on the iframe doesn't reliably resolve
-           against it (confirmed by testing — width honors 100%, height doesn't,
-           leaving the iframe shrink-wrapped small with black space around it).
-           Taking the iframe out of flow with absolute positioning sidesteps that
-           entirely: inset:0 pins it to fill .call-frame exactly, regardless of
-           whatever inline sizing Jitsi's own script applies. */
-        .call-frame iframe {
-            position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0;
-        }
-
         .stage { text-align: center; padding: 24px 20px; width: 100%; max-height: 100%; overflow-y: auto; }
         .stage p { color: rgba(255,255,255,0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
         .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.5; }
@@ -98,10 +86,6 @@
         }
         .privacy-caption strong { color: var(--gold); font-weight: 600; }
 
-        /* Once the call is live, the caption steps aside — every pixel goes to the call */
-        body.in-call .privacy-caption { display: none; }
-        body.in-call .top-bar { padding: 10px 5%; }
-
         [hidden] { display: none !important; }
     </style>
 </head>
@@ -139,12 +123,14 @@
                 </form>
             </div>
 
-            <!-- Step 2: room ready, not yet in-call -->
+            <!-- Step 2: room ready — the call itself opens in its own tab (see the
+                 note in the script below for why we're not embedding it here) -->
             <div class="stage" id="stage-ready" hidden>
                 <p class="room-label">Room</p>
                 <p class="room-code" id="room-code-display"></p>
                 <button class="btn-secondary" id="copy-link-btn">Copy Invite Link</button>
-                <button class="btn-pill" id="join-btn">Join Video Call</button>
+                <a class="btn-pill" id="join-btn" target="_blank" rel="noopener">Join Video Call</a>
+                <p class="note" id="join-note" hidden>Opened in a new tab — come back here anytime to invite someone else.</p>
             </div>
         </div>
 
@@ -153,11 +139,17 @@
 
     <script>
         (function () {
+            // Jitsi's free public server disconnects EMBEDDED calls after 5 minutes —
+            // that limit is tied to using their iframe/external_api.js specifically,
+            // not to being signed in. A plain link to meet.jit.si that opens its own
+            // tab isn't "embedding," so it isn't capped. Trade-off: the call runs in
+            // Jitsi's own plain-branded page instead of wrapped in ours. Revisit this
+            // once JaaS (Jitsi's paid product, with a real free tier) or a backend to
+            // sign JWTs makes proper embedding worthwhile.
             var JITSI_DOMAIN = 'meet.jit.si';
             var ADJECTIVES = ['Amber', 'Copper', 'Cedar', 'Quiet', 'Golden', 'Northern', 'Quartz', 'Walnut', 'Marble', 'Alpine'];
             var NOUNS = ['Oak', 'Maple', 'Harbor', 'Ridge', 'Meadow', 'Birch', 'Lantern', 'Cabin', 'Studio', 'Loft'];
 
-            var callFrame = document.getElementById('call-frame');
             var stageChoice = document.getElementById('stage-choice');
             var stageEmployeeGate = document.getElementById('stage-employee-gate');
             var stageReady = document.getElementById('stage-ready');
@@ -171,6 +163,7 @@
             var joinExistingBtn = document.getElementById('join-existing-btn');
             var copyLinkBtn = document.getElementById('copy-link-btn');
             var joinBtn = document.getElementById('join-btn');
+            var joinNote = document.getElementById('join-note');
 
             // Client-side only, so it's a UX deterrent, not real security — anyone
             // who views source can read it. Change the word below to update it;
@@ -178,7 +171,6 @@
             var EMPLOYEE_PASSWORD = 'changeme';
 
             var roomName = null;
-            var isEmployeeSession = false;
 
             function randomRoomCode() {
                 var adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
@@ -190,6 +182,8 @@
             function showReadyStage(name) {
                 roomName = name;
                 roomCodeDisplay.textContent = name;
+                joinBtn.href = 'https://' + JITSI_DOMAIN + '/' + encodeURIComponent(name);
+                joinNote.hidden = true;
 
                 var url = new URL(window.location.href);
                 url.searchParams.set('room', name);
@@ -215,7 +209,6 @@
             employeeForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 if (employeePassword.value === EMPLOYEE_PASSWORD) {
-                    isEmployeeSession = true;
                     stageEmployeeGate.hidden = true;
                     showReadyStage(randomRoomCode());
                 } else {
@@ -243,48 +236,8 @@
             });
 
             joinBtn.addEventListener('click', function () {
-                joinBtn.disabled = true;
-                joinBtn.textContent = 'Loading…';
-
-                var script = document.createElement('script');
-                script.src = 'https://' + JITSI_DOMAIN + '/external_api.js';
-                script.onload = startCall;
-                script.onerror = function () {
-                    stageReady.innerHTML = '<p class="note error-note">Could not reach the video service. Check your connection and try again.</p>';
-                };
-                document.body.appendChild(script);
+                joinNote.hidden = false;
             });
-
-            function startCall() {
-                if (typeof JitsiMeetExternalAPI === 'undefined') {
-                    stageReady.innerHTML = '<p class="note error-note">Could not load the video service. Check your connection and try again.</p>';
-                    return;
-                }
-                document.body.classList.add('in-call');
-                stageReady.remove();
-                new JitsiMeetExternalAPI(JITSI_DOMAIN, {
-                    roomName: roomName,
-                    parentNode: callFrame,
-                    width: '100%',
-                    height: '100%',
-                    userInfo: { displayName: isEmployeeSession ? 'Design Lab Team' : 'Design Lab Guest' },
-                    configOverwrite: {
-                        // Employees creating a room get Jitsi's normal prejoin screen so its
-                        // "I am the host" sign-in link is reachable — signing into a Jitsi
-                        // account in a separate browser tab doesn't authenticate this embedded
-                        // session, only signing in from inside the embed does, and that's what
-                        // lifts the free server's call-length limit. Clients joining a room
-                        // someone else already created don't need that, so they still skip
-                        // straight in (our earlier fix — no overflow:hidden, min-height instead
-                        // of fixed height — is still in place as a safety net either way, so a
-                        // mobile keyboard popping up on the employee prejoin screen can't trap
-                        // anyone the way it did before).
-                        prejoinPageEnabled: isEmployeeSession,
-                        disableInviteFunctions: true
-                    },
-                    interfaceConfigOverwrite: { DISABLE_INVITE_FUNCTIONS: true }
-                });
-            }
 
             // Arrived via a shared invite link — skip straight to "ready to join"
             var sharedRoom = new URLSearchParams(window.location.search).get('room');
