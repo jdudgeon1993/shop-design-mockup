@@ -1,0 +1,213 @@
+<!-- Customer-facing About page — copy adapted from the Design Lab Playbook
+     (Executive Concept Book v1). Linked from the footer sitemap. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Design Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); }
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        html, body {
+            min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
+            background: var(--black); color: var(--white);
+        }
+
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 5%; border-bottom: 1px solid var(--border);
+        }
+        .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
+
+        section { padding: 90px 8%; }
+        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 14px; }
+
+        /* Hero */
+        .about-hero { text-align: center; padding: 110px 8% 90px; }
+        .about-hero h1 {
+            margin: 0 auto 20px; max-width: 720px;
+            font-size: clamp(30px, 5.5vw, 52px); font-weight: 700; line-height: 1.15;
+        }
+        .about-hero h1 em { color: var(--gold); font-style: normal; }
+        .about-hero p { margin: 0 auto; max-width: 560px; color: rgba(255,255,255,0.65); font-size: 16px; line-height: 1.65; }
+
+        /* Story */
+        .story { border-top: 1px solid var(--border); }
+        .story-inner { max-width: 980px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 60px; align-items: flex-start; }
+        .story-text { flex: 1 1 420px; min-width: 0; }
+        .story-text h2 { margin: 0 0 22px; font-size: clamp(24px, 3.5vw, 34px); line-height: 1.2; }
+        .story-text p { margin: 0 0 18px; color: rgba(255,255,255,0.7); font-size: 15px; line-height: 1.75; }
+        .story-text p:last-child { margin-bottom: 0; }
+
+        .story-stats { flex: 0 1 260px; display: flex; flex-direction: column; gap: 18px; }
+        .stat-card {
+            border: 1px solid var(--border); border-radius: 8px; padding: 26px 24px;
+            background: rgba(255,255,255,0.03); text-align: center;
+        }
+        .stat-card strong { display: block; color: var(--gold); font-size: 40px; font-weight: 700; line-height: 1; margin-bottom: 8px; }
+        .stat-card span { color: rgba(255,255,255,0.6); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; line-height: 1.5; }
+
+        /* Confidence statement */
+        .confidence { border-top: 1px solid var(--border); text-align: center; }
+        .confidence blockquote {
+            margin: 0 auto; max-width: 700px;
+            font-size: clamp(22px, 3.5vw, 32px); font-weight: 300; line-height: 1.45;
+        }
+        .confidence blockquote strong { color: var(--gold); font-weight: 700; }
+        .confidence figcaption { margin-top: 18px; color: rgba(255,255,255,0.45); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; }
+
+        /* Pillars */
+        .pillars { border-top: 1px solid var(--border); }
+        .pillars-head { text-align: center; max-width: 640px; margin: 0 auto 56px; }
+        .pillars-head h2 { margin: 0 0 14px; font-size: clamp(24px, 3.5vw, 34px); }
+        .pillars-head p { margin: 0; color: rgba(255,255,255,0.6); font-size: 15px; line-height: 1.6; }
+        .pillar-grid {
+            display: grid; gap: 22px; max-width: 1060px; margin: 0 auto;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+        .pillar-card {
+            border: 1px solid var(--border); border-radius: 8px; padding: 30px 26px;
+            background: rgba(255,255,255,0.03);
+        }
+        .pillar-card h3 {
+            margin: 0 0 10px; font-size: 15px; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--gold);
+        }
+        .pillar-card p { margin: 0; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.65; }
+        .pillar-footnote { text-align: center; margin: 48px auto 0; color: rgba(255,255,255,0.45); font-size: 14px; font-style: italic; }
+        .pillar-footnote strong { color: var(--gold); font-style: normal; }
+
+        /* Entrance animation — progressive enhancement only, same pattern as the
+           storefront's benefits section */
+        @media (prefers-reduced-motion: no-preference) {
+            @supports (animation-timeline: view()) {
+                .pillar-card, .stat-card {
+                    animation: rise-in linear both;
+                    animation-timeline: view();
+                    animation-range: entry 0% entry 60%;
+                }
+                @keyframes rise-in {
+                    from { opacity: 0; transform: translateY(28px); }
+                    to { opacity: 1; transform: none; }
+                }
+            }
+        }
+
+        /* Closing CTA */
+        .closing { border-top: 1px solid var(--border); text-align: center; }
+        .closing h2 { margin: 0 0 14px; font-size: clamp(24px, 3.5vw, 34px); }
+        .closing p { margin: 0 auto 34px; max-width: 520px; color: rgba(255,255,255,0.6); font-size: 15px; line-height: 1.6; }
+
+        .btn-pill, .btn-secondary {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+            display: inline-block; padding: 15px 34px; border: none; border-radius: 999px;
+            font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
+            text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1.5px;
+            cursor: pointer; transition: 0.3s; margin: 6px;
+        }
+        .btn-pill { background: var(--white); color: var(--black); }
+        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); }
+        .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
+        .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
+
+        .page-foot { border-top: 1px solid var(--border); padding: 26px 8%; text-align: center; color: rgba(255,255,255,0.4); font-size: 12px; }
+
+        @media (max-width: 640px) {
+            section { padding: 64px 7%; }
+            .about-hero { padding: 80px 7% 64px; }
+            .story-inner { gap: 40px; }
+            .story-stats { flex-basis: 100%; flex-direction: row; flex-wrap: wrap; }
+            .stat-card { flex: 1 1 140px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a class="back-link" href="../index.html">&larr; Back to storefront</a>
+        <span class="page-title">About Us</span>
+    </div>
+
+    <section class="about-hero">
+        <p class="kicker">About Design Lab</p>
+        <h1>Thoughtfully Designed. <em>Expertly Guided.</em></h1>
+        <p>Design Lab exists because thoughtfully designed spaces make everyday life more enjoyable. We combine thoughtful design with experienced guidance to create spaces people love to live in — starting with cabinetry, and extending to complete living environments.</p>
+    </section>
+
+    <section class="story">
+        <div class="story-inner">
+            <div class="story-text">
+                <p class="kicker">Our Story</p>
+                <h2>A better way to buy your dream kitchen.</h2>
+                <p>Buying cabinetry has always meant showroom visits, scheduling around business hours, and a process that moves at someone else's pace. We think there's a better way — and we're not alone. Homeowners are more comfortable than ever purchasing significant pieces for their homes online, and technology now makes it possible to sit down with a real designer at the drop of a hat, from anywhere.</p>
+                <p>Will video calls ever fully replace the brick-and-mortar showroom? Not completely. But we're challenging that thought — because the process of creating a space you love should be as enjoyable as the space itself.</p>
+                <p>Design Lab began with three kitchen &amp; bath industry veterans — close to 90 years of collective experience — who share one belief: there's a more enjoyable, more efficient, easier way for people to get the kitchen they've been dreaming about. We're building it.</p>
+            </div>
+            <div class="story-stats">
+                <div class="stat-card"><strong>3</strong><span>Industry veterans</span></div>
+                <div class="stat-card"><strong>90</strong><span>Years of combined experience</span></div>
+                <div class="stat-card"><strong>1</strong><span>Better way to buy cabinetry</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="confidence">
+        <figure style="margin:0;">
+            <blockquote>We sell lots of things. But before any of that, <strong>we sell confidence</strong> — so the uncertainty of a big decision is removed.</blockquote>
+            <figcaption>The Design Lab Strategy</figcaption>
+        </figure>
+    </section>
+
+    <section class="pillars">
+        <div class="pillars-head">
+            <p class="kicker">What We Stand On</p>
+            <h2>The Six Design Lab Pillars</h2>
+            <p>Every decision we make — from the vendors we partner with to the way we answer the phone — runs through these six.</p>
+        </div>
+        <div class="pillar-grid">
+            <div class="pillar-card">
+                <h3>Authenticity</h3>
+                <p>We're real, caring people, and we stay true to who we are. The team you meet on a call is exactly who we are off it.</p>
+            </div>
+            <div class="pillar-card">
+                <h3>Consistency</h3>
+                <p>Our look, our effort, our standards — the same every time. We want you to say, "oh yes, I know that company."</p>
+            </div>
+            <div class="pillar-card">
+                <h3>Quality</h3>
+                <p>We'll never claim to be perfect. We will always be chasing it.</p>
+            </div>
+            <div class="pillar-card">
+                <h3>Experience</h3>
+                <p>You can't guide someone through a big decision without having made a career of it. Our decades in kitchen &amp; bath remove the doubts before they start.</p>
+            </div>
+            <div class="pillar-card">
+                <h3>Passion</h3>
+                <p>We love what we do — and you'll see it. It's why we put on our work hat every morning.</p>
+            </div>
+            <div class="pillar-card">
+                <h3>Thoughtfulness</h3>
+                <p>Always welcomed, never skipped. It's what puts a smile on your face — and ours.</p>
+            </div>
+        </div>
+        <p class="pillar-footnote">Small details eventually add up to <strong>something big.</strong></p>
+    </section>
+
+    <section class="closing">
+        <p class="kicker">Meet Us</p>
+        <h2>Sit down with a designer — from anywhere.</h2>
+        <p>No showroom visit required. Join a private video consultation and walk through your project face-to-face, or start building your own cabinetry right now.</p>
+        <a class="btn-pill" href="../consultation/">Book a Video Consultation</a>
+        <a class="btn-secondary" href="../diy-wizard/">Try the DIY Builder</a>
+    </section>
+
+    <p class="page-foot">&copy; 2026 Design Lab. All rights reserved.</p>
+
+</body>
+</html>
