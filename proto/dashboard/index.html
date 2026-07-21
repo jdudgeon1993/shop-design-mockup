@@ -124,8 +124,8 @@
                 <h1 class="intro-heading">Video Consultation</h1>
 
                 <div class="panel">
-                    <h3>Start a Room</h3>
-                    <button class="btn-pill" id="create-room-btn">Create Room</button>
+                    <h3>Start a Conference Call</h3>
+                    <button class="btn-pill" id="create-room-btn">Start Conference Call</button>
                     <p class="note error-note" id="create-error" hidden></p>
                 </div>
 
@@ -137,9 +137,9 @@
                 <button class="sign-out-link" id="logout-btn" type="button">Sign out</button>
             </div>
 
-            <!-- Stage 3: room ready, not yet in-call -->
+            <!-- Stage 3: conference call ready, not yet in-call -->
             <div class="stage" id="stage-ready" hidden>
-                <p class="room-label">Room</p>
+                <p class="room-label">Conference Call</p>
                 <p class="room-code" id="room-code-display"></p>
                 <button class="btn-secondary" id="copy-link-btn">Copy Invite Link</button>
                 <button class="btn-pill" id="join-btn">Join Video Call</button>
@@ -256,11 +256,11 @@
                     showReadyStage(randomRoomCode());
                 }).catch(function (err) {
                     if (err.message === 'no session') return;
-                    createError.textContent = 'Could not start a room right now. Try again in a moment.';
+                    createError.textContent = 'Could not start a conference call right now. Try again in a moment.';
                     createError.hidden = false;
                 }).finally(function () {
                     createRoomBtn.disabled = false;
-                    createRoomBtn.textContent = 'Create Room';
+                    createRoomBtn.textContent = 'Start Conference Call';
                 });
             });
 
