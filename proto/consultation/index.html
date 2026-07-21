@@ -83,6 +83,15 @@
         .note { margin: 20px 0 0; padding: 12px 16px; border-radius: 4px; background: rgba(212,175,55,0.1); color: var(--gold); font-size: 13px; max-width: 500px; margin-left: auto; margin-right: auto; }
         .error-note { background: rgba(220,80,80,0.15); color: #ff9a9a; }
 
+        .narrow-form { max-width: 320px; margin: 0 auto; }
+
+        .employee-link {
+            appearance: none; background: none; border: none; cursor: pointer;
+            color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px;
+            text-decoration: underline; margin: 28px auto 0; display: block;
+        }
+        .employee-link:hover, .employee-link:focus-visible { color: var(--gold); }
+
         .privacy-caption {
             flex-shrink: 0; padding: 8px 5% 12px; font-size: 12px; text-align: center;
             color: rgba(255,255,255,0.4);
@@ -105,15 +114,10 @@
         </div>
 
         <div class="call-frame" id="call-frame">
-            <!-- Step 1: create or join -->
+            <!-- Step 1: join (the only path clients ever see) -->
             <div class="stage" id="stage-choice">
-                <p class="intro-line">Create a new private room, or join one someone sent you. Runs on Jitsi Meet, hosted on their own servers — nothing recorded or stored by us.</p>
+                <p class="intro-line">Enter the room code someone sent you. Runs on Jitsi Meet, hosted on their own servers — nothing recorded or stored by us.</p>
                 <div class="choice-grid">
-                    <div class="choice-card">
-                        <h3>Create a Room</h3>
-                        <p>Start a new private meeting and send the link to a coworker.</p>
-                        <button class="btn-pill" id="create-btn">Create Room</button>
-                    </div>
                     <div class="choice-card">
                         <h3>Join a Room</h3>
                         <p>Enter the room code someone sent you.</p>
@@ -121,6 +125,18 @@
                         <button class="btn-secondary" id="join-existing-btn">Join Room</button>
                     </div>
                 </div>
+                <button class="employee-link" id="employee-link" type="button">Employee? Sign in to create a room</button>
+            </div>
+
+            <!-- Employee-only gate: password required before a new room can be created -->
+            <div class="stage" id="stage-employee-gate" hidden>
+                <p class="intro-line">Employee access — enter the team password to start a new room.</p>
+                <form class="narrow-form" id="employee-form">
+                    <input type="password" id="employee-password" class="room-input" placeholder="Password" autocomplete="off">
+                    <button class="btn-pill" type="submit">Create Room</button>
+                    <button class="btn-secondary" id="employee-cancel-btn" type="button">Cancel</button>
+                    <p class="note error-note" id="employee-error" hidden>Incorrect password.</p>
+                </form>
             </div>
 
             <!-- Step 2: room ready, not yet in-call -->
@@ -143,15 +159,26 @@
 
             var callFrame = document.getElementById('call-frame');
             var stageChoice = document.getElementById('stage-choice');
+            var stageEmployeeGate = document.getElementById('stage-employee-gate');
             var stageReady = document.getElementById('stage-ready');
             var roomCodeDisplay = document.getElementById('room-code-display');
-            var createBtn = document.getElementById('create-btn');
+            var employeeLink = document.getElementById('employee-link');
+            var employeeForm = document.getElementById('employee-form');
+            var employeePassword = document.getElementById('employee-password');
+            var employeeCancelBtn = document.getElementById('employee-cancel-btn');
+            var employeeError = document.getElementById('employee-error');
             var joinInput = document.getElementById('join-input');
             var joinExistingBtn = document.getElementById('join-existing-btn');
             var copyLinkBtn = document.getElementById('copy-link-btn');
             var joinBtn = document.getElementById('join-btn');
 
+            // Client-side only, so it's a UX deterrent, not real security — anyone
+            // who views source can read it. Change the word below to update it;
+            // swap for real server-side auth once there's a backend to check against.
+            var EMPLOYEE_PASSWORD = 'changeme';
+
             var roomName = null;
+            var isEmployeeSession = false;
 
             function randomRoomCode() {
                 var adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
@@ -172,8 +199,30 @@
                 stageReady.hidden = false;
             }
 
-            createBtn.addEventListener('click', function () {
-                showReadyStage(randomRoomCode());
+            employeeLink.addEventListener('click', function () {
+                stageChoice.hidden = true;
+                stageEmployeeGate.hidden = false;
+                employeeError.hidden = true;
+                employeePassword.value = '';
+                employeePassword.focus();
+            });
+
+            employeeCancelBtn.addEventListener('click', function () {
+                stageEmployeeGate.hidden = true;
+                stageChoice.hidden = false;
+            });
+
+            employeeForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                if (employeePassword.value === EMPLOYEE_PASSWORD) {
+                    isEmployeeSession = true;
+                    stageEmployeeGate.hidden = true;
+                    showReadyStage(randomRoomCode());
+                } else {
+                    employeeError.hidden = false;
+                    employeePassword.value = '';
+                    employeePassword.focus();
+                }
             });
 
             joinExistingBtn.addEventListener('click', function () {
@@ -218,14 +267,21 @@
                     parentNode: callFrame,
                     width: '100%',
                     height: '100%',
-                    userInfo: { displayName: 'Design Lab Guest' },
-                    // Jitsi's own prejoin screen (name entry + device check) is redundant
-                    // with our own Create/Join Room step, and its name field auto-focusing
-                    // is what triggered the mobile keyboard that broke the layout — skip
-                    // straight into the call instead. Also suppress the auto-shown
-                    // "invite others / dial-in PIN" overlay, which was appearing as a
-                    // small floating panel instead of the actual call filling the frame.
-                    configOverwrite: { prejoinPageEnabled: false, disableInviteFunctions: true },
+                    userInfo: { displayName: isEmployeeSession ? 'Design Lab Team' : 'Design Lab Guest' },
+                    configOverwrite: {
+                        // Employees creating a room get Jitsi's normal prejoin screen so its
+                        // "I am the host" sign-in link is reachable — signing into a Jitsi
+                        // account in a separate browser tab doesn't authenticate this embedded
+                        // session, only signing in from inside the embed does, and that's what
+                        // lifts the free server's call-length limit. Clients joining a room
+                        // someone else already created don't need that, so they still skip
+                        // straight in (our earlier fix — no overflow:hidden, min-height instead
+                        // of fixed height — is still in place as a safety net either way, so a
+                        // mobile keyboard popping up on the employee prejoin screen can't trap
+                        // anyone the way it did before).
+                        prejoinPageEnabled: isEmployeeSession,
+                        disableInviteFunctions: true
+                    },
                     interfaceConfigOverwrite: { DISABLE_INVITE_FUNCTIONS: true }
                 });
             }
