@@ -1,0 +1,17 @@
+{
+  "name": "design-lab-jaas-token-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bridge service: verifies a logged-in Supabase employee session, then signs a short-lived JaaS moderator JWT. The JaaS private key lives only here, never in the website's code.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

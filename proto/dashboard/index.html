@@ -1,0 +1,333 @@
+<!-- Employee-only. Linked from the site footer, not the main nav. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Employee Dashboard - Design Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Deliberately not deferred: our own inline script at the end of <body>
+         uses window.supabase immediately, so this has to finish executing
+         before that runs, not merely appear earlier in the document. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
+            background: var(--black); color: var(--white);
+        }
+
+        .page { display: flex; flex-direction: column; min-height: 100dvh; width: 100%; }
+
+        .top-bar {
+            flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 5%; border-bottom: 1px solid var(--border);
+        }
+        .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
+
+        .call-frame {
+            flex: 1; min-height: 0; width: 100%; background: #000;
+            display: flex; align-items: center; justify-content: center; position: relative;
+        }
+
+        /* Same fix as the consultation page: Jitsi's script sets its own inline
+           width/height on the iframe it injects, which doesn't reliably resolve
+           against a flex-grown container. Absolute-position + inset:0 sidesteps
+           that entirely. */
+        .call-frame iframe {
+            position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0;
+        }
+
+        .stage { text-align: center; padding: 40px 20px; width: 100%; max-height: 100%; overflow-y: auto; }
+        .stage p { color: rgba(255,255,255,0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
+        .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.5; }
+        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
+        .intro-heading { margin: 0 0 14px; font-size: clamp(22px, 4vw, 30px); font-weight: 700; line-height: 1.2; }
+
+        .room-input {
+            width: 100%; background: #242424; border: 1px solid var(--border); color: var(--white);
+            padding: 10px 12px; border-radius: 4px; font-family: inherit; font-size: 14px;
+            margin-bottom: 14px; text-align: center;
+        }
+
+        .room-label { color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin: 0 0 6px; }
+        .room-code { color: var(--gold); font-size: 20px; font-weight: 700; margin: 0 0 20px; word-break: break-all; }
+
+        .btn-pill, .btn-secondary {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+            display: inline-block; padding: 14px 32px; border: none; border-radius: 999px;
+            font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
+            text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1.5px;
+            cursor: pointer; transition: 0.3s; margin: 4px;
+        }
+        .btn-pill { background: var(--white); color: var(--black); }
+        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); }
+        .btn-pill:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
+        .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
+
+        .note { margin: 20px 0 0; padding: 12px 16px; border-radius: 4px; background: rgba(212,175,55,0.1); color: var(--gold); font-size: 13px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .error-note { background: rgba(220,80,80,0.15); color: #ff9a9a; }
+
+        .narrow-form { max-width: 320px; margin: 0 auto; }
+
+        .panel {
+            max-width: 320px; margin: 0 auto 20px; padding: 24px; border: 1px solid var(--border);
+            border-radius: 8px; background: rgba(255,255,255,0.03);
+        }
+        .panel h3 { margin: 0 0 16px; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--white); }
+        .panel.coming-soon { opacity: 0.55; }
+        .panel.coming-soon p { font-size: 13px; margin: 0; }
+
+        .sign-out-link {
+            appearance: none; background: none; border: none; cursor: pointer;
+            color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px;
+            text-decoration: underline; margin: 20px auto 0; display: block;
+        }
+        .sign-out-link:hover, .sign-out-link:focus-visible { color: var(--gold); }
+
+        body.in-call .top-bar { padding: 10px 5%; }
+
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="page">
+        <div class="top-bar">
+            <a class="back-link" href="../index.html">&larr; Back to storefront</a>
+            <span class="page-title">Employee Dashboard</span>
+        </div>
+
+        <div class="call-frame" id="call-frame">
+            <!-- Stage 1: sign in -->
+            <div class="stage" id="stage-login">
+                <p class="kicker">Design Lab Team</p>
+                <h1 class="intro-heading">Employee Sign In</h1>
+                <p class="intro-line">Sign in with your Design Lab account to start a video consultation.</p>
+                <form class="narrow-form" id="login-form">
+                    <input type="email" id="login-email" class="room-input" placeholder="Work email" autocomplete="username" required>
+                    <input type="password" id="login-password" class="room-input" placeholder="Password" autocomplete="current-password" required>
+                    <button class="btn-pill" type="submit" id="login-submit-btn">Sign In</button>
+                    <p class="note error-note" id="login-error" hidden></p>
+                </form>
+            </div>
+
+            <!-- Stage 2: signed in -->
+            <div class="stage" id="stage-dashboard" hidden>
+                <p class="kicker" id="dashboard-greeting">Signed In</p>
+                <h1 class="intro-heading">Video Consultation</h1>
+
+                <div class="panel">
+                    <h3>Start a Room</h3>
+                    <button class="btn-pill" id="create-room-btn">Create Room</button>
+                    <p class="note error-note" id="create-error" hidden></p>
+                </div>
+
+                <div class="panel coming-soon">
+                    <h3>Coming Soon</h3>
+                    <p>Usage tracking and appointment scheduling will appear here once they're wired up.</p>
+                </div>
+
+                <button class="sign-out-link" id="logout-btn" type="button">Sign out</button>
+            </div>
+
+            <!-- Stage 3: room ready, not yet in-call -->
+            <div class="stage" id="stage-ready" hidden>
+                <p class="room-label">Room</p>
+                <p class="room-code" id="room-code-display"></p>
+                <button class="btn-secondary" id="copy-link-btn">Copy Invite Link</button>
+                <button class="btn-pill" id="join-btn">Join Video Call</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // ---- Fill these in once the Supabase project + Railway service exist ----
+            var SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+            var SUPABASE_ANON_KEY = 'YOUR-SUPABASE-ANON-PUBLIC-KEY';
+            // Deployed Railway service from /server — mints short-lived JaaS tokens.
+            var TOKEN_ENDPOINT = 'https://YOUR-SERVICE.up.railway.app/api/jitsi-token';
+            // --------------------------------------------------------------------------
+
+            var JITSI_DOMAIN = '8x8.vc';
+            var APP_ID = 'vpaas-magic-cookie-f0a0399c162749f2805d91eef3967b80';
+            var ADJECTIVES = ['Amber', 'Copper', 'Cedar', 'Quiet', 'Golden', 'Northern', 'Quartz', 'Walnut', 'Marble', 'Alpine'];
+            var NOUNS = ['Oak', 'Maple', 'Harbor', 'Ridge', 'Meadow', 'Birch', 'Lantern', 'Cabin', 'Studio', 'Loft'];
+
+            var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            var callFrame = document.getElementById('call-frame');
+            var stageLogin = document.getElementById('stage-login');
+            var stageDashboard = document.getElementById('stage-dashboard');
+            var stageReady = document.getElementById('stage-ready');
+            var loginForm = document.getElementById('login-form');
+            var loginEmail = document.getElementById('login-email');
+            var loginPassword = document.getElementById('login-password');
+            var loginSubmitBtn = document.getElementById('login-submit-btn');
+            var loginError = document.getElementById('login-error');
+            var dashboardGreeting = document.getElementById('dashboard-greeting');
+            var createRoomBtn = document.getElementById('create-room-btn');
+            var createError = document.getElementById('create-error');
+            var logoutBtn = document.getElementById('logout-btn');
+            var roomCodeDisplay = document.getElementById('room-code-display');
+            var copyLinkBtn = document.getElementById('copy-link-btn');
+            var joinBtn = document.getElementById('join-btn');
+
+            var roomName = null;
+            var pendingJwt = null;
+
+            function randomRoomCode() {
+                var adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+                var noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+                var num = Math.floor(100 + Math.random() * 900);
+                return 'dl-' + adj.toLowerCase() + '-' + noun.toLowerCase() + '-' + num;
+            }
+
+            function showDashboard(user) {
+                dashboardGreeting.textContent = 'Signed in as ' + user.email;
+                stageLogin.hidden = true;
+                stageDashboard.hidden = false;
+            }
+
+            function showLogin() {
+                stageDashboard.hidden = true;
+                stageReady.hidden = true;
+                stageLogin.hidden = false;
+                loginForm.reset();
+            }
+
+            loginForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                loginError.hidden = true;
+                loginSubmitBtn.disabled = true;
+                loginSubmitBtn.textContent = 'Signing In…';
+
+                supabase.auth.signInWithPassword({
+                    email: loginEmail.value.trim(),
+                    password: loginPassword.value
+                }).then(function (result) {
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = 'Sign In';
+                    if (result.error) {
+                        loginError.textContent = 'Incorrect email or password.';
+                        loginError.hidden = false;
+                        return;
+                    }
+                    showDashboard(result.data.user);
+                }).catch(function () {
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = 'Sign In';
+                    loginError.textContent = 'Could not reach the sign-in service. Check your connection and try again.';
+                    loginError.hidden = false;
+                });
+            });
+
+            logoutBtn.addEventListener('click', function () {
+                supabase.auth.signOut().then(showLogin);
+            });
+
+            createRoomBtn.addEventListener('click', function () {
+                createRoomBtn.disabled = true;
+                createRoomBtn.textContent = 'Creating…';
+                createError.hidden = true;
+
+                supabase.auth.getSession().then(function (sessionResult) {
+                    var session = sessionResult.data.session;
+                    if (!session) {
+                        showLogin();
+                        return Promise.reject(new Error('no session'));
+                    }
+                    return fetch(TOKEN_ENDPOINT, {
+                        method: 'POST',
+                        headers: { Authorization: 'Bearer ' + session.access_token }
+                    });
+                }).then(function (response) {
+                    if (!response.ok) throw new Error('token request failed');
+                    return response.json();
+                }).then(function (body) {
+                    pendingJwt = body.jwt;
+                    showReadyStage(randomRoomCode());
+                }).catch(function (err) {
+                    if (err.message === 'no session') return;
+                    createError.textContent = 'Could not start a room right now. Try again in a moment.';
+                    createError.hidden = false;
+                }).finally(function () {
+                    createRoomBtn.disabled = false;
+                    createRoomBtn.textContent = 'Create Room';
+                });
+            });
+
+            function showReadyStage(name) {
+                roomName = name;
+                roomCodeDisplay.textContent = name;
+                stageDashboard.hidden = true;
+                stageReady.hidden = false;
+            }
+
+            copyLinkBtn.addEventListener('click', function () {
+                // Clients always join through the public consultation page, never
+                // through this dashboard — it stays employee-only.
+                var url = new URL('../consultation/index.html', window.location.href);
+                url.searchParams.set('room', roomName);
+                navigator.clipboard.writeText(url.toString()).then(function () {
+                    var original = copyLinkBtn.textContent;
+                    copyLinkBtn.textContent = 'Copied!';
+                    setTimeout(function () { copyLinkBtn.textContent = original; }, 1800);
+                });
+            });
+
+            joinBtn.addEventListener('click', function () {
+                joinBtn.disabled = true;
+                joinBtn.textContent = 'Loading…';
+
+                var script = document.createElement('script');
+                script.src = 'https://' + JITSI_DOMAIN + '/' + APP_ID + '/external_api.js';
+                script.onload = startCall;
+                script.onerror = function () {
+                    stageReady.innerHTML = '<p class="note error-note">Could not reach the video service. Check your connection and try again.</p>';
+                };
+                document.body.appendChild(script);
+            });
+
+            function startCall() {
+                if (typeof JitsiMeetExternalAPI === 'undefined') {
+                    stageReady.innerHTML = '<p class="note error-note">Could not load the video service. Check your connection and try again.</p>';
+                    return;
+                }
+                document.body.classList.add('in-call');
+                stageReady.remove();
+                var api = new JitsiMeetExternalAPI(JITSI_DOMAIN, {
+                    roomName: APP_ID + '/' + roomName,
+                    parentNode: callFrame,
+                    width: '100%',
+                    height: '100%',
+                    jwt: pendingJwt,
+                    configOverwrite: { prejoinPageEnabled: false, disableInviteFunctions: true },
+                    interfaceConfigOverwrite: { DISABLE_INVITE_FUNCTIONS: true }
+                });
+
+                // Same fix as the consultation page — send the employee back to our
+                // own site instead of Jitsi's own "meeting ended" page.
+                api.addEventListener('readyToClose', function () {
+                    api.dispose();
+                    window.location.href = '../index.html';
+                });
+            }
+
+            // Restore a signed-in session on page reload instead of asking again.
+            supabase.auth.getSession().then(function (result) {
+                if (result.data.session) {
+                    showDashboard(result.data.session.user);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
