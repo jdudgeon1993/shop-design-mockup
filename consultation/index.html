@@ -267,7 +267,7 @@
                 }
                 document.body.classList.add('in-call');
                 stageReady.remove();
-                new JitsiMeetExternalAPI(JITSI_DOMAIN, {
+                var api = new JitsiMeetExternalAPI(JITSI_DOMAIN, {
                     roomName: APP_ID + '/' + roomName,
                     parentNode: callFrame,
                     width: '100%',
@@ -280,6 +280,15 @@
                     // instead of the actual call filling the frame.
                     configOverwrite: { prejoinPageEnabled: false, disableInviteFunctions: true },
                     interfaceConfigOverwrite: { DISABLE_INVITE_FUNCTIONS: true }
+                });
+
+                // Left alone, Jitsi's own iframe navigates itself to a generic
+                // "meeting ended" page on their site once someone hangs up — jarring,
+                // and looks like the visitor left our site entirely. Tear the call
+                // down properly and send them back to our own homepage instead.
+                api.addEventListener('readyToClose', function () {
+                    api.dispose();
+                    window.location.href = '../index.html';
                 });
             }
 
