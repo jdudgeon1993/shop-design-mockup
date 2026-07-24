@@ -37,8 +37,11 @@
         /* Same fix as the consultation page: Jitsi's script sets its own inline
            width/height on the iframe it injects, which doesn't reliably resolve
            against a flex-grown container. Absolute-position + inset:0 sidesteps
-           that entirely. */
-        .call-frame iframe {
+           that entirely. Direct-child selector on purpose — Jitsi injects its
+           iframe straight into #call-frame (parentNode), but the calendar iframe
+           lives several levels deeper inside .stage > .panel, and a descendant
+           selector here would wrongly stretch that one full-viewport too. */
+        .call-frame > iframe {
             position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0;
         }
 
@@ -83,6 +86,10 @@
         .panel h3 { margin: 0 0 16px; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--white); }
         .panel.coming-soon { opacity: 0.55; }
         .panel.coming-soon p { font-size: 13px; margin: 0; }
+
+        .calendar-panel { max-width: 760px; }
+        .calendar-frame { width: 100%; height: 520px; border: 0; border-radius: 4px; background: #fff; display: block; }
+        .calendar-note { font-size: 12px; color: rgba(255,255,255,0.4); margin: 14px 0 0; max-width: none; }
 
         .sign-out-link {
             appearance: none; background: none; border: none; cursor: pointer;
@@ -129,6 +136,12 @@
                     <p class="note error-note" id="create-error" hidden></p>
                 </div>
 
+                <div class="panel calendar-panel">
+                    <h3>Team Calendar</h3>
+                    <iframe class="calendar-frame" id="calendar-frame" title="Design Lab team calendar" frameborder="0" scrolling="no"></iframe>
+                    <p class="note calendar-note">Shown using your Design Lab Google account. If this looks empty, make sure you're signed into that account (not a personal one) in this browser.</p>
+                </div>
+
                 <div class="panel coming-soon">
                     <h3>Coming Soon</h3>
                     <p>Usage tracking and appointment scheduling will appear here once they're wired up.</p>
@@ -158,6 +171,11 @@
 
             var JITSI_DOMAIN = '8x8.vc';
             var APP_ID = 'vpaas-magic-cookie-f0a0399c162749f2805d91eef3967b80';
+            // Shared team calendar — restricted to Design Lab LLC Google accounts,
+            // never public (confirmed in Calendar's own sharing settings). This ID
+            // being visible in page source doesn't expose anything: Google still
+            // requires an authorized sign-in to actually view it.
+            var CALENDAR_ID = 'c_9089d8c980992d45cb984c6a34f591828f33a49387d17a67496e669859499399@group.calendar.google.com';
             var ADJECTIVES = ['Amber', 'Copper', 'Cedar', 'Quiet', 'Golden', 'Northern', 'Quartz', 'Walnut', 'Marble', 'Alpine'];
             var NOUNS = ['Oak', 'Maple', 'Harbor', 'Ridge', 'Meadow', 'Birch', 'Lantern', 'Cabin', 'Studio', 'Loft'];
 
@@ -179,6 +197,7 @@
             var roomCodeDisplay = document.getElementById('room-code-display');
             var copyLinkBtn = document.getElementById('copy-link-btn');
             var joinBtn = document.getElementById('join-btn');
+            var calendarFrame = document.getElementById('calendar-frame');
 
             var roomName = null;
             var pendingJwt = null;
@@ -194,6 +213,13 @@
                 dashboardGreeting.textContent = 'Signed in as ' + user.email;
                 stageLogin.hidden = true;
                 stageDashboard.hidden = false;
+
+                // authuser hints Google to prefer this account if it's one of
+                // several already signed into this browser — it can't sign anyone
+                // in on its own, only skip the "wrong account" default when the
+                // right one is already authenticated somewhere in the session.
+                calendarFrame.src = 'https://calendar.google.com/calendar/embed?src=' +
+                    encodeURIComponent(CALENDAR_ID) + '&authuser=' + encodeURIComponent(user.email);
             }
 
             function showLogin() {
@@ -201,6 +227,7 @@
                 stageReady.hidden = true;
                 stageLogin.hidden = false;
                 loginForm.reset();
+                calendarFrame.src = '';
             }
 
             loginForm.addEventListener('submit', function (e) {
