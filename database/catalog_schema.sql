@@ -2,8 +2,9 @@
 -- Design Lab — DIY Catalog Schema (draft)
 -- ============================================================================
 -- Models the "Choose a cabinet -> Customize via fields" DIY flow: browse a
--- tier, browse a brand's real catalog of cabinet SKUs within that tier, pick
--- one or more, then customize each via its brand's allowed options.
+-- tier, browse a brand's real catalog of cabinet styles within that tier,
+-- pick a real dimension/SKU of that style, then customize via its brand's
+-- allowed options (finish, door style, hardware).
 --
 -- Scope: catalog data only (tiers, brands, cabinets, customization options,
 -- and which options each brand/cabinet actually allows). Orders/cart/checkout
@@ -61,27 +62,46 @@ create table cabinet_categories (
 );
 
 -- ----------------------------------------------------------------------------
--- 4. Cabinets — the real catalog of physical SKUs a brand sells. This is
---    what "Choose a cabinet(s)" actually browses, one row per real model.
+-- 4. Cabinets — a brand's cabinet STYLES, one row per model (e.g. "2-Door
+--    Base Cabinet"). This is what "Choose a cabinet(s)" browses. Deliberately
+--    has no width/price of its own — a style is sold in a range of sizes,
+--    each a real, separately-priced SKU. See cabinet_dimensions below.
 -- ----------------------------------------------------------------------------
 create table cabinets (
     id           uuid primary key default gen_random_uuid(),
     brand_id     uuid not null references brands(id),
     category_id  uuid not null references cabinet_categories(id),
-    sku          text not null,             -- the vendor's own model number
-    name         text not null,             -- 'B24 - 24" Base Cabinet, 2-Door'
-    width_in     numeric(6,2),
-    height_in    numeric(6,2),
-    depth_in     numeric(6,2),
-    base_price   numeric(10,2) not null,
+    name         text not null,             -- '2-Door Base Cabinet'
     image_url    text,
     description  text,
     active       boolean not null default true,
     created_at   timestamptz not null default now(),
-    unique (brand_id, sku)
+    unique (brand_id, name)
 );
 create index cabinets_brand_id_idx on cabinets (brand_id);
 create index cabinets_category_id_idx on cabinets (category_id);
+
+-- ----------------------------------------------------------------------------
+-- 4b. Cabinet dimensions — THE DIMENSION RESTRICTIONS LAYER. Each row is one
+--    real, orderable width/height/depth variant of a cabinet style, with its
+--    own SKU and price (a 36" base costs more than a 24" base of the same
+--    style). The app only ever renders widths that exist here, so there is
+--    nothing invalid for a customer to submit — the allow-list IS the
+--    validation, no separate rule-checking needed.
+-- ----------------------------------------------------------------------------
+create table cabinet_dimensions (
+    id          uuid primary key default gen_random_uuid(),
+    cabinet_id  uuid not null references cabinets(id),
+    sku         text not null,              -- the vendor's own model number
+    width_in    numeric(6,2) not null,
+    height_in   numeric(6,2),
+    depth_in    numeric(6,2),
+    price       numeric(10,2) not null,
+    active      boolean not null default true,
+    created_at  timestamptz not null default now(),
+    unique (cabinet_id, sku)
+);
+create index cabinet_dimensions_cabinet_id_idx on cabinet_dimensions (cabinet_id);
 
 -- ----------------------------------------------------------------------------
 -- 5. Option categories — the "customize via fields" step types
@@ -105,7 +125,8 @@ create table options (
     price_modifier       numeric(10,2) not null default 0,
     image_url            text,
     sort_order           int not null default 0,
-    created_at           timestamptz not null default now()
+    created_at           timestamptz not null default now(),
+    unique (option_category_id, name)
 );
 create index options_option_category_id_idx on options (option_category_id);
 
@@ -145,6 +166,7 @@ alter table tiers enable row level security;
 alter table brands enable row level security;
 alter table cabinet_categories enable row level security;
 alter table cabinets enable row level security;
+alter table cabinet_dimensions enable row level security;
 alter table option_categories enable row level security;
 alter table options enable row level security;
 alter table brand_options enable row level security;
@@ -154,6 +176,7 @@ create policy "Public read access" on tiers for select using (true);
 create policy "Public read access" on brands for select using (true);
 create policy "Public read access" on cabinet_categories for select using (true);
 create policy "Public read access" on cabinets for select using (true);
+create policy "Public read access" on cabinet_dimensions for select using (true);
 create policy "Public read access" on option_categories for select using (true);
 create policy "Public read access" on options for select using (true);
 create policy "Public read access" on brand_options for select using (true);
@@ -163,4 +186,5 @@ create policy "Public read access" on cabinet_option_exclusions for select using
 -- Reset (commented out — uncomment to wipe and start over while iterating)
 -- ============================================================================
 -- drop table if exists cabinet_option_exclusions, brand_options, options,
---     option_categories, cabinets, cabinet_categories, brands, tiers cascade;
+--     option_categories, cabinet_dimensions, cabinets, cabinet_categories,
+--     brands, tiers cascade;
