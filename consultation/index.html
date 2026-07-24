@@ -40,8 +40,10 @@
            leaving the iframe shrink-wrapped small with black space around it).
            Taking the iframe out of flow with absolute positioning sidesteps that
            entirely: inset:0 pins it to fill .call-frame exactly, regardless of
-           whatever inline sizing Jitsi's own script applies. */
-        .call-frame iframe {
+           whatever inline sizing Jitsi's own script applies. Direct-child
+           selector on purpose — Jitsi injects straight into #call-frame, so this
+           shouldn't reach into deeper-nested iframes some other feature adds later. */
+        .call-frame > iframe {
             position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0;
         }
 
