@@ -1,0 +1,374 @@
+<!-- Unlisted prototype: live client of the real catalog tables in Supabase.
+     Nothing here is hardcoded — every stage queries Supabase directly, so
+     adding/editing rows in Supabase's Table Editor shows up here on refresh.
+     No login required: the catalog tables have public read RLS policies,
+     matching the eventual public-facing DIY experience. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>DIY Catalog (Live) - Prototype</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); }
+
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+            padding: 14px 5%; border-bottom: 1px solid var(--border);
+        }
+        .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+        .back-link:hover { text-decoration: underline; }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
+
+        @media (max-width: 640px) {
+            .page-title { display: none; }
+        }
+
+        .content { max-width: 900px; margin: 0 auto; padding: 48px 6% 100px; }
+        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
+        .intro-heading { margin: 0 0 28px; font-size: clamp(24px, 4vw, 32px); font-weight: 700; }
+
+        .breadcrumb { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+        .breadcrumb button {
+            appearance: none; background: none; border: none; color: var(--gold); cursor: pointer;
+            font: inherit; font-size: inherit; padding: 0; text-decoration: underline;
+        }
+        .breadcrumb .sep { margin: 0 8px; color: rgba(255,255,255,0.3); }
+
+        .card-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); margin-bottom: 20px; }
+        .pick-card {
+            text-align: left; appearance: none; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 8px; padding: 20px; color: var(--white); font-family: inherit; cursor: pointer; transition: 0.2s;
+        }
+        .pick-card:hover, .pick-card:focus-visible { border-color: var(--gold); background: rgba(212,175,55,0.08); }
+        .pick-card h3 { margin: 0 0 6px; font-size: 16px; }
+        .pick-card p { margin: 0; font-size: 13px; color: rgba(255,255,255,0.55); }
+        .pick-card .price-tag { color: var(--gold); font-weight: 700; margin-top: 10px; font-size: 14px; }
+
+        .empty-note {
+            border: 1px dashed var(--border); border-radius: 8px; padding: 20px; font-size: 14px;
+            color: rgba(255,255,255,0.5); line-height: 1.6;
+        }
+        .empty-note code { color: var(--gold); background: rgba(212,175,55,0.1); padding: 2px 6px; border-radius: 3px; }
+
+        .option-group { margin-bottom: 28px; }
+        .option-group h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.6); margin: 0 0 12px; }
+        .option-row { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .option-row:last-child { border-bottom: none; }
+        .option-row input { accent-color: var(--gold); width: 16px; height: 16px; }
+        .option-row .opt-name { flex: 1; font-size: 14px; }
+        .option-row .opt-price { color: rgba(255,255,255,0.5); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+        .totals-bar {
+            position: sticky; bottom: 0; margin-top: 32px; padding: 20px 24px; border-radius: 8px;
+            border: 1px solid var(--border); background: rgba(26,26,26,0.95); backdrop-filter: blur(6px);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .totals-bar strong { color: var(--gold); font-size: 22px; font-variant-numeric: tabular-nums; }
+
+        .btn-secondary {
+            appearance: none; background: transparent; border: 1px solid var(--border); color: var(--white);
+            padding: 10px 20px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
+
+        .refresh-btn {
+            flex-shrink: 0;
+            appearance: none; background: rgba(212,175,55,0.12); border: 1px solid var(--gold); color: var(--gold);
+            padding: 8px 16px; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; white-space: nowrap;
+        }
+        .refresh-btn:hover, .refresh-btn:focus-visible { background: rgba(212,175,55,0.25); }
+        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a class="back-link" href="../../index.html">&larr; Back to storefront</a>
+        <span class="page-title">DIY Catalog — Live Prototype</span>
+        <button class="refresh-btn" id="refresh-btn" type="button">&#8635; Refresh from database</button>
+    </div>
+
+    <div class="content">
+        <div class="breadcrumb" id="breadcrumb"></div>
+
+        <!-- Stage 1: Level -->
+        <section id="stage-tier">
+            <p class="kicker">Step 1</p>
+            <h1 class="intro-heading">Choose Your Level</h1>
+            <div class="card-grid" id="tier-grid"></div>
+            <p class="empty-note" id="tier-empty" hidden>No tiers yet — add rows to the <code>tiers</code> table in Supabase's Table Editor, then hit "Refresh from database" above.</p>
+        </section>
+
+        <!-- Stage 2: Brand -->
+        <section id="stage-brand" hidden>
+            <p class="kicker">Step 2</p>
+            <h1 class="intro-heading">Choose Your Line</h1>
+            <div class="card-grid" id="brand-grid"></div>
+            <p class="empty-note" id="brand-empty" hidden>No brands in this level yet — add a row to <code>brands</code> with this tier selected, then refresh.</p>
+        </section>
+
+        <!-- Stage 3: Cabinet -->
+        <section id="stage-cabinet" hidden>
+            <p class="kicker">Step 3</p>
+            <h1 class="intro-heading">Choose Your Cabinet</h1>
+            <div class="card-grid" id="cabinet-grid"></div>
+            <p class="empty-note" id="cabinet-empty" hidden>No cabinets for this brand yet — add a row to <code>cabinets</code>, then refresh.</p>
+        </section>
+
+        <!-- Stage 4: Customize -->
+        <section id="stage-customize" hidden>
+            <p class="kicker">Step 4</p>
+            <h1 class="intro-heading" id="customize-heading">Customize</h1>
+
+            <div class="option-group">
+                <h3>Size</h3>
+                <div class="card-grid" id="dimension-grid"></div>
+                <p class="empty-note" id="dimension-empty" hidden>No sizes for this cabinet yet — add a row to <code>cabinet_dimensions</code>, then refresh.</p>
+            </div>
+
+            <div id="option-groups"></div>
+
+            <div class="totals-bar" id="totals-bar" hidden>
+                <span>Estimated Total</span>
+                <strong id="running-total">$0.00</strong>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        (function () {
+            // Same real project already used by dashboard/index.html — the
+            // catalog tables are public-read (RLS), so no login is needed here.
+            var SUPABASE_URL = 'https://nutgbxgnkvvruaoloqch.supabase.co';
+            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51dGdieGdua3Z2cnVhb2xvcWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NDEzNDgsImV4cCI6MjEwMDIxNzM0OH0.v9hXYtxOslhyXOu-mZVjm_EFaUIdTqTWKn9P3B7BY64';
+
+            var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            var state = { tier: null, brand: null, cabinet: null, dimension: null, selectedOptions: {} };
+
+            var breadcrumb = document.getElementById('breadcrumb');
+            var refreshBtn = document.getElementById('refresh-btn');
+
+            var stageTier = document.getElementById('stage-tier');
+            var stageBrand = document.getElementById('stage-brand');
+            var stageCabinet = document.getElementById('stage-cabinet');
+            var stageCustomize = document.getElementById('stage-customize');
+
+            var tierGrid = document.getElementById('tier-grid');
+            var tierEmpty = document.getElementById('tier-empty');
+            var brandGrid = document.getElementById('brand-grid');
+            var brandEmpty = document.getElementById('brand-empty');
+            var cabinetGrid = document.getElementById('cabinet-grid');
+            var cabinetEmpty = document.getElementById('cabinet-empty');
+            var dimensionGrid = document.getElementById('dimension-grid');
+            var dimensionEmpty = document.getElementById('dimension-empty');
+            var optionGroups = document.getElementById('option-groups');
+            var customizeHeading = document.getElementById('customize-heading');
+            var totalsBar = document.getElementById('totals-bar');
+            var runningTotal = document.getElementById('running-total');
+
+            function currency(n) { return '$' + n.toFixed(2); }
+            function clear(el) { el.innerHTML = ''; }
+            function showOnly(stage) {
+                [stageTier, stageBrand, stageCabinet, stageCustomize].forEach(function (s) { s.hidden = (s !== stage); });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function renderBreadcrumb() {
+                var parts = [];
+                parts.push(state.tier
+                    ? '<button data-go="tier">' + state.tier.name + '</button>'
+                    : 'Level');
+                if (state.brand) parts.push('<button data-go="brand">' + state.brand.name + '</button>');
+                if (state.cabinet) parts.push('<button data-go="cabinet">' + state.cabinet.name + '</button>');
+                breadcrumb.innerHTML = parts.join('<span class="sep">/</span>');
+                breadcrumb.querySelectorAll('button').forEach(function (btn) {
+                    btn.addEventListener('click', function () { goToStage(btn.dataset.go); });
+                });
+            }
+
+            function goToStage(name) {
+                if (name === 'tier') { state.brand = null; state.cabinet = null; showOnly(stageTier); }
+                if (name === 'brand') { state.cabinet = null; showOnly(stageBrand); }
+                if (name === 'cabinet') { showOnly(stageCabinet); }
+                renderBreadcrumb();
+            }
+
+            // ---- Stage 1: Tiers ----
+            async function loadTiers() {
+                clear(tierGrid);
+                tierEmpty.hidden = true;
+                var result = await supabase.from('tiers').select('*').order('sort_order');
+                if (result.error) { tierEmpty.textContent = 'Could not reach the database: ' + result.error.message; tierEmpty.hidden = false; return; }
+                if (!result.data.length) { tierEmpty.hidden = false; return; }
+                result.data.forEach(function (tier) {
+                    var card = document.createElement('button');
+                    card.className = 'pick-card';
+                    card.innerHTML = '<h3>' + tier.name + '</h3>';
+                    card.addEventListener('click', function () {
+                        state.tier = tier; state.brand = null; state.cabinet = null;
+                        renderBreadcrumb();
+                        loadBrands(tier.id);
+                        showOnly(stageBrand);
+                    });
+                    tierGrid.appendChild(card);
+                });
+            }
+
+            // ---- Stage 2: Brands ----
+            async function loadBrands(tierId) {
+                clear(brandGrid);
+                brandEmpty.hidden = true;
+                var result = await supabase.from('brands').select('*').eq('tier_id', tierId).eq('active', true).order('sort_order');
+                if (result.error) { brandEmpty.textContent = 'Could not reach the database: ' + result.error.message; brandEmpty.hidden = false; return; }
+                if (!result.data.length) { brandEmpty.hidden = false; return; }
+                result.data.forEach(function (brand) {
+                    var card = document.createElement('button');
+                    card.className = 'pick-card';
+                    card.innerHTML = '<h3>' + brand.name + '</h3>' + (brand.description ? '<p>' + brand.description + '</p>' : '');
+                    card.addEventListener('click', function () {
+                        state.brand = brand; state.cabinet = null;
+                        renderBreadcrumb();
+                        loadCabinets(brand.id);
+                        showOnly(stageCabinet);
+                    });
+                    brandGrid.appendChild(card);
+                });
+            }
+
+            // ---- Stage 3: Cabinets ----
+            async function loadCabinets(brandId) {
+                clear(cabinetGrid);
+                cabinetEmpty.hidden = true;
+                var result = await supabase.from('cabinets')
+                    .select('*, cabinet_categories(name)')
+                    .eq('brand_id', brandId).eq('active', true);
+                if (result.error) { cabinetEmpty.textContent = 'Could not reach the database: ' + result.error.message; cabinetEmpty.hidden = false; return; }
+                if (!result.data.length) { cabinetEmpty.hidden = false; return; }
+                result.data.forEach(function (cabinet) {
+                    var categoryName = cabinet.cabinet_categories ? cabinet.cabinet_categories.name : '';
+                    var card = document.createElement('button');
+                    card.className = 'pick-card';
+                    card.innerHTML = '<h3>' + cabinet.name + '</h3>' + (categoryName ? '<p>' + categoryName + '</p>' : '');
+                    card.addEventListener('click', function () {
+                        state.cabinet = cabinet; state.dimension = null; state.selectedOptions = {};
+                        renderBreadcrumb();
+                        loadCustomizeStage(cabinet, state.brand.id);
+                        showOnly(stageCustomize);
+                    });
+                    cabinetGrid.appendChild(card);
+                });
+            }
+
+            // ---- Stage 4: Dimensions + brand-restricted options ----
+            async function loadCustomizeStage(cabinet, brandId) {
+                customizeHeading.textContent = 'Customize: ' + cabinet.name;
+                totalsBar.hidden = true;
+                clear(dimensionGrid);
+                clear(optionGroups);
+                dimensionEmpty.hidden = true;
+
+                var dimResult = await supabase.from('cabinet_dimensions')
+                    .select('*').eq('cabinet_id', cabinet.id).eq('active', true).order('width_in');
+                if (dimResult.error) { dimensionEmpty.textContent = 'Could not reach the database: ' + dimResult.error.message; dimensionEmpty.hidden = false; return; }
+                if (!dimResult.data.length) { dimensionEmpty.hidden = false; return; }
+
+                dimResult.data.forEach(function (dim) {
+                    var card = document.createElement('button');
+                    card.className = 'pick-card';
+                    card.innerHTML = '<h3>' + dim.width_in + '" wide</h3><p>SKU ' + dim.sku + '</p><div class="price-tag">' + currency(Number(dim.price)) + '</div>';
+                    card.addEventListener('click', function () {
+                        state.dimension = dim;
+                        dimensionGrid.querySelectorAll('.pick-card').forEach(function (c) { c.style.borderColor = ''; });
+                        card.style.borderColor = 'var(--gold)';
+                        updateTotal();
+                    });
+                    dimensionGrid.appendChild(card);
+                });
+
+                // Brand-restricted options, grouped by option category — this is
+                // the restriction layer actually rendering: only what this brand
+                // allows shows up, nothing else exists to pick from.
+                var optResult = await supabase.from('brand_options')
+                    .select('price_modifier_override, options(id, name, price_modifier, option_categories(id, name, sort_order))')
+                    .eq('brand_id', brandId);
+                if (optResult.error || !optResult.data.length) return;
+
+                var byCategory = {};
+                optResult.data.forEach(function (row) {
+                    var opt = row.options;
+                    var cat = opt.option_categories;
+                    if (!byCategory[cat.id]) byCategory[cat.id] = { name: cat.name, sort: cat.sort_order, options: [] };
+                    byCategory[cat.id].options.push({
+                        id: opt.id,
+                        name: opt.name,
+                        price: row.price_modifier_override != null ? Number(row.price_modifier_override) : Number(opt.price_modifier)
+                    });
+                });
+
+                Object.keys(byCategory)
+                    .sort(function (a, b) { return byCategory[a].sort - byCategory[b].sort; })
+                    .forEach(function (catId) {
+                        var cat = byCategory[catId];
+                        var group = document.createElement('div');
+                        group.className = 'option-group';
+                        var heading = document.createElement('h3');
+                        heading.textContent = cat.name;
+                        group.appendChild(heading);
+                        cat.options.forEach(function (opt, i) {
+                            var row = document.createElement('label');
+                            row.className = 'option-row';
+                            row.innerHTML =
+                                '<input type="radio" name="cat-' + catId + '"' + (i === 0 ? ' checked' : '') + '>' +
+                                '<span class="opt-name">' + opt.name + '</span>' +
+                                '<span class="opt-price">' + (opt.price ? '+' + currency(opt.price) : 'Included') + '</span>';
+                            row.querySelector('input').addEventListener('change', function () {
+                                state.selectedOptions[catId] = opt.price;
+                                updateTotal();
+                            });
+                            group.appendChild(row);
+                        });
+                        if (cat.options.length) state.selectedOptions[catId] = cat.options[0].price;
+                        optionGroups.appendChild(group);
+                    });
+
+                updateTotal();
+            }
+
+            function updateTotal() {
+                if (!state.dimension) { totalsBar.hidden = true; return; }
+                var total = Number(state.dimension.price);
+                Object.keys(state.selectedOptions).forEach(function (k) { total += state.selectedOptions[k]; });
+                runningTotal.textContent = currency(total);
+                totalsBar.hidden = false;
+            }
+
+            refreshBtn.addEventListener('click', function () {
+                refreshBtn.disabled = true;
+                refreshBtn.textContent = 'Refreshing…';
+                var reload = state.cabinet ? loadCustomizeStage(state.cabinet, state.brand.id)
+                    : state.brand ? loadCabinets(state.brand.id)
+                    : state.tier ? loadBrands(state.tier.id)
+                    : loadTiers();
+                Promise.resolve(reload).finally(function () {
+                    refreshBtn.disabled = false;
+                    refreshBtn.textContent = '↻ Refresh from database';
+                });
+            });
+
+            renderBreadcrumb();
+            loadTiers();
+        })();
+    </script>
+</body>
+</html>
