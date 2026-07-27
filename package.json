@@ -1,0 +1,12 @@
+{
+  "name": "design-lab-admin-static-host",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Serves this repo's static site as-is (no build step, no dependencies) — used by the two admin.shopdesignlab.com Railway services described in ADMIN-HOSTING.md. GitHub Pages remains the host for the real shopdesignlab.com production domain; this only exists for internal preview/staging.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node static-server.js"
+  }
+}
