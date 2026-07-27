@@ -310,7 +310,7 @@
             <img class="hero-logo-img" src="Assets/Logos/Hero-Logo%202.0.png" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
             <div>
                 <h2>Cabinetry for Every Room in the House</h2>
-                <a class="btn-pill" href="#">Shop now</a>
+                <a class="btn-pill hero-shop-now" href="#section-offerings">Shop now</a>
             </div>
         </section>
 
@@ -340,7 +340,7 @@
             </div>
         </section>
 
-        <section class="section-offerings">
+        <section class="section-offerings" id="section-offerings">
             <div class="offering-fan" id="offering-fan">
                 <div class="offering-panel offering-panel--diy is-open" data-offering="diy">
                     <button class="offering-label" type="button">DIY Shop</button>
@@ -458,17 +458,27 @@
             var fan = document.getElementById('offering-fan');
             if (!fan) return;
 
-            fan.addEventListener('click', function (event) {
-                var label = event.target.closest('.offering-label');
-                if (!label) return;
-
-                var panel = label.closest('.offering-panel');
+            function openOffering(panel) {
                 if (!panel || panel.classList.contains('is-open')) return;
-
                 var open = fan.querySelector('.offering-panel.is-open');
                 if (open) open.classList.remove('is-open');
                 panel.classList.add('is-open');
+            }
+
+            fan.addEventListener('click', function (event) {
+                var label = event.target.closest('.offering-label');
+                if (!label) return;
+                openOffering(label.closest('.offering-panel'));
             });
+
+            // Hero's "Shop now" always lands on the DIY panel, regardless of
+            // whatever panel a returning visitor last had open.
+            var heroShopNow = document.querySelector('.hero-shop-now');
+            if (heroShopNow) {
+                heroShopNow.addEventListener('click', function () {
+                    openOffering(fan.querySelector('.offering-panel--diy'));
+                });
+            }
         })();
     </script>
 </body>
