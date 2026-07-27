@@ -92,11 +92,62 @@
         .hero-slide.is-active { opacity: 1; }
 
         /* background-color shows while the photo loads, or if a hotlinked URL ever breaks */
-        .section-diy { background-color: var(--black); background-image: var(--img-diy); }
-        .section-curated { background-color: var(--black); background-image: var(--img-curated); }
-        .section-full-service { background-color: var(--black); background-image: var(--img-full-service); }
         .section-benefits { background-color: var(--black); background-image: var(--img-benefits); }
         .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; }
+
+        /* Three offerings, one screen: a fan/accordion instead of separate
+           full screens. Horizontal on desktop (width expands/collapses),
+           vertical on mobile (height expands/collapses) — same markup, same
+           click logic, just which axis the media query below animates. */
+        .section-offerings { padding: 0; background-color: var(--black); }
+        .section-offerings::before { content: none; } /* fully covered by the fan; the section-level scrim would just be wasted paint */
+
+        .offering-fan { display: flex; flex-direction: row; height: 100%; width: 100%; }
+
+        .offering-panel {
+            position: relative; overflow: hidden; flex: 0 0 80px;
+            transition: flex-basis 0.6s ease;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 40px 5%; cursor: pointer;
+        }
+        .offering-panel::before {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.78));
+        }
+        .offering-panel > * { position: relative; z-index: 1; }
+        .offering-panel.is-open { flex-basis: calc(100% - 160px); cursor: default; }
+
+        .offering-panel--diy { background-image: var(--img-diy); }
+        .offering-panel--curated { background-image: var(--img-curated); }
+        .offering-panel--full-service { background-image: var(--img-full-service); }
+
+        .offering-label {
+            appearance: none; background: none; border: none; color: var(--white);
+            font: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+            padding: 0; text-align: left; cursor: inherit;
+        }
+        /* Collapsed: the label fills the whole panel and is the click target —
+           "click anywhere on a collapsed panel" is true because of this. */
+        .offering-panel:not(.is-open) .offering-label {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            writing-mode: vertical-rl; text-orientation: mixed;
+            font-size: 15px; letter-spacing: 3px;
+        }
+        .offering-panel.is-open .offering-label { font-size: 26px; margin-bottom: 16px; }
+
+        .offering-panel:not(.is-open) .offering-body { display: none; }
+        .offering-body p { color: rgba(255,255,255,0.75); max-width: 480px; margin: 0 0 20px; font-size: 15px; line-height: 1.6; }
+
+        @media (max-width: 767px) {
+            .offering-fan { flex-direction: column; }
+            .offering-panel { flex-basis: 72px; padding: 24px 8%; }
+            .offering-panel.is-open { flex-basis: calc(100% - 144px); }
+            .offering-panel:not(.is-open) .offering-label {
+                writing-mode: horizontal-tb; text-orientation: initial; font-size: 15px; letter-spacing: 2px;
+            }
+        }
 
         /* Benefits Grid */
         .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1000px; }
@@ -272,22 +323,30 @@
             </div>
         </section>
 
-        <section class="section-diy">
-            <h2>DIY Shop</h2>
-            <p>For experienced buyers who know exactly what they need. Pick your cabinets, choose your finishes, build it yourself.</p>
-            <a class="btn-pill" href="diy-wizard/">Shop now</a>
-        </section>
-
-        <section class="section-curated">
-            <h2>Designed in the Lab</h2>
-            <p>Explore &amp; purchase our Curated Collections designed by our best Designers — ready to order, no guesswork required.</p>
-            <a class="btn-pill" href="#">Shop now</a>
-        </section>
-
-        <section class="section-full-service">
-            <h2>Full Service</h2>
-            <p>Work directly with our designers from concept to installation — kitchens, baths, and beyond. The white-glove option for your whole project.</p>
-            <a class="btn-pill" href="consultation/">Book a Consultation</a>
+        <section class="section-offerings">
+            <div class="offering-fan" id="offering-fan">
+                <div class="offering-panel offering-panel--diy is-open" data-offering="diy">
+                    <button class="offering-label" type="button">DIY Shop</button>
+                    <div class="offering-body">
+                        <p>For experienced buyers who know exactly what they need. Pick your cabinets, choose your finishes, build it yourself.</p>
+                        <a class="btn-pill" href="diy-wizard/">Shop now</a>
+                    </div>
+                </div>
+                <div class="offering-panel offering-panel--curated" data-offering="curated">
+                    <button class="offering-label" type="button">Designed in the Lab</button>
+                    <div class="offering-body">
+                        <p>Explore &amp; purchase our Curated Collections designed by our best Designers — ready to order, no guesswork required.</p>
+                        <a class="btn-pill" href="#">Shop now</a>
+                    </div>
+                </div>
+                <div class="offering-panel offering-panel--full-service" data-offering="full-service">
+                    <button class="offering-label" type="button">Full Service</button>
+                    <div class="offering-body">
+                        <p>Work directly with our designers from concept to installation — kitchens, baths, and beyond. The white-glove option for your whole project.</p>
+                        <a class="btn-pill" href="consultation/">Book a Consultation</a>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <footer class="site-footer">
@@ -375,6 +434,24 @@
                 activeLayer = 1 - activeLayer;
                 nextIndex = (nextIndex + 1) % heroImages.length;
             }, 5000);
+        })();
+
+        (function () {
+            // Offerings fan/accordion: exactly one panel open at a time.
+            var fan = document.getElementById('offering-fan');
+            if (!fan) return;
+
+            fan.addEventListener('click', function (event) {
+                var label = event.target.closest('.offering-label');
+                if (!label) return;
+
+                var panel = label.closest('.offering-panel');
+                if (!panel || panel.classList.contains('is-open')) return;
+
+                var open = fan.querySelector('.offering-panel.is-open');
+                if (open) open.classList.remove('is-open');
+                panel.classList.add('is-open');
+            });
         })();
     </script>
 </body>
