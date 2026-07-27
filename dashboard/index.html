@@ -93,6 +93,15 @@
         .calendar-frame { width: 100%; height: 520px; border: 0; border-radius: 4px; background: #fff; display: block; }
         .calendar-note { font-size: 12px; color: rgba(255,255,255,0.4); margin: 14px 0 0; max-width: none; }
 
+        .proto-panel { max-width: 640px; text-align: left; }
+        .proto-intro { margin: 0 0 18px; font-size: 13px; color: rgba(255,255,255,0.5); text-align: left; }
+        .proto-list { list-style: none; margin: 0; padding: 0; }
+        .proto-list li { padding: 12px 4px; border-bottom: 1px solid var(--border); }
+        .proto-list li:last-child { border-bottom: none; }
+        .proto-list a { color: var(--white); font-weight: 700; font-size: 14px; text-decoration: none; }
+        .proto-list a:hover, .proto-list a:focus-visible { color: var(--gold); text-decoration: underline; }
+        .proto-list span { display: block; margin-top: 4px; font-size: 12px; color: rgba(255,255,255,0.45); }
+
         .sign-out-link {
             appearance: none; background: none; border: none; cursor: pointer;
             color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px;
@@ -142,6 +151,20 @@
                     <h3>Team Calendar</h3>
                     <iframe class="calendar-frame" id="calendar-frame" title="Design Lab team calendar" frameborder="0" scrolling="no"></iframe>
                     <p class="note calendar-note">Shown using your Design Lab Google account. If this looks empty, make sure you're signed into that account (not a personal one) in this browser.</p>
+                </div>
+
+                <div class="panel proto-panel">
+                    <h3>Prototypes &amp; Experiments</h3>
+                    <p class="proto-intro">Every sandbox page built so far, in one place — nothing here is public or linked from the live site.</p>
+                    <ul class="proto-list">
+                        <li><a href="../proto/index.html" target="_blank" rel="noopener">Prototype Storefront</a><span>Full mirror of the live site — safe to test changes on</span></li>
+                        <li><a href="../proto/about/index.html" target="_blank" rel="noopener">About Us</a><span>Story, pillars, and stats pulled from the Design Lab Playbook</span></li>
+                        <li><a href="../proto/consultation/index.html" target="_blank" rel="noopener">Video Consultation</a><span>Client-facing join flow, plus employee room creation</span></li>
+                        <li><a href="../proto/dashboard/index.html" target="_blank" rel="noopener">Employee Dashboard</a><span>Mirror of this page, for testing changes safely</span></li>
+                        <li><a href="../proto/diy-catalog/index.html" target="_blank" rel="noopener">DIY Catalog (Live Database)</a><span>Level &rarr; Brand &rarr; Cabinet &rarr; Customize, wired directly to Supabase</span></li>
+                        <li><a href="../proto/diy-wizard/index.html" target="_blank" rel="noopener">DIY Wizard</a><span>Original accordion-style cabinet builder with cart &amp; pricing</span></li>
+                        <li><a href="../proto/vendors/index.html" target="_blank" rel="noopener">Vendor / Curated Showcase</a><span>5 sample vendors, each with curated collections you can customize</span></li>
+                    </ul>
                 </div>
 
                 <div class="panel coming-soon">
