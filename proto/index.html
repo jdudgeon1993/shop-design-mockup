@@ -14,9 +14,9 @@
             /* REFERENCE IMAGES — hotlinked from other companies' sites / a stock
                preview for mockup purposes only. Swap for owned/licensed photography
                before this is shown outside the team or shared anywhere public. */
-            --img-hero: url('https://blog.kitchenmagic.com/hs-fs/hubfs/blog-files/5-steps-farmhouse-kitchen.jpg?width=600&name=5-steps-farmhouse-kitchen.jpg');
-            --img-diy: url('https://www.performancekitchens.com/wp-content/uploads/2024/10/performance-kitchens-and-home-has-the-number-1-kitchen-design-showroom-in-philadelphia.jpg');
-            --img-lab: url('https://as2.ftcdn.net/jpg/03/20/87/41/1000_F_320874178_NfeNVxYKbrbefr3eoqYXdkpSpL8j7SuL.jpg');
+            --img-diy: url('../Assets/Images/diy-section.png');
+            --img-curated: url('../Assets/Images/curated-section.png');
+            --img-full-service: url('../Assets/Images/full-service-section.png');
             --img-benefits: url('https://inspiredclosetsmediafiles.s3.amazonaws.com/wp-content/uploads/2024/12/30110608/InspiredClosets-january-2025-blog-header.jpg');
         }
 
@@ -80,11 +80,21 @@
         .nav-icon svg { width: 20px; height: 20px; display: block; }
 
         /* Hero */
-        .hero { background-color: var(--black); background-image: var(--img-hero); justify-content: space-between; padding: 120px 10% 80px 10%; }
+        .hero { background-color: var(--black); justify-content: space-between; padding: 120px 10% 80px 10%; }
+
+        .hero::before { z-index: 1; }
+
+        .hero-slide {
+            position: absolute; inset: 0; z-index: 0;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            opacity: 0; transition: opacity 1.2s ease;
+        }
+        .hero-slide.is-active { opacity: 1; }
 
         /* background-color shows while the photo loads, or if a hotlinked URL ever breaks */
         .section-diy { background-color: var(--black); background-image: var(--img-diy); }
-        .section-lab { background-color: var(--black); background-image: var(--img-lab); }
+        .section-curated { background-color: var(--black); background-image: var(--img-curated); }
+        .section-full-service { background-color: var(--black); background-image: var(--img-full-service); }
         .section-benefits { background-color: var(--black); background-image: var(--img-benefits); }
         .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; }
 
@@ -115,9 +125,6 @@
         }
 
         /* DIY vs Curated: one full-screen row split 50/50 on desktop */
-        .compare-row { display: flex; flex-direction: row; }
-        .compare-row .half { width: 50%; padding-left: 8%; padding-right: 8%; }
-        .compare-row .section-diy { border-right: 1px solid rgba(255,255,255,0.35); }
 
         /* Footer: min-height instead of a fixed height so it can grow past one
            screen if a narrow viewport needs more room for the sitemap columns */
@@ -161,6 +168,12 @@
             border: none; border-radius: 999px;
             background: var(--white); color: var(--black);
 
+            /* When this is a direct child of a column flex container (like
+               these full-screen <section> elements), flexbox's default
+               align-items:stretch would otherwise blow it out to full width
+               regardless of display:inline-block — pin it to content width. */
+            align-self: flex-start;
+
             font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
             text-align: center; text-decoration: none;
             text-transform: uppercase; letter-spacing: 2px;
@@ -185,11 +198,6 @@
 
             .hero-logo-img { max-width: 320px; }
             .benefits-grid { grid-template-columns: 1fr; }
-
-            /* Split back into two separate full-screen sections */
-            .compare-row { flex-direction: column; }
-            .compare-row .half { width: 100%; padding-left: 10%; padding-right: 10%; }
-            .compare-row .section-diy { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.15); }
 
             .site-footer { padding: 100px 10% 30px; }
             .footer-top { gap: 40px; }
@@ -229,6 +237,8 @@
 
     <div class="scroll-container">
         <section class="hero">
+            <div class="hero-slide"></div>
+            <div class="hero-slide"></div>
             <img class="hero-logo-img" src="../Assets/Logos/Hero-Logo%202.0.png" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
             <div>
                 <h2>Cabinetry for Every Room in the House</h2>
@@ -262,19 +272,23 @@
             </div>
         </section>
 
-        <div class="compare-row">
-            <section class="section-diy half">
-                <h2>DIY Shop</h2>
-                <p>For experienced buyers who know exactly what they need.</p>
-                <a class="btn-pill" href="diy-wizard/">Shop now</a>
-            </section>
+        <section class="section-diy">
+            <h2>DIY Shop</h2>
+            <p>For experienced buyers who know exactly what they need. Pick your cabinets, choose your finishes, build it yourself.</p>
+            <a class="btn-pill" href="diy-wizard/">Shop now</a>
+        </section>
 
-            <section class="section-lab half">
-                <h2>Designed in the Lab</h2>
-                <p>Explore &amp; purchase our Curated Collections designed by our best Designers.</p>
-                <a class="btn-pill" href="#">Shop now</a>
-            </section>
-        </div>
+        <section class="section-curated">
+            <h2>Designed in the Lab</h2>
+            <p>Explore &amp; purchase our Curated Collections designed by our best Designers — ready to order, no guesswork required.</p>
+            <a class="btn-pill" href="#">Shop now</a>
+        </section>
+
+        <section class="section-full-service">
+            <h2>Full Service</h2>
+            <p>Work directly with our designers from concept to installation — kitchens, baths, and beyond. The white-glove option for your whole project.</p>
+            <a class="btn-pill" href="consultation/">Book a Consultation</a>
+        </section>
 
         <footer class="site-footer">
             <div class="footer-top">
@@ -327,5 +341,41 @@
             </div>
         </footer>
     </div>
+
+    <script>
+        (function () {
+            // Hero slideshow. hero-section-i1 must stay first — add future
+            // images by appending to this array, never prepending, so it
+            // keeps being the first thing a visitor sees.
+            var heroImages = [
+                '../Assets/Images/hero-section-i1.png'
+            ];
+
+            var slides = document.querySelectorAll('.hero-slide');
+            if (!slides.length || !heroImages.length) return;
+
+            slides.forEach(function (slide) {
+                slide.style.backgroundImage = "url('" + heroImages[0] + "')";
+            });
+            slides[0].classList.add('is-active');
+
+            // Nothing to rotate to yet, or the visitor has asked for less motion.
+            if (heroImages.length < 2) return;
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            var activeLayer = 0;
+            var nextIndex = 1;
+
+            setInterval(function () {
+                var showing = slides[activeLayer];
+                var hidden = slides[1 - activeLayer];
+                hidden.style.backgroundImage = "url('" + heroImages[nextIndex] + "')";
+                hidden.classList.add('is-active');
+                showing.classList.remove('is-active');
+                activeLayer = 1 - activeLayer;
+                nextIndex = (nextIndex + 1) % heroImages.length;
+            }, 5000);
+        })();
+    </script>
 </body>
 </html>
