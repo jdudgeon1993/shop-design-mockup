@@ -77,16 +77,33 @@
         .nav-icon:hover { color: var(--gold); }
         .nav-icon svg { width: 20px; height: 20px; display: block; }
 
-        /* Hero — now the only section: the photo, the logo, the
-           heading/buttons, and the stat bar all live in this one 100dvh
-           screen. space-between pins .hero-top (the logo) to the top and
-           .hero-bottom (heading/buttons + stat bar, grouped as one unit)
-           to the bottom — same top/bottom split the logo had before the
-           reface, just sharing the screen with the new stat bar now. */
-        .hero { background-color: var(--black); justify-content: space-between; padding: var(--navbar-h) 0 0; }
-        .hero-top { padding: 28px 10% 0; }
+        /* Hero — the only section now: the photo, the logo, and the
+           heading/buttons live in .hero-photo; the stat bar is a separate
+           sibling below it. On desktop .hero-photo grows to fill whatever
+           space .hero-stats doesn't need, so the two together still total
+           exactly 100dvh. On mobile .hero-photo gets its own min-height:
+           100dvh instead — the photo gets a full screen to itself so it's
+           actually visible, and .hero-stats becomes a normal section you
+           scroll to, not squeezed into the same screen. */
+        .hero { background-color: var(--black); padding: 0; }
+        .hero::before { content: none; } /* replaced by .hero-photo::before, scoped to just the photo area */
 
-        .hero::before { z-index: 1; }
+        .hero-photo {
+            position: relative; overflow: hidden;
+            flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between;
+            padding: var(--navbar-h) 0 0;
+        }
+        /* The scrim is normally z-index:auto; pin it explicitly so it's
+           unambiguous relative to the slide layers below and the real
+           content above (both use z-index:1, but the scrim still paints
+           first since ::before always precedes other content). */
+        .hero-photo::before {
+            content: ""; position: absolute; inset: 0; z-index: 1;
+            background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.65));
+        }
+        .hero-photo > * { position: relative; z-index: 1; }
+
+        .hero-top { padding: 28px 10% 0; }
 
         .hero-slide {
             position: absolute; inset: 0; z-index: 0;
@@ -214,18 +231,21 @@
             .nav-links { flex-direction: column; gap: 16px; align-items: flex-start; }
             .nav-icons { flex-direction: row; gap: 24px; }
 
-            /* Interim mobile treatment, not the final design — the desktop
-               one-screen layout (heading + buttons + 5-column stat bar all
-               fitting in 100dvh) doesn't have room to work on a phone.
-               Everything just stacks and scrolls normally for now. */
-            .hero { height: auto; min-height: 100dvh; padding-bottom: 32px; }
+            /* The photo gets a full screen to itself — same top/bottom
+               split as desktop (logo top, heading/buttons bottom) — instead
+               of competing with the stat bar for space. Stats become a
+               normal section below, reached by scrolling, not squeezed. */
+            .hero { height: auto; }
+            .hero-photo { min-height: 100dvh; padding-bottom: 32px; }
             .hero-logo-img { max-width: 320px; }
             .hero-heading { font-size: clamp(28px, 8vw, 40px); }
             .btn-hero { width: 100%; justify-content: space-between; }
-            .hero-stats { grid-template-columns: repeat(2, 1fr); }
-            .hero-stat { border-bottom: 1px solid rgba(255,255,255,0.12); }
-            .hero-stat:nth-child(2n) { border-right: none; }
-            .hero-stat:last-child { grid-column: 1 / -1; border-bottom: none; }
+
+            /* Roomy single column now that stats aren't fighting for
+               vertical space inside the same screen as the photo. */
+            .hero-stats { grid-template-columns: 1fr; }
+            .hero-stat { padding: 22px 8%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.12); }
+            .hero-stat:last-child { border-bottom: none; }
 
             .site-footer { padding: 60px 10% 30px; }
         }
@@ -264,14 +284,14 @@
 
     <div class="scroll-container">
         <section class="hero">
-            <div class="hero-slide"></div>
-            <div class="hero-slide"></div>
+            <div class="hero-photo">
+                <div class="hero-slide"></div>
+                <div class="hero-slide"></div>
 
-            <div class="hero-top">
-                <img class="hero-logo-img" src="../Assets/Logos/Hero-Logo%202.0.png" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
-            </div>
+                <div class="hero-top">
+                    <img class="hero-logo-img" src="../Assets/Logos/Hero-Logo%202.0.png" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
+                </div>
 
-            <div class="hero-bottom">
                 <div class="hero-content">
                     <h1 class="hero-heading">Cabinetry for Every Room of the House</h1>
                     <div class="hero-actions">
@@ -280,8 +300,9 @@
                         <a class="btn-hero" href="consultation/">Meet with a Designer about my Project <span class="arrow" aria-hidden="true">&rarr;</span></a>
                     </div>
                 </div>
+            </div>
 
-                <div class="hero-stats">
+            <div class="hero-stats">
                 <div class="hero-stat">
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.9 6.4 6.9.6-5.2 4.6 1.6 6.8L12 17l-6.2 3.4 1.6-6.8L2.2 9l6.9-.6Z"></path></svg></div>
                     <h3>90+ Years of Experience</h3>
@@ -306,7 +327,6 @@
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6Z"></path></svg></div>
                     <h3>We're With You</h3>
                     <p>From inspiration to installation and beyond.</p>
-                </div>
                 </div>
             </div>
         </section>
