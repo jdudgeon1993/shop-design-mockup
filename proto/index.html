@@ -11,6 +11,11 @@
         :root {
             --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
 
+            /* Real measured height of .navbar (18px padding + 30px logo, both
+               sides) — sections reserve this as top padding so the fixed,
+               translucent navbar never sits over content underneath it. */
+            --navbar-h: 68px;
+
             /* Hero is now a JS-driven slideshow (see .hero-slide) instead of a
                single CSS background — its images live in the hero-images array
                near the bottom of this file, not here. */
@@ -34,7 +39,7 @@
 
         section {
             height: 100dvh; width: 100%; scroll-snap-align: start;
-            display: flex; flex-direction: column; justify-content: center; padding: 0 10%;
+            display: flex; flex-direction: column; justify-content: center; padding: var(--navbar-h) 10% 0;
             position: relative; color: var(--white);
             background-size: cover; background-position: center; background-repeat: no-repeat;
         }
@@ -99,7 +104,7 @@
            full screens. Horizontal on desktop (width expands/collapses),
            vertical on mobile (height expands/collapses) — same markup, same
            click logic, just which axis the media query below animates. */
-        .section-offerings { padding: 0; background-color: var(--black); }
+        .section-offerings { padding: var(--navbar-h) 0 0; background-color: var(--black); }
         .section-offerings::before { content: none; } /* fully covered by the fan; the section-level scrim would just be wasted paint */
 
         .offering-fan { display: flex; flex-direction: row; height: 100%; width: 100%; }
@@ -249,6 +254,12 @@
 
             .hero-logo-img { max-width: 320px; }
             .benefits-grid { grid-template-columns: 1fr; }
+
+            /* Four stacked cards are taller than one mobile screen. Rather
+               than centering (which pushes the heading up under the navbar
+               and crops the last card with no way to reach it), anchor to
+               the top and let the section scroll internally. */
+            .section-benefits { justify-content: flex-start; overflow-y: auto; }
 
             .site-footer { padding: 100px 10% 30px; }
             .footer-top { gap: 40px; }
