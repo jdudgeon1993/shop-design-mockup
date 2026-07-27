@@ -93,22 +93,28 @@
         }
         .hero-slide.is-active { opacity: 1; }
 
-        .hero-content { padding: 0 10%; margin-bottom: 36px; }
+        .hero-content { padding: 0 10%; margin-bottom: 28px; }
+        .hero-logo-img { display: block; width: 100%; max-width: 200px; height: auto; margin-bottom: 18px; }
         .hero-heading {
             font-family: var(--font-serif); font-weight: 700;
-            font-size: clamp(32px, 5vw, 56px); line-height: 1.15;
-            max-width: 560px; margin: 0 0 32px;
+            font-size: clamp(24px, 3.4vw, 38px); line-height: 1.15;
+            max-width: 500px; margin: 0 0 22px;
         }
 
-        .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+        /* Fixed width so all three read as one deliberate set instead of
+           each pill sizing to its own text — the longest label just wraps
+           to a second line rather than stretching its pill wider. */
+        .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
         .btn-hero {
             appearance: none; -webkit-appearance: none; -moz-appearance: none;
             outline: none; box-shadow: none; box-sizing: border-box;
-            display: inline-flex; align-items: center; gap: 10px;
+            display: inline-flex; align-items: center; justify-content: space-between; gap: 10px;
+            width: 290px;
             background: var(--gold); color: var(--black);
-            padding: 16px 30px; border: none; border-radius: 999px;
-            font: inherit; font-weight: 700; font-size: 13px;
-            text-transform: uppercase; letter-spacing: 1px; text-decoration: none;
+            padding: 13px 24px; border: none; border-radius: 999px;
+            font: inherit; font-weight: 700; font-size: 12px; line-height: 1.3;
+            text-align: left;
+            text-transform: uppercase; letter-spacing: 0.75px; text-decoration: none;
             cursor: pointer; transition: 0.25s ease;
         }
         .btn-hero:hover, .btn-hero:focus-visible { background: var(--white); }
@@ -254,6 +260,7 @@
             <div class="hero-slide"></div>
 
             <div class="hero-content">
+                <img class="hero-logo-img" src="../Assets/Logos/Hero-Logo%202.0.png" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
                 <h1 class="hero-heading">Cabinetry for Every Room of the House</h1>
                 <div class="hero-actions">
                     <a class="btn-hero" href="diy-wizard/">DIY Shop Here <span class="arrow" aria-hidden="true">&rarr;</span></a>
