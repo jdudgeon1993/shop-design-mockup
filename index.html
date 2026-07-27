@@ -146,7 +146,12 @@
             transition: flex-basis 0.6s ease;
             background-size: cover; background-position: center; background-repeat: no-repeat;
             display: flex; flex-direction: column; justify-content: flex-end;
-            padding: 40px 5%; cursor: pointer;
+            /* Fixed px, not %: horizontal percentage padding resolves
+               against the containing block's width (near-full viewport),
+               not this item's own 80px flex-basis — at large viewport
+               widths that demanded far more than 80px, overflowing the row
+               and pushing Full Service off-screen entirely. */
+            padding: 40px 24px; cursor: pointer;
         }
         .offering-panel::before {
             content: ""; position: absolute; inset: 0;
@@ -179,7 +184,7 @@
 
         @media (max-width: 767px) {
             .offering-fan { flex-direction: column; }
-            .offering-panel { flex-basis: 72px; padding: 24px 8%; }
+            .offering-panel { flex-basis: 72px; padding: 24px 20px; }
             .offering-panel.is-open { flex-basis: calc(100% - 144px); }
             .offering-panel:not(.is-open) .offering-label {
                 writing-mode: horizontal-tb; text-orientation: initial; font-size: 15px; letter-spacing: 2px;
