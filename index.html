@@ -4,23 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Design Labs - Complete Storefront</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
+            --font-serif: 'Playfair Display', serif;
 
             /* Real measured height of .navbar (18px padding + 30px logo, both
                sides) — sections reserve this as top padding so the fixed,
                translucent navbar never sits over content underneath it. */
             --navbar-h: 68px;
-
-            /* Hero is now a JS-driven slideshow (see .hero-slide) instead of a
-               single CSS background — its images live in the hero-images array
-               near the bottom of this file, not here. */
-            --img-diy: url('Assets/Images/diy-section.png');
-            --img-curated: url('Assets/Images/curated-section.png');
-            --img-full-service: url('Assets/Images/full-service-section.png');
-            --img-benefits: url('Assets/Images/why-choose-us.png');
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -108,8 +101,12 @@
         }
         .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); transform: scale(1.05); }
 
-        /* Hero */
-        .hero { background-color: var(--black); justify-content: space-between; padding: 120px 10% 80px 10%; }
+        /* Hero — now the only section: the photo, the heading/buttons, and
+           the stat bar all live in this one 100dvh screen. justify-content:
+           flex-end packs .hero-content and .hero-stats together at the
+           bottom, leaving the top of the photo uncovered, same as the
+           reference mockup. */
+        .hero { background-color: var(--black); justify-content: flex-end; padding: var(--navbar-h) 0 0; }
 
         /* The scrim is normally z-index:auto; pin it explicitly so it's
            unambiguous relative to the slide layers below and the real
@@ -128,94 +125,46 @@
         }
         .hero-slide.is-active { opacity: 1; }
 
-        /* background-color shows while the photo loads, or if a hotlinked URL ever breaks */
-        .section-benefits { background-color: var(--black); background-image: var(--img-benefits); }
-        .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; }
-
-        /* Three offerings, one screen: a fan/accordion instead of separate
-           full screens. Horizontal on desktop (width expands/collapses),
-           vertical on mobile (height expands/collapses) — same markup, same
-           click logic, just which axis the media query below animates. */
-        .section-offerings { padding: var(--navbar-h) 0 0; background-color: var(--black); }
-        .section-offerings::before { content: none; } /* fully covered by the fan; the section-level scrim would just be wasted paint */
-
-        .offering-fan { display: flex; flex-direction: row; height: 100%; width: 100%; }
-
-        .offering-panel {
-            position: relative; overflow: hidden; flex: 0 0 80px;
-            transition: flex-basis 0.6s ease;
-            background-size: cover; background-position: center; background-repeat: no-repeat;
-            display: flex; flex-direction: column; justify-content: flex-end;
-            /* Fixed px, not %: horizontal percentage padding resolves
-               against the containing block's width (near-full viewport),
-               not this item's own 80px flex-basis — at large viewport
-               widths that demanded far more than 80px, overflowing the row
-               and pushing Full Service off-screen entirely. */
-            padding: 40px 24px; cursor: pointer;
-        }
-        .offering-panel::before {
-            content: ""; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.78));
-        }
-        .offering-panel > * { position: relative; z-index: 1; }
-        .offering-panel.is-open { flex-basis: calc(100% - 160px); cursor: default; }
-
-        .offering-panel--diy { background-image: var(--img-diy); }
-        .offering-panel--curated { background-image: var(--img-curated); }
-        .offering-panel--full-service { background-image: var(--img-full-service); }
-
-        .offering-label {
-            appearance: none; background: none; border: none; color: var(--white);
-            font: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
-            padding: 0; text-align: left; cursor: inherit;
-        }
-        /* Collapsed: the label fills the whole panel and is the click target —
-           "click anywhere on a collapsed panel" is true because of this. */
-        .offering-panel:not(.is-open) .offering-label {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            writing-mode: vertical-rl; text-orientation: mixed;
-            font-size: 15px; letter-spacing: 3px;
-        }
-        .offering-panel.is-open .offering-label { font-size: 26px; margin-bottom: 16px; }
-
-        .offering-panel:not(.is-open) .offering-body { display: none; }
-        .offering-body p { color: rgba(255,255,255,0.75); max-width: 480px; margin: 0 0 20px; font-size: 15px; line-height: 1.6; }
-
-        @media (max-width: 767px) {
-            .offering-fan { flex-direction: column; }
-            .offering-panel { flex-basis: 72px; padding: 24px 20px; }
-            .offering-panel.is-open { flex-basis: calc(100% - 144px); }
-            .offering-panel:not(.is-open) .offering-label {
-                writing-mode: horizontal-tb; text-orientation: initial; font-size: 15px; letter-spacing: 2px;
-            }
+        .hero-content { padding: 0 10%; margin-bottom: 36px; }
+        .hero-heading {
+            font-family: var(--font-serif); font-weight: 700;
+            font-size: clamp(32px, 5vw, 56px); line-height: 1.15;
+            max-width: 560px; margin: 0 0 32px;
         }
 
-        /* Benefits Grid */
-        .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1000px; }
-        .benefit-item {
-            padding: 28px; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
-            background: rgba(255,255,255,0.03);
+        .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+        .btn-hero {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--gold); color: var(--black);
+            padding: 16px 30px; border: none; border-radius: 999px;
+            font: inherit; font-weight: 700; font-size: 13px;
+            text-transform: uppercase; letter-spacing: 1px; text-decoration: none;
+            cursor: pointer; transition: 0.25s ease;
         }
-        .benefit-icon {
-            width: 44px; height: 44px; margin-bottom: 16px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(212,175,55,0.12); color: var(--gold);
-        }
-        .benefit-icon svg { width: 22px; height: 22px; }
-        .benefit-item h4 { margin: 0 0 8px 0; color: var(--gold); font-size: 20px; }
-        .benefit-item p { margin: 0; color: rgba(255,255,255,0.75); }
+        .btn-hero:hover, .btn-hero:focus-visible { background: var(--white); }
+        .btn-hero .arrow { transition: transform 0.25s ease; }
+        .btn-hero:hover .arrow, .btn-hero:focus-visible .arrow { transform: translateX(3px); }
 
-        /* Scroll-triggered entrance — progressive enhancement, browsers without
-           animation-timeline support just show the end state immediately. */
-        @keyframes benefit-in { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-        @media (prefers-reduced-motion: no-preference) {
-            .benefit-item {
-                animation: benefit-in linear both;
-                animation-timeline: view();
-                animation-range: entry 0% entry 60%;
-            }
+        /* Stat bar: a solid strip anchored to the bottom of the hero, not
+           the section's own 10% side padding — full-bleed width with each
+           column keeping its own inset instead. */
+        .hero-stats {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            background: rgba(0,0,0,0.85); border-top: 1px solid rgba(255,255,255,0.12);
         }
+        .hero-stat {
+            padding: 26px 22px; border-right: 1px solid rgba(255,255,255,0.12);
+            transition: transform 0.25s ease;
+        }
+        .hero-stat:last-child { border-right: none; }
+        .hero-stat:hover { transform: translateY(-3px); }
+        .hero-stat-icon { width: 30px; height: 30px; margin-bottom: 12px; color: var(--white); transition: color 0.25s ease; }
+        .hero-stat-icon svg { width: 100%; height: 100%; }
+        .hero-stat:hover .hero-stat-icon { color: var(--gold); }
+        .hero-stat h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--white); }
+        .hero-stat p { margin: 0; font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,0.6); }
 
 
         /* Footer: sized to its own content now (no more min-height:100dvh) —
@@ -262,20 +211,19 @@
             .nav-links { flex-direction: column; gap: 16px; align-items: flex-start; }
             .nav-icons { flex-direction: row; gap: 24px; }
 
-            .hero-logo-img { max-width: 320px; }
-            .benefits-grid { grid-template-columns: 1fr; }
-
-            /* Four stacked cards are taller than one mobile screen. Rather
-               than centering (which pushes the heading up under the navbar
-               and crops the last card with no way to reach it), anchor to
-               the top and let the section scroll internally. */
-            .section-benefits { justify-content: flex-start; overflow-y: auto; }
+            /* Interim mobile treatment, not the final design — the desktop
+               one-screen layout (heading + buttons + 5-column stat bar all
+               fitting in 100dvh) doesn't have room to work on a phone.
+               Everything just stacks and scrolls normally for now. */
+            .hero { height: auto; min-height: 100dvh; padding-bottom: 32px; }
+            .hero-heading { font-size: clamp(28px, 8vw, 40px); }
+            .btn-hero { width: 100%; justify-content: space-between; }
+            .hero-stats { grid-template-columns: repeat(2, 1fr); }
+            .hero-stat { border-bottom: 1px solid rgba(255,255,255,0.12); }
+            .hero-stat:nth-child(2n) { border-right: none; }
+            .hero-stat:last-child { grid-column: 1 / -1; border-bottom: none; }
 
             .site-footer { padding: 60px 10% 30px; }
-        }
-
-        @media (max-width: 420px) {
-            .hero-logo-img { max-width: 260px; }
         }
     </style>
 </head>
@@ -310,61 +258,41 @@
         <section class="hero">
             <div class="hero-slide"></div>
             <div class="hero-slide"></div>
-            <img class="hero-logo-img" src="Assets/Logos/Hero-Logo%202.0.png" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
-            <div>
-                <h2>Cabinetry for Every Room in the House</h2>
-                <a class="btn-pill hero-shop-now" href="#section-offerings">Shop now</a>
-            </div>
-        </section>
 
-        <section class="section-benefits">
-            <h2>Why Homeowners Choose Us</h2>
-            <div class="benefits-grid">
-                <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.9 6.4 6.9.6-5.2 4.6 1.6 6.8L12 17l-6.2 3.4 1.6-6.8L2.2 9l6.9-.6Z"></path></svg></div>
-                    <h4>Extreme Experience</h4>
-                    <p>Decades of industry experience.</p>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg></div>
-                    <h4>Convenient</h4>
-                    <p>Shop our designers' packages from your home.</p>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 13 9 5 9-5"></path></svg></div>
-                    <h4>Variety</h4>
-                    <p>Kitchens, baths, closets, garage, and more.</p>
-                </div>
-                <div class="benefit-item">
-                    <div class="benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v10M9.5 9.5c0-1.2 1-2 2.5-2s2.5.8 2.5 2-1 1.5-2.5 2-2.5.8-2.5 2 1 2 2.5 2 2.5-.8 2.5-2"></path></svg></div>
-                    <h4>All Budgets</h4>
-                    <p>Vetted options from entry-level to full custom.</p>
+            <div class="hero-content">
+                <h1 class="hero-heading">Cabinetry for Every Room of the House</h1>
+                <div class="hero-actions">
+                    <a class="btn-hero" href="diy-wizard/">DIY Shop Here <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                    <a class="btn-hero" href="#">Shop Curated Collections <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                    <a class="btn-hero" href="consultation/">Meet with a Designer about my Project <span class="arrow" aria-hidden="true">&rarr;</span></a>
                 </div>
             </div>
-        </section>
 
-        <section class="section-offerings" id="section-offerings">
-            <div class="offering-fan" id="offering-fan">
-                <div class="offering-panel offering-panel--diy is-open" data-offering="diy">
-                    <button class="offering-label" type="button">DIY Shop</button>
-                    <div class="offering-body">
-                        <p>For experienced buyers who know exactly what they need. Pick your cabinets, choose your finishes, build it yourself.</p>
-                        <a class="btn-pill" href="diy-wizard/">Shop now</a>
-                    </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.9 6.4 6.9.6-5.2 4.6 1.6 6.8L12 17l-6.2 3.4 1.6-6.8L2.2 9l6.9-.6Z"></path></svg></div>
+                    <h3>90+ Years of Experience</h3>
+                    <p>Three industry veterans. One shared standard.</p>
                 </div>
-                <div class="offering-panel offering-panel--curated" data-offering="curated">
-                    <button class="offering-label" type="button">Designed in the Lab</button>
-                    <div class="offering-body">
-                        <p>Explore &amp; purchase our Curated Collections designed by our best Designers — ready to order, no guesswork required.</p>
-                        <a class="btn-pill" href="#">Shop now</a>
-                    </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"></path></svg></div>
+                    <h3>Thoughtful Design</h3>
+                    <p>Beautiful, functional, organized... happiness.</p>
                 </div>
-                <div class="offering-panel offering-panel--full-service" data-offering="full-service">
-                    <button class="offering-label" type="button">Full Service</button>
-                    <div class="offering-body">
-                        <p>Work directly with our designers from concept to installation — kitchens, baths, and beyond. The white-glove option for your whole project.</p>
-                        <a class="btn-pill" href="consultation/">Book a Consultation</a>
-                    </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
+                    <h3>Customer Confidence</h3>
+                    <p>Clarity. Guidance. Review. Approval. Every step.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg></div>
+                    <h3>Built for Real Life</h3>
+                    <p>Quality cabinetry for every room, every style, every budget.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6Z"></path></svg></div>
+                    <h3>We're With You</h3>
+                    <p>From inspiration to installation and beyond.</p>
                 </div>
             </div>
         </section>
@@ -434,34 +362,6 @@
                 activeLayer = 1 - activeLayer;
                 nextIndex = (nextIndex + 1) % heroImages.length;
             }, 5000);
-        })();
-
-        (function () {
-            // Offerings fan/accordion: exactly one panel open at a time.
-            var fan = document.getElementById('offering-fan');
-            if (!fan) return;
-
-            function openOffering(panel) {
-                if (!panel || panel.classList.contains('is-open')) return;
-                var open = fan.querySelector('.offering-panel.is-open');
-                if (open) open.classList.remove('is-open');
-                panel.classList.add('is-open');
-            }
-
-            fan.addEventListener('click', function (event) {
-                var label = event.target.closest('.offering-label');
-                if (!label) return;
-                openOffering(label.closest('.offering-panel'));
-            });
-
-            // Hero's "Shop now" always lands on the DIY panel, regardless of
-            // whatever panel a returning visitor last had open.
-            var heroShopNow = document.querySelector('.hero-shop-now');
-            if (heroShopNow) {
-                heroShopNow.addEventListener('click', function () {
-                    openOffering(fan.querySelector('.offering-panel--diy'));
-                });
-            }
         })();
     </script>
 </body>
