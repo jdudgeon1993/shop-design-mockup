@@ -218,16 +218,17 @@
         }
 
 
-        /* Footer: min-height instead of a fixed height so it can grow past one
-           screen if a narrow viewport needs more room for the sitemap columns */
+        /* Footer: sized to its own content now (no more min-height:100dvh) —
+           simplified down to brand + one flat link list, so forcing it to a
+           full screen would just leave a lot of empty black space. */
         .site-footer {
-            min-height: 100dvh; width: 100%; scroll-snap-align: start;
+            width: 100%; scroll-snap-align: start;
             display: flex; flex-direction: column; justify-content: center;
             background: var(--black); color: var(--white);
-            padding: 120px 10% 40px;
+            padding: 80px 10% 40px;
         }
-        .footer-top { display: flex; flex-wrap: wrap; gap: 60px; justify-content: space-between; }
-        .footer-brand { flex: 1 1 220px; max-width: 300px; }
+        .footer-top { display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; align-items: flex-start; }
+        .footer-brand { flex: 1 1 220px; max-width: 340px; }
         .footer-logo { height: 34px; width: auto; display: block; margin-bottom: 16px; }
         .footer-tagline { color: rgba(255,255,255,0.6); margin: 0 0 20px; line-height: 1.5; }
         .footer-social { display: flex; gap: 16px; }
@@ -235,14 +236,12 @@
         .footer-social a:hover { color: var(--gold); }
         .footer-social svg { width: 20px; height: 20px; }
 
-        .footer-sitemap { display: flex; flex-wrap: wrap; gap: 48px; flex: 2 1 500px; }
-        .footer-col { display: flex; flex-direction: column; gap: 12px; min-width: 140px; }
-        .footer-col h4 {
-            margin: 0 0 4px; color: var(--gold); text-transform: uppercase;
-            letter-spacing: 1px; font-size: 13px;
-        }
-        .footer-col a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
-        .footer-col a:hover { color: var(--gold); }
+        /* One flat list instead of headed Shop/Company/Legal columns — the
+           two links that have no other path to them (Video Consultation,
+           Employee Login) live here alongside About Us and Contact. */
+        .footer-links { display: flex; flex-wrap: wrap; gap: 12px 28px; list-style: none; margin: 0; padding: 0; }
+        .footer-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--gold); }
 
         .footer-bottom {
             margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);
@@ -272,8 +271,7 @@
                the top and let the section scroll internally. */
             .section-benefits { justify-content: flex-start; overflow-y: auto; }
 
-            .site-footer { padding: 100px 10% 30px; }
-            .footer-top { gap: 40px; }
+            .site-footer { padding: 60px 10% 30px; }
         }
 
         @media (max-width: 420px) {
@@ -389,32 +387,12 @@
                     </div>
                 </div>
 
-                <nav class="footer-sitemap" aria-label="Sitemap">
-                    <div class="footer-col">
-                        <h4>Shop</h4>
-                        <a href="#">Home</a>
-                        <a href="diy-wizard/">DIY Shop</a>
-                        <a href="#">Designed in the Lab</a>
-                        <a href="#">Why Homeowners Choose Us</a>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Company</h4>
-                        <a href="about/">About Us</a>
-                        <a href="#">Contact</a>
-                        <a href="consultation/">Video Consultation</a>
-                        <a href="dashboard/">Employee Login</a>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Legal</h4>
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Terms of Service</a>
-                        <a href="#">Accessibility</a>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Contact</h4>
-                        <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
-                    </div>
-                </nav>
+                <ul class="footer-links" aria-label="Sitemap">
+                    <li><a href="about/">About Us</a></li>
+                    <li><a href="consultation/">Video Consultation</a></li>
+                    <li><a href="dashboard/">Employee Login</a></li>
+                    <li><a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a></li>
+                </ul>
             </div>
 
             <div class="footer-bottom">
