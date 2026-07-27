@@ -52,13 +52,29 @@ create table brands (
 create index brands_tier_id_idx on brands (tier_id);
 
 -- ----------------------------------------------------------------------------
+-- 2b. Room types — Kitchen / Bath / Garage / Closet. The first filter in the
+--    DIY flow, applied before brand. Added via add_room_types.sql after this
+--    file was first applied — included here so a fresh install gets it too.
+-- ----------------------------------------------------------------------------
+create table room_types (
+    id          uuid primary key default gen_random_uuid(),
+    name        text not null unique,       -- 'Kitchen', 'Bath', 'Garage', 'Closet'
+    slug        text not null unique,
+    image_url   text,
+    sort_order  int not null default 0
+);
+
+-- ----------------------------------------------------------------------------
 -- 3. Cabinet categories — shared vocabulary across every brand's catalog
---    (Base, Wall, Tall, Pantry, ...). Not brand-specific.
+--    (Base, Wall, Tall, Pantry, ...). Not brand-specific. Each belongs to one
+--    room type — a brand's available room types are derived from which
+--    categories its cabinets use, not stored on brands directly.
 -- ----------------------------------------------------------------------------
 create table cabinet_categories (
-    id          uuid primary key default gen_random_uuid(),
-    name        text not null unique,       -- 'Base', 'Wall', 'Tall', 'Pantry'
-    sort_order  int not null default 0
+    id            uuid primary key default gen_random_uuid(),
+    name          text not null unique,       -- 'Base', 'Wall', 'Tall', 'Pantry'
+    room_type_id  uuid references room_types(id),
+    sort_order    int not null default 0
 );
 
 -- ----------------------------------------------------------------------------
@@ -164,6 +180,7 @@ create table cabinet_option_exclusions (
 -- ============================================================================
 alter table tiers enable row level security;
 alter table brands enable row level security;
+alter table room_types enable row level security;
 alter table cabinet_categories enable row level security;
 alter table cabinets enable row level security;
 alter table cabinet_dimensions enable row level security;
@@ -174,6 +191,7 @@ alter table cabinet_option_exclusions enable row level security;
 
 create policy "Public read access" on tiers for select using (true);
 create policy "Public read access" on brands for select using (true);
+create policy "Public read access" on room_types for select using (true);
 create policy "Public read access" on cabinet_categories for select using (true);
 create policy "Public read access" on cabinets for select using (true);
 create policy "Public read access" on cabinet_dimensions for select using (true);
@@ -186,5 +204,5 @@ create policy "Public read access" on cabinet_option_exclusions for select using
 -- Reset (commented out — uncomment to wipe and start over while iterating)
 -- ============================================================================
 -- drop table if exists cabinet_option_exclusions, brand_options, options,
---     option_categories, cabinet_dimensions, cabinets, cabinet_categories,
+--     option_categories, cabinet_dimensions, cabinets, cabinet_categories, room_types,
 --     brands, tiers cascade;
