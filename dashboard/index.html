@@ -93,6 +93,20 @@
         .calendar-frame { width: 100%; height: 520px; border: 0; border-radius: 4px; background: #fff; display: block; }
         .calendar-note { font-size: 12px; color: rgba(255,255,255,0.4); margin: 14px 0 0; max-width: none; }
 
+        .rooms-panel { max-width: 480px; text-align: left; }
+        .rooms-list { list-style: none; margin: 0; padding: 0; }
+        .rooms-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--border); }
+        .rooms-list li:last-child { border-bottom: none; }
+        .room-info { min-width: 0; }
+        .room-name { font-weight: 700; font-size: 14px; word-break: break-all; }
+        .room-meta { display: block; margin-top: 2px; font-size: 12px; color: rgba(255,255,255,0.45); }
+        .room-actions { flex-shrink: 0; display: flex; gap: 6px; }
+        .btn-small {
+            padding: 6px 14px; font-size: 11px; letter-spacing: 1px; margin: 0;
+        }
+        .btn-danger { border-color: rgba(220,80,80,0.4); color: #ff9a9a; }
+        .btn-danger:hover, .btn-danger:focus-visible { border-color: #ff9a9a; color: #ff9a9a; background: rgba(220,80,80,0.12); }
+
         .proto-panel { max-width: 640px; text-align: left; }
         .proto-intro { margin: 0 0 18px; font-size: 13px; color: rgba(255,255,255,0.5); text-align: left; }
         .proto-list { list-style: none; margin: 0; padding: 0; }
@@ -143,8 +157,17 @@
 
                 <div class="panel">
                     <h3>Start a Conference Call</h3>
-                    <button class="btn-pill" id="create-room-btn">Start Conference Call</button>
-                    <p class="note error-note" id="create-error" hidden></p>
+                    <form id="create-room-form">
+                        <input type="text" id="room-name-input" class="room-input" placeholder="e.g. Smith Family Kitchen" autocomplete="off">
+                        <button class="btn-pill" type="submit" id="create-room-btn">Start Conference Call</button>
+                        <p class="note error-note" id="create-error" hidden></p>
+                    </form>
+                </div>
+
+                <div class="panel rooms-panel">
+                    <h3>Open Rooms</h3>
+                    <p class="note" id="rooms-empty" hidden>No rooms yet — start one above.</p>
+                    <ul class="rooms-list" id="rooms-list"></ul>
                 </div>
 
                 <div class="panel calendar-panel">
@@ -202,8 +225,6 @@
             // being visible in page source doesn't expose anything: Google still
             // requires an authorized sign-in to actually view it.
             var CALENDAR_ID = 'c_9089d8c980992d45cb984c6a34f591828f33a49387d17a67496e669859499399@group.calendar.google.com';
-            var ADJECTIVES = ['Amber', 'Copper', 'Cedar', 'Quiet', 'Golden', 'Northern', 'Quartz', 'Walnut', 'Marble', 'Alpine'];
-            var NOUNS = ['Oak', 'Maple', 'Harbor', 'Ridge', 'Meadow', 'Birch', 'Lantern', 'Cabin', 'Studio', 'Loft'];
 
             var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -217,8 +238,12 @@
             var loginSubmitBtn = document.getElementById('login-submit-btn');
             var loginError = document.getElementById('login-error');
             var dashboardGreeting = document.getElementById('dashboard-greeting');
+            var createRoomForm = document.getElementById('create-room-form');
+            var roomNameInput = document.getElementById('room-name-input');
             var createRoomBtn = document.getElementById('create-room-btn');
             var createError = document.getElementById('create-error');
+            var roomsList = document.getElementById('rooms-list');
+            var roomsEmpty = document.getElementById('rooms-empty');
             var logoutBtn = document.getElementById('logout-btn');
             var roomCodeDisplay = document.getElementById('room-code-display');
             var copyLinkBtn = document.getElementById('copy-link-btn');
@@ -227,18 +252,65 @@
 
             var roomName = null;
             var pendingJwt = null;
+            var currentUser = null;
 
-            function randomRoomCode() {
-                var adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-                var noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
-                var num = Math.floor(100 + Math.random() * 900);
-                return 'dl-' + adj.toLowerCase() + '-' + noun.toLowerCase() + '-' + num;
+            // Employees type the room name now — no more random adjective-noun
+            // codes. Slugified so it's safe as both a Jitsi room name and a
+            // URL query param: lowercase, hyphens only, "dl-" namespaced.
+            function slugify(raw) {
+                var slug = raw.trim().toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                return slug ? 'dl-' + slug : '';
+            }
+
+            function roomInviteUrl(name) {
+                // Clients always join through the public consultation page,
+                // never through this dashboard — it stays employee-only.
+                var url = new URL('../consultation/index.html', window.location.href);
+                url.searchParams.set('room', name);
+                return url.toString();
+            }
+
+            function loadRooms() {
+                supabase.from('consultation_rooms').select('*').order('created_at', { ascending: false })
+                    .then(function (result) {
+                        roomsList.innerHTML = '';
+                        var rows = result.data || [];
+                        roomsEmpty.hidden = rows.length > 0;
+                        rows.forEach(function (room) {
+                            var li = document.createElement('li');
+                            var createdAt = new Date(room.created_at).toLocaleString();
+                            li.innerHTML =
+                                '<div class="room-info"><span class="room-name">' + room.room_name + '</span>' +
+                                '<span class="room-meta">' + room.created_by + ' &middot; ' + createdAt + '</span></div>' +
+                                '<div class="room-actions">' +
+                                '<button class="btn-secondary btn-small" type="button" data-copy>Copy</button>' +
+                                '<button class="btn-secondary btn-small btn-danger" type="button" data-delete>Delete</button>' +
+                                '</div>';
+                            li.querySelector('[data-copy]').addEventListener('click', function (e) {
+                                navigator.clipboard.writeText(roomInviteUrl(room.room_name)).then(function () {
+                                    var btn = e.target;
+                                    var original = btn.textContent;
+                                    btn.textContent = 'Copied!';
+                                    setTimeout(function () { btn.textContent = original; }, 1800);
+                                });
+                            });
+                            li.querySelector('[data-delete]').addEventListener('click', function () {
+                                if (!window.confirm('Remove "' + room.room_name + '" from this list? This does not end a call already in progress.')) return;
+                                supabase.from('consultation_rooms').delete().eq('id', room.id).then(loadRooms);
+                            });
+                            roomsList.appendChild(li);
+                        });
+                    });
             }
 
             function showDashboard(user) {
+                currentUser = user;
                 dashboardGreeting.textContent = 'Signed in as ' + user.email;
                 stageLogin.hidden = true;
                 stageDashboard.hidden = false;
+                loadRooms();
 
                 // authuser hints Google to prefer this account if it's one of
                 // several already signed into this browser — it can't sign anyone
@@ -286,10 +358,20 @@
                 supabase.auth.signOut().then(showLogin);
             });
 
-            createRoomBtn.addEventListener('click', function () {
+            createRoomForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                createError.hidden = true;
+
+                var slug = slugify(roomNameInput.value);
+                if (!slug) {
+                    createError.textContent = 'Enter a name for this room.';
+                    createError.hidden = false;
+                    roomNameInput.focus();
+                    return;
+                }
+
                 createRoomBtn.disabled = true;
                 createRoomBtn.textContent = 'Creating…';
-                createError.hidden = true;
 
                 supabase.auth.getSession().then(function (sessionResult) {
                     var session = sessionResult.data.session;
@@ -306,7 +388,16 @@
                     return response.json();
                 }).then(function (body) {
                     pendingJwt = body.jwt;
-                    showReadyStage(randomRoomCode());
+                    // Best-effort tracking for the Open Rooms list. Supabase
+                    // resolves with {data, error} rather than rejecting, so a
+                    // failed insert here can't block actually starting the call.
+                    return supabase.from('consultation_rooms').insert({
+                        room_name: slug,
+                        created_by: currentUser.email
+                    });
+                }).then(function () {
+                    loadRooms();
+                    showReadyStage(slug);
                 }).catch(function (err) {
                     if (err.message === 'no session') return;
                     createError.textContent = 'Could not start a conference call right now. Try again in a moment.';
@@ -325,11 +416,7 @@
             }
 
             copyLinkBtn.addEventListener('click', function () {
-                // Clients always join through the public consultation page, never
-                // through this dashboard — it stays employee-only.
-                var url = new URL('../consultation/index.html', window.location.href);
-                url.searchParams.set('room', roomName);
-                navigator.clipboard.writeText(url.toString()).then(function () {
+                navigator.clipboard.writeText(roomInviteUrl(roomName)).then(function () {
                     var original = copyLinkBtn.textContent;
                     copyLinkBtn.textContent = 'Copied!';
                     setTimeout(function () { copyLinkBtn.textContent = original; }, 1800);
