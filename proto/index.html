@@ -77,12 +77,14 @@
         .nav-icon:hover { color: var(--gold); }
         .nav-icon svg { width: 20px; height: 20px; display: block; }
 
-        /* Hero — now the only section: the photo, the heading/buttons, and
-           the stat bar all live in this one 100dvh screen. justify-content:
-           flex-end packs .hero-content and .hero-stats together at the
-           bottom, leaving the top of the photo uncovered, same as the
-           reference mockup. */
-        .hero { background-color: var(--black); justify-content: flex-end; padding: var(--navbar-h) 0 0; }
+        /* Hero — now the only section: the photo, the logo, the
+           heading/buttons, and the stat bar all live in this one 100dvh
+           screen. space-between pins .hero-top (the logo) to the top and
+           .hero-bottom (heading/buttons + stat bar, grouped as one unit)
+           to the bottom — same top/bottom split the logo had before the
+           reface, just sharing the screen with the new stat bar now. */
+        .hero { background-color: var(--black); justify-content: space-between; padding: var(--navbar-h) 0 0; }
+        .hero-top { padding: 28px 10% 0; }
 
         .hero::before { z-index: 1; }
 
@@ -93,8 +95,9 @@
         }
         .hero-slide.is-active { opacity: 1; }
 
+        .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; }
+
         .hero-content { padding: 0 10%; margin-bottom: 28px; }
-        .hero-logo-img { display: block; width: 100%; max-width: 200px; height: auto; margin-bottom: 18px; }
         .hero-heading {
             font-family: var(--font-serif); font-weight: 700;
             font-size: clamp(24px, 3.4vw, 38px); line-height: 1.15;
@@ -216,6 +219,7 @@
                fitting in 100dvh) doesn't have room to work on a phone.
                Everything just stacks and scrolls normally for now. */
             .hero { height: auto; min-height: 100dvh; padding-bottom: 32px; }
+            .hero-logo-img { max-width: 320px; }
             .hero-heading { font-size: clamp(28px, 8vw, 40px); }
             .btn-hero { width: 100%; justify-content: space-between; }
             .hero-stats { grid-template-columns: repeat(2, 1fr); }
@@ -224,6 +228,10 @@
             .hero-stat:last-child { grid-column: 1 / -1; border-bottom: none; }
 
             .site-footer { padding: 60px 10% 30px; }
+        }
+
+        @media (max-width: 420px) {
+            .hero-logo-img { max-width: 260px; }
         }
     </style>
 </head>
@@ -259,17 +267,21 @@
             <div class="hero-slide"></div>
             <div class="hero-slide"></div>
 
-            <div class="hero-content">
+            <div class="hero-top">
                 <img class="hero-logo-img" src="../Assets/Logos/Hero-Logo%202.0.png" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
-                <h1 class="hero-heading">Cabinetry for Every Room of the House</h1>
-                <div class="hero-actions">
-                    <a class="btn-hero" href="diy-wizard/">DIY Shop Here <span class="arrow" aria-hidden="true">&rarr;</span></a>
-                    <a class="btn-hero" href="#">Shop Curated Collections <span class="arrow" aria-hidden="true">&rarr;</span></a>
-                    <a class="btn-hero" href="consultation/">Meet with a Designer about my Project <span class="arrow" aria-hidden="true">&rarr;</span></a>
-                </div>
             </div>
 
-            <div class="hero-stats">
+            <div class="hero-bottom">
+                <div class="hero-content">
+                    <h1 class="hero-heading">Cabinetry for Every Room of the House</h1>
+                    <div class="hero-actions">
+                        <a class="btn-hero" href="diy-wizard/">DIY Shop Here <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                        <a class="btn-hero" href="#">Shop Curated Collections <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                        <a class="btn-hero" href="consultation/">Meet with a Designer about my Project <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                    </div>
+                </div>
+
+                <div class="hero-stats">
                 <div class="hero-stat">
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.9 6.4 6.9.6-5.2 4.6 1.6 6.8L12 17l-6.2 3.4 1.6-6.8L2.2 9l6.9-.6Z"></path></svg></div>
                     <h3>90+ Years of Experience</h3>
@@ -294,6 +306,7 @@
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6Z"></path></svg></div>
                     <h3>We're With You</h3>
                     <p>From inspiration to installation and beyond.</p>
+                </div>
                 </div>
             </div>
         </section>
