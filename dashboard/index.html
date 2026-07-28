@@ -107,6 +107,19 @@
         .btn-danger { border-color: rgba(220,80,80,0.4); color: #ff9a9a; }
         .btn-danger:hover, .btn-danger:focus-visible { border-color: #ff9a9a; color: #ff9a9a; background: rgba(220,80,80,0.12); }
 
+        /* Section labels — the panel list has grown enough that a flat
+           stack of them stops being scannable at a glance. */
+        .group-label {
+            max-width: 640px; margin: 36px auto 14px; padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: left; font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.4);
+        }
+        .group-label:first-of-type { margin-top: 8px; padding-top: 0; border-top: none; }
+
+        .catalog-panel { max-width: 420px; text-align: left; }
+        .catalog-desc { margin: 0 0 18px; font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+
         .proto-panel { max-width: 640px; text-align: left; }
         .proto-intro { margin: 0 0 18px; font-size: 13px; color: rgba(255,255,255,0.5); text-align: left; }
         .proto-list { list-style: none; margin: 0; padding: 0; }
@@ -153,7 +166,9 @@
             <!-- Stage 2: signed in -->
             <div class="stage" id="stage-dashboard" hidden>
                 <p class="kicker" id="dashboard-greeting">Signed In</p>
-                <h1 class="intro-heading">Video Consultation</h1>
+                <h1 class="intro-heading">Employee Dashboard</h1>
+
+                <p class="group-label">Video Consultations</p>
 
                 <div class="panel">
                     <h3>Start a Conference Call</h3>
@@ -170,11 +185,23 @@
                     <ul class="rooms-list" id="rooms-list"></ul>
                 </div>
 
+                <p class="group-label">Catalog</p>
+
+                <div class="panel catalog-panel">
+                    <h3>Catalog Admin</h3>
+                    <p class="catalog-desc">Add tiers, brands, cabinets, options, and everything else that feeds the storefront — straight into Supabase, no spreadsheets. Every dropdown here always reflects whatever's currently in the database.</p>
+                    <a class="btn-pill" href="../proto/catalog-admin/index.html" target="_blank" rel="noopener">Open Catalog Admin</a>
+                </div>
+
+                <p class="group-label">Team</p>
+
                 <div class="panel calendar-panel">
                     <h3>Team Calendar</h3>
                     <iframe class="calendar-frame" id="calendar-frame" title="Design Lab team calendar" frameborder="0" scrolling="no"></iframe>
                     <p class="note calendar-note">Shown using your Design Lab Google account. If this looks empty, make sure you're signed into that account (not a personal one) in this browser.</p>
                 </div>
+
+                <p class="group-label">Reference</p>
 
                 <div class="panel proto-panel">
                     <h3>Prototypes &amp; Experiments</h3>
@@ -184,6 +211,7 @@
                         <li><a href="../proto/about/index.html" target="_blank" rel="noopener">About Us</a><span>Story, pillars, and stats pulled from the Design Lab Playbook</span></li>
                         <li><a href="../proto/consultation/index.html" target="_blank" rel="noopener">Video Consultation</a><span>Client-facing join flow, plus employee room creation</span></li>
                         <li><a href="../proto/dashboard/index.html" target="_blank" rel="noopener">Employee Dashboard</a><span>Mirror of this page, for testing changes safely</span></li>
+                        <li><a href="../proto/catalog-admin/index.html" target="_blank" rel="noopener">Catalog Admin</a><span>Add tiers, brands, cabinets, options, and dimensions directly to Supabase</span></li>
                         <li><a href="../proto/diy-catalog/index.html" target="_blank" rel="noopener">DIY Catalog (Live Database)</a><span>Level &rarr; Brand &rarr; Cabinet &rarr; Customize, wired directly to Supabase</span></li>
                         <li><a href="../proto/diy-flow/index.html" target="_blank" rel="noopener">DIY Flow (Live Database)</a><span>Room &rarr; Brand &rarr; Finish &rarr; Door Style &rarr; Cabinets &rarr; Account, Katzkin-style step timeline</span></li>
                         <li><a href="../proto/diy-wizard/index.html" target="_blank" rel="noopener">DIY Wizard</a><span>Original accordion-style cabinet builder with cart &amp; pricing</span></li>
