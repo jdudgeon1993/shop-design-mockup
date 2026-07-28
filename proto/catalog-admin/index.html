@@ -1,0 +1,735 @@
+<!-- Employee-only. Adds rows to the live catalog tables in Supabase — the
+     write-side companion to proto/diy-catalog/ and proto/diy-flow/, which
+     only ever read. Every dropdown here is populated fresh from Supabase on
+     load and again after every add/remove, so it can never go stale: add a
+     brand, and it shows up in every other dropdown that lists brands without
+     a page reload. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Catalog Admin - Design Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
+            background: var(--black); color: var(--white);
+        }
+
+        .top-bar {
+            position: sticky; top: 0; z-index: 10; background: var(--black);
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+            padding: 14px 5%; border-bottom: 1px solid var(--border);
+        }
+        .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
+
+        /* Jump nav — one section per table, so you never have to scroll
+           hunting for the right one on a page this long. Sits directly under
+           .top-bar: top must match .top-bar's real rendered height (45px)
+           exactly, or a sliver of scrolling content shows through the gap. */
+        .quick-nav {
+            position: sticky; top: 45px; z-index: 9; background: rgba(26,26,26,0.97); backdrop-filter: blur(6px);
+            display: flex; gap: 4px; overflow-x: auto; padding: 10px 5%; border-bottom: 1px solid var(--border);
+        }
+        .quick-nav a {
+            flex-shrink: 0; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 12px; border-radius: 999px; transition: 0.2s;
+        }
+        .quick-nav a:hover, .quick-nav a:focus-visible { color: var(--gold); background: rgba(212,175,55,0.1); }
+
+        .stage { text-align: center; padding: 60px 20px; }
+        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
+        .intro-heading { margin: 0 0 14px; font-size: clamp(22px, 4vw, 30px); font-weight: 700; line-height: 1.2; }
+        .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.5; }
+        .narrow-form { max-width: 320px; margin: 0 auto; }
+
+        .room-input, .room-select, .room-textarea {
+            width: 100%; background: #242424; border: 1px solid var(--border); color: var(--white);
+            padding: 10px 12px; border-radius: 4px; font-family: inherit; font-size: 14px;
+        }
+        .room-textarea { resize: vertical; min-height: 60px; }
+        .room-input:focus, .room-select:focus, .room-textarea:focus { outline: none; border-color: var(--gold); }
+
+        .btn-pill, .btn-secondary {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+            display: inline-block; padding: 14px 32px; border: none; border-radius: 999px;
+            font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
+            text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1.5px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-pill { background: var(--gold); color: var(--black); }
+        .btn-pill:hover, .btn-pill:focus-visible { background: var(--white); }
+        .btn-pill:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
+        .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
+        .btn-small { padding: 6px 14px; font-size: 11px; letter-spacing: 1px; }
+        .btn-danger { border-color: rgba(220,80,80,0.4); color: #ff9a9a; }
+        .btn-danger:hover, .btn-danger:focus-visible { border-color: #ff9a9a; color: #ff9a9a; background: rgba(220,80,80,0.12); }
+
+        .note { margin: 14px 0 0; padding: 10px 14px; border-radius: 4px; background: rgba(212,175,55,0.1); color: var(--gold); font-size: 13px; }
+        .error-note { background: rgba(220,80,80,0.15); color: #ff9a9a; }
+        .success-note { background: rgba(90,180,120,0.15); color: #8fe0ac; }
+
+        .login-error { max-width: 320px; margin: 14px auto 0; text-align: left; }
+
+        /* ---------- Main content ---------- */
+        .content { max-width: 880px; margin: 0 auto; padding: 40px 6% 120px; text-align: left; }
+        .content-head { text-align: center; margin-bottom: 8px; }
+        .content-sub { text-align: center; max-width: 560px; margin: 0 auto 48px; color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.6; }
+
+        .admin-section {
+            margin-bottom: 20px; padding: 28px; border: 1px solid var(--border); border-radius: 8px;
+            background: rgba(255,255,255,0.03); scroll-margin-top: 110px;
+        }
+        .admin-section h2 { margin: 0 0 4px; font-size: 18px; }
+        .admin-section .section-desc { margin: 0 0 22px; font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; max-width: 60ch; }
+
+        .field-label { display: block; margin: 0 0 6px; font-size: 12px; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.5px; }
+        .field { margin-bottom: 14px; }
+        .field-row { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+        @media (min-width: 560px) { .field-row.cols-2 { grid-template-columns: 1fr 1fr; } .field-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; } }
+        .field-row .field { margin-bottom: 0; }
+
+        .form-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
+        .form-actions .note { margin: 0; }
+
+        /* Existing entries, shown above every add-form so you can see what's
+           already there before adding a possible duplicate. */
+        .entry-list { list-style: none; margin: 0 0 20px; padding: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; max-height: 260px; overflow-y: auto; }
+        .entry-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .entry-list li:last-child { border-bottom: none; }
+        .entry-name { font-weight: 700; }
+        .entry-meta { color: rgba(255,255,255,0.5); font-size: 12px; }
+        .entry-empty { padding: 14px; font-size: 13px; color: rgba(255,255,255,0.4); font-style: italic; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(212,175,55,0.15); color: var(--gold); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #8fe0ac; margin-right: 4px; }
+        .dot.inactive { background: rgba(255,255,255,0.25); }
+
+        /* Brand Options — a per-brand checklist instead of an add-row form */
+        .toggle-groups { display: none; }
+        .toggle-groups.is-visible { display: block; }
+        .toggle-group { margin-bottom: 18px; }
+        .toggle-group h4 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6); }
+        .toggle-row { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-row input { accent-color: var(--gold); width: 16px; height: 16px; flex-shrink: 0; }
+        .toggle-row .opt-name { flex: 1; font-size: 14px; }
+        .toggle-row .opt-price { color: rgba(255,255,255,0.45); font-size: 12px; font-variant-numeric: tabular-nums; }
+        .toggle-placeholder { font-size: 13px; color: rgba(255,255,255,0.4); font-style: italic; }
+
+        .sign-out-link {
+            appearance: none; background: none; border: none; cursor: pointer;
+            color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px;
+            text-decoration: underline; margin: 40px auto 0; display: block;
+        }
+        .sign-out-link:hover, .sign-out-link:focus-visible { color: var(--gold); }
+
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a class="back-link" href="../../dashboard/index.html">&larr; Back to dashboard</a>
+        <span class="page-title">Catalog Admin</span>
+    </div>
+
+    <nav class="quick-nav" id="quick-nav" hidden>
+        <a href="#sec-tiers">Tiers</a>
+        <a href="#sec-room-types">Room Types</a>
+        <a href="#sec-option-categories">Option Categories</a>
+        <a href="#sec-brands">Brands</a>
+        <a href="#sec-cabinet-categories">Cabinet Categories</a>
+        <a href="#sec-options">Options</a>
+        <a href="#sec-brand-options">Brand Options</a>
+        <a href="#sec-cabinets">Cabinets</a>
+        <a href="#sec-dimensions">Dimensions</a>
+    </nav>
+
+    <!-- Stage 1: sign in -->
+    <div class="stage" id="stage-login">
+        <p class="kicker">Design Lab Team</p>
+        <h1 class="intro-heading">Catalog Admin</h1>
+        <p class="intro-line">Sign in with your Design Lab account to add to the catalog.</p>
+        <form class="narrow-form" id="login-form">
+            <div class="field"><input type="email" id="login-email" class="room-input" placeholder="Work email" autocomplete="username" required></div>
+            <div class="field"><input type="password" id="login-password" class="room-input" placeholder="Password" autocomplete="current-password" required></div>
+            <button class="btn-pill" type="submit" id="login-submit-btn">Sign In</button>
+            <p class="note error-note login-error" id="login-error" hidden></p>
+        </form>
+    </div>
+
+    <!-- Stage 2: signed in -->
+    <div class="content" id="stage-admin" hidden>
+        <div class="content-head">
+            <p class="kicker" id="admin-greeting">Signed In</p>
+            <h1 class="intro-heading">Add to the Catalog</h1>
+        </div>
+        <p class="content-sub">
+            Every dropdown below reads straight from Supabase, live — add something in one section and it's
+            immediately available to pick from in every section below it, no reload needed.
+        </p>
+
+        <!-- 1. Tiers -->
+        <section class="admin-section" id="sec-tiers">
+            <h2>Tiers</h2>
+            <p class="section-desc">Entry / Middle / High End — every brand belongs to exactly one.</p>
+            <ul class="entry-list" id="tiers-list"></ul>
+            <form id="tiers-form">
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Name</label><input class="room-input" type="text" id="tiers-name" placeholder="e.g. Entry" required></div>
+                    <div class="field"><label class="field-label">Sort order</label><input class="room-input" type="number" id="tiers-sort" value="0"></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-pill" type="submit">Add Tier</button>
+                    <p class="note error-note" id="tiers-error" hidden></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- 2. Room Types -->
+        <section class="admin-section" id="sec-room-types">
+            <h2>Room Types</h2>
+            <p class="section-desc">Kitchen / Bath / Garage / Closet — the first filter a shopper picks in the DIY flow.</p>
+            <ul class="entry-list" id="room-types-list"></ul>
+            <form id="room-types-form">
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Name</label><input class="room-input" type="text" id="room-types-name" placeholder="e.g. Kitchen" required></div>
+                    <div class="field"><label class="field-label">Image URL (optional)</label><input class="room-input" type="text" id="room-types-image" placeholder="Assets/Images/..."></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-pill" type="submit">Add Room Type</button>
+                    <p class="note error-note" id="room-types-error" hidden></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- 3. Option Categories -->
+        <section class="admin-section" id="sec-option-categories">
+            <h2>Option Categories</h2>
+            <p class="section-desc">Finish / Door Style / Hardware — the customize-step types. The actual selectable values (like "Weathered Gray") live in Options below.</p>
+            <ul class="entry-list" id="option-categories-list"></ul>
+            <form id="option-categories-form">
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Name</label><input class="room-input" type="text" id="option-categories-name" placeholder="e.g. Finish" required></div>
+                    <div class="field"><label class="field-label">Sort order</label><input class="room-input" type="number" id="option-categories-sort" value="0"></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-pill" type="submit">Add Option Category</button>
+                    <p class="note error-note" id="option-categories-error" hidden></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- 4. Brands -->
+        <section class="admin-section" id="sec-brands">
+            <h2>Brands</h2>
+            <p class="section-desc">The actual vendor lines. Each belongs to one Tier — orders never mix brands, so this is the anchor everything downstream hangs off of.</p>
+            <ul class="entry-list" id="brands-list"></ul>
+            <form id="brands-form">
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Name</label><input class="room-input" type="text" id="brands-name" placeholder="e.g. Northridge Cabinetry" required></div>
+                    <div class="field"><label class="field-label">Tier</label><select class="room-select" id="brands-tier" required></select></div>
+                </div>
+                <div class="field"><label class="field-label">Description (optional)</label><textarea class="room-textarea" id="brands-description"></textarea></div>
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Logo URL (optional)</label><input class="room-input" type="text" id="brands-logo" placeholder="Assets/Logos/..."></div>
+                    <div class="field"><label class="field-label">Hero image URL (optional)</label><input class="room-input" type="text" id="brands-hero" placeholder="Assets/Images/..."></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-pill" type="submit">Add Brand</button>
+                    <p class="note error-note" id="brands-error" hidden></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- 5. Cabinet Categories -->
+        <section class="admin-section" id="sec-cabinet-categories">
+            <h2>Cabinet Categories</h2>
+            <p class="section-desc">Base / Wall / Tall / Pantry — shared vocabulary across every brand's catalog. Each belongs to one Room Type.</p>
+            <ul class="entry-list" id="cabinet-categories-list"></ul>
+            <form id="cabinet-categories-form">
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Name</label><input class="room-input" type="text" id="cabinet-categories-name" placeholder="e.g. Base" required></div>
+                    <div class="field"><label class="field-label">Room type</label><select class="room-select" id="cabinet-categories-room" required></select></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-pill" type="submit">Add Cabinet Category</button>
+                    <p class="note error-note" id="cabinet-categories-error" hidden></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- 6. Options -->
+        <section class="admin-section" id="sec-options">
+            <h2>Options</h2>
+            <p class="section-desc">The actual selectable values — "Weathered Gray," "Brass Designer Pull" — with a default price add-on. Adding one here doesn't make it available to any brand yet; that's the next section.</p>
+            <ul class="entry-list" id="options-list"></ul>
+            <form id="options-form">
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Name</label><input class="room-input" type="text" id="options-name" placeholder="e.g. Weathered Gray" required></div>
+                    <div class="field"><label class="field-label">Option category</label><select class="room-select" id="options-category" required></select></div>
+                </div>
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Price add-on ($)</label><input class="room-input" type="number" step="0.01" id="options-price" value="0"></div>
+                    <div class="field"><label class="field-label">Image URL (optional)</label><input class="room-input" type="text" id="options-image" placeholder="Assets/Images/..."></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-pill" type="submit">Add Option</button>
+                    <p class="note error-note" id="options-error" hidden></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- 7. Brand Options (the restriction layer — a toggle grid, not an add-row form) -->
+        <section class="admin-section" id="sec-brand-options">
+            <h2>Brand Options</h2>
+            <p class="section-desc">The restrictions layer — a brand only ever offers what's checked here. Pick a brand, then check off everything it allows.</p>
+            <div class="field"><label class="field-label">Brand</label><select class="room-select" id="brand-options-brand"></select></div>
+            <p class="toggle-placeholder" id="brand-options-placeholder">Pick a brand above to see and toggle its allowed options.</p>
+            <div class="toggle-groups" id="brand-options-groups"></div>
+            <p class="note error-note" id="brand-options-error" hidden></p>
+        </section>
+
+        <!-- 8. Cabinets -->
+        <section class="admin-section" id="sec-cabinets">
+            <h2>Cabinets</h2>
+            <p class="section-desc">A brand's actual cabinet styles — what a customer browses. No width or price here on purpose; those are real, orderable SKUs added below in Dimensions.</p>
+            <ul class="entry-list" id="cabinets-list"></ul>
+            <form id="cabinets-form">
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Brand</label><select class="room-select" id="cabinets-brand" required></select></div>
+                    <div class="field"><label class="field-label">Category</label><select class="room-select" id="cabinets-category" required></select></div>
+                </div>
+                <div class="field"><label class="field-label">Name</label><input class="room-input" type="text" id="cabinets-name" placeholder="e.g. 2-Door Base Cabinet" required></div>
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">Image URL (optional)</label><input class="room-input" type="text" id="cabinets-image" placeholder="Assets/Images/..."></div>
+                    <div class="field"><label class="field-label">Description (optional)</label><input class="room-input" type="text" id="cabinets-description"></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-pill" type="submit">Add Cabinet</button>
+                    <p class="note error-note" id="cabinets-error" hidden></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- 9. Cabinet Dimensions -->
+        <section class="admin-section" id="sec-dimensions">
+            <h2>Cabinet Dimensions</h2>
+            <p class="section-desc">The real, orderable width/SKU/price for a cabinet style — the dimension allow-list. A customer can only ever pick a size that's a real row here.</p>
+            <ul class="entry-list" id="dimensions-list"></ul>
+            <form id="dimensions-form">
+                <div class="field"><label class="field-label">Cabinet</label><select class="room-select" id="dimensions-cabinet" required></select></div>
+                <div class="field-row cols-3">
+                    <div class="field"><label class="field-label">Width (in)</label><input class="room-input" type="number" step="0.25" id="dimensions-width" required></div>
+                    <div class="field"><label class="field-label">Height (in, optional)</label><input class="room-input" type="number" step="0.25" id="dimensions-height"></div>
+                    <div class="field"><label class="field-label">Depth (in, optional)</label><input class="room-input" type="number" step="0.25" id="dimensions-depth"></div>
+                </div>
+                <div class="field-row cols-2">
+                    <div class="field"><label class="field-label">SKU</label><input class="room-input" type="text" id="dimensions-sku" placeholder="Vendor's model number" required></div>
+                    <div class="field"><label class="field-label">Price ($)</label><input class="room-input" type="number" step="0.01" id="dimensions-price" required></div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-pill" type="submit">Add Dimension</button>
+                    <p class="note error-note" id="dimensions-error" hidden></p>
+                </div>
+            </form>
+        </section>
+
+        <button class="sign-out-link" id="logout-btn" type="button">Sign out</button>
+    </div>
+
+    <script>
+        (function () {
+            var SUPABASE_URL = 'https://nutgbxgnkvvruaoloqch.supabase.co';
+            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51dGdieGdua3Z2cnVhb2xvcWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NDEzNDgsImV4cCI6MjEwMDIxNzM0OH0.v9hXYtxOslhyXOu-mZVjm_EFaUIdTqTWKn9P3B7BY64';
+
+            var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            var stageLogin = document.getElementById('stage-login');
+            var stageAdmin = document.getElementById('stage-admin');
+            var quickNav = document.getElementById('quick-nav');
+            var loginForm = document.getElementById('login-form');
+            var loginEmail = document.getElementById('login-email');
+            var loginPassword = document.getElementById('login-password');
+            var loginSubmitBtn = document.getElementById('login-submit-btn');
+            var loginError = document.getElementById('login-error');
+            var adminGreeting = document.getElementById('admin-greeting');
+            var logoutBtn = document.getElementById('logout-btn');
+
+            // Everything currently in the database, refreshed after every
+            // write — this is what keeps every dropdown/list live instead
+            // of going stale the moment someone adds something new.
+            var state = {
+                tiers: [], roomTypes: [], optionCategories: [], brands: [],
+                cabinetCategories: [], options: [], brandOptions: [],
+                cabinets: [], dimensions: []
+            };
+            var selectedBrandOptionsId = '';
+
+            function slugify(raw) {
+                return raw.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            }
+            function currency(n) { return '$' + Number(n).toFixed(2); }
+            function clear(el) { el.innerHTML = ''; }
+            function showError(el, err) {
+                el.textContent = (err && err.message) ? humanizeDbError(err.message) : 'Something went wrong. Try again.';
+                el.hidden = false;
+            }
+            function humanizeDbError(msg) {
+                if (msg.indexOf('duplicate key') !== -1) return 'That already exists — check the list above.';
+                if (msg.indexOf('violates foreign key') !== -1) return 'One of the things you picked no longer exists — refresh and try again.';
+                if (msg.indexOf('violates row-level security') !== -1) return 'Your session may have expired — sign out and back in, then try again.';
+                return msg;
+            }
+            function populateSelect(selectEl, rows, valueKey, labelFn, placeholder) {
+                var current = selectEl.value;
+                var html = '<option value="">' + placeholder + '</option>';
+                rows.forEach(function (r) { html += '<option value="' + r[valueKey] + '">' + labelFn(r) + '</option>'; });
+                selectEl.innerHTML = html;
+                if (rows.some(function (r) { return r[valueKey] === current; })) selectEl.value = current;
+            }
+            function entryRow(name, meta) {
+                return '<li><span class="entry-name">' + name + '</span><span class="entry-meta">' + (meta || '') + '</span></li>';
+            }
+            function renderList(el, rows, renderFn, emptyText) {
+                if (!rows.length) { el.innerHTML = '<li class="entry-empty">' + emptyText + '</li>'; return; }
+                el.innerHTML = rows.map(renderFn).join('');
+            }
+
+            // ---- Load everything, then render everything ----
+            function loadAll() {
+                return Promise.all([
+                    supabase.from('tiers').select('*').order('sort_order'),
+                    supabase.from('room_types').select('*').order('sort_order'),
+                    supabase.from('option_categories').select('*').order('sort_order'),
+                    supabase.from('brands').select('*, tiers(name)').order('sort_order'),
+                    supabase.from('cabinet_categories').select('*, room_types(name)').order('sort_order'),
+                    supabase.from('options').select('*, option_categories(name)').order('sort_order'),
+                    supabase.from('brand_options').select('*'),
+                    supabase.from('cabinets').select('*, brands(name), cabinet_categories(name)').order('created_at', { ascending: false }),
+                    supabase.from('cabinet_dimensions').select('*, cabinets(name)').order('created_at', { ascending: false })
+                ]).then(function (results) {
+                    state.tiers = results[0].data || [];
+                    state.roomTypes = results[1].data || [];
+                    state.optionCategories = results[2].data || [];
+                    state.brands = results[3].data || [];
+                    state.cabinetCategories = results[4].data || [];
+                    state.options = results[5].data || [];
+                    state.brandOptions = results[6].data || [];
+                    state.cabinets = results[7].data || [];
+                    state.dimensions = results[8].data || [];
+                    renderAll();
+                });
+            }
+
+            function renderAll() {
+                renderList(document.getElementById('tiers-list'), state.tiers,
+                    function (t) { return entryRow(t.name, ''); }, 'No tiers yet.');
+
+                renderList(document.getElementById('room-types-list'), state.roomTypes,
+                    function (r) { return entryRow(r.name, ''); }, 'No room types yet.');
+
+                renderList(document.getElementById('option-categories-list'), state.optionCategories,
+                    function (c) { return entryRow(c.name, ''); }, 'No option categories yet.');
+
+                renderList(document.getElementById('brands-list'), state.brands,
+                    function (b) {
+                        var tierName = b.tiers ? b.tiers.name : '—';
+                        var status = b.active === false
+                            ? '<span class="dot inactive"></span>inactive'
+                            : '<span class="dot"></span>active';
+                        return entryRow(b.name, '<span class="badge">' + tierName + '</span> &nbsp; ' + status);
+                    }, 'No brands yet.');
+
+                renderList(document.getElementById('cabinet-categories-list'), state.cabinetCategories,
+                    function (c) { return entryRow(c.name, c.room_types ? c.room_types.name : '—'); }, 'No cabinet categories yet.');
+
+                renderList(document.getElementById('options-list'), state.options,
+                    function (o) {
+                        var catName = o.option_categories ? o.option_categories.name : '—';
+                        return entryRow(o.name, '<span class="badge">' + catName + '</span> &nbsp; ' + currency(o.price_modifier));
+                    }, 'No options yet.');
+
+                renderList(document.getElementById('cabinets-list'), state.cabinets,
+                    function (c) {
+                        var brandName = c.brands ? c.brands.name : '—';
+                        var catName = c.cabinet_categories ? c.cabinet_categories.name : '—';
+                        return entryRow(c.name, '<span class="badge">' + brandName + '</span> &nbsp; ' + catName);
+                    }, 'No cabinets yet.');
+
+                renderList(document.getElementById('dimensions-list'), state.dimensions,
+                    function (d) {
+                        var cabName = d.cabinets ? d.cabinets.name : '—';
+                        return entryRow(cabName + ' — ' + d.width_in + '" wide', 'SKU ' + d.sku + ' &nbsp; ' + currency(d.price));
+                    }, 'No dimensions yet.');
+
+                populateSelect(document.getElementById('brands-tier'), state.tiers, 'id', function (t) { return t.name; }, 'Choose a tier…');
+                populateSelect(document.getElementById('cabinet-categories-room'), state.roomTypes, 'id', function (r) { return r.name; }, 'Choose a room type…');
+                populateSelect(document.getElementById('options-category'), state.optionCategories, 'id', function (c) { return c.name; }, 'Choose an option category…');
+                populateSelect(document.getElementById('cabinets-brand'), state.brands, 'id', function (b) { return b.name; }, 'Choose a brand…');
+                populateSelect(document.getElementById('cabinets-category'), state.cabinetCategories, 'id', function (c) { return c.name; }, 'Choose a category…');
+                populateSelect(document.getElementById('dimensions-cabinet'), state.cabinets, 'id', function (c) { return c.name; }, 'Choose a cabinet…');
+                populateSelect(document.getElementById('brand-options-brand'), state.brands, 'id', function (b) { return b.name; }, 'Choose a brand…');
+
+                renderBrandOptionsPanel();
+            }
+
+            // ---- Brand Options: a per-brand toggle checklist ----
+            function renderBrandOptionsPanel() {
+                var placeholder = document.getElementById('brand-options-placeholder');
+                var groupsEl = document.getElementById('brand-options-groups');
+
+                if (!selectedBrandOptionsId || !state.brands.some(function (b) { return b.id === selectedBrandOptionsId; })) {
+                    placeholder.hidden = false;
+                    groupsEl.classList.remove('is-visible');
+                    clear(groupsEl);
+                    return;
+                }
+                placeholder.hidden = true;
+                groupsEl.classList.add('is-visible');
+
+                var allowedIds = {};
+                state.brandOptions.forEach(function (bo) {
+                    if (bo.brand_id === selectedBrandOptionsId) allowedIds[bo.option_id] = true;
+                });
+
+                var byCategory = {};
+                state.options.forEach(function (opt) {
+                    var catName = opt.option_categories ? opt.option_categories.name : 'Other';
+                    if (!byCategory[catName]) byCategory[catName] = [];
+                    byCategory[catName].push(opt);
+                });
+
+                var categoryNames = Object.keys(byCategory);
+                if (!categoryNames.length) {
+                    groupsEl.innerHTML = '<p class="toggle-placeholder">No options exist yet — add some in the Options section above first.</p>';
+                    return;
+                }
+
+                clear(groupsEl);
+                categoryNames.forEach(function (catName) {
+                    var group = document.createElement('div');
+                    group.className = 'toggle-group';
+                    var heading = document.createElement('h4');
+                    heading.textContent = catName;
+                    group.appendChild(heading);
+
+                    byCategory[catName].forEach(function (opt) {
+                        var row = document.createElement('label');
+                        row.className = 'toggle-row';
+                        row.innerHTML =
+                            '<input type="checkbox"' + (allowedIds[opt.id] ? ' checked' : '') + '>' +
+                            '<span class="opt-name">' + opt.name + '</span>' +
+                            '<span class="opt-price">' + (Number(opt.price_modifier) ? '+' + currency(opt.price_modifier) : 'Included') + '</span>';
+                        row.querySelector('input').addEventListener('change', function (e) {
+                            toggleBrandOption(selectedBrandOptionsId, opt.id, e.target.checked, e.target);
+                        });
+                        group.appendChild(row);
+                    });
+                    groupsEl.appendChild(group);
+                });
+            }
+
+            function toggleBrandOption(brandId, optionId, allow, checkboxEl) {
+                var errorEl = document.getElementById('brand-options-error');
+                errorEl.hidden = true;
+                checkboxEl.disabled = true;
+
+                var query = allow
+                    ? supabase.from('brand_options').insert({ brand_id: brandId, option_id: optionId })
+                    : supabase.from('brand_options').delete().eq('brand_id', brandId).eq('option_id', optionId);
+
+                query.then(function (result) {
+                    checkboxEl.disabled = false;
+                    if (result.error) {
+                        checkboxEl.checked = !allow; // revert the visual state
+                        showError(errorEl, result.error);
+                        return;
+                    }
+                    return loadAll();
+                });
+            }
+
+            document.getElementById('brand-options-brand').addEventListener('change', function (e) {
+                selectedBrandOptionsId = e.target.value;
+                renderBrandOptionsPanel();
+            });
+
+            // ---- Generic "add a row" form wiring ----
+            function wireAddForm(formEl, errorId, buildPayload, table) {
+                formEl.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var errorEl = document.getElementById(errorId);
+                    errorEl.hidden = true;
+
+                    var payload;
+                    try {
+                        payload = buildPayload();
+                    } catch (err) {
+                        showError(errorEl, err);
+                        return;
+                    }
+
+                    var submitBtn = formEl.querySelector('button[type="submit"]');
+                    var originalLabel = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Adding…';
+
+                    supabase.from(table).insert(payload).then(function (result) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalLabel;
+                        if (result.error) { showError(errorEl, result.error); return; }
+                        formEl.reset();
+                        loadAll();
+                    });
+                });
+            }
+
+            wireAddForm(document.getElementById('tiers-form'), 'tiers-error', function () {
+                var name = document.getElementById('tiers-name').value.trim();
+                if (!name) throw new Error('Enter a name.');
+                return { name: name, sort_order: Number(document.getElementById('tiers-sort').value) || 0 };
+            }, 'tiers');
+
+            wireAddForm(document.getElementById('room-types-form'), 'room-types-error', function () {
+                var name = document.getElementById('room-types-name').value.trim();
+                if (!name) throw new Error('Enter a name.');
+                var payload = { name: name, slug: slugify(name) };
+                var image = document.getElementById('room-types-image').value.trim();
+                if (image) payload.image_url = image;
+                return payload;
+            }, 'room_types');
+
+            wireAddForm(document.getElementById('option-categories-form'), 'option-categories-error', function () {
+                var name = document.getElementById('option-categories-name').value.trim();
+                if (!name) throw new Error('Enter a name.');
+                return { name: name, sort_order: Number(document.getElementById('option-categories-sort').value) || 0 };
+            }, 'option_categories');
+
+            wireAddForm(document.getElementById('brands-form'), 'brands-error', function () {
+                var name = document.getElementById('brands-name').value.trim();
+                var tierId = document.getElementById('brands-tier').value;
+                if (!name) throw new Error('Enter a name.');
+                if (!tierId) throw new Error('Choose a tier.');
+                var payload = { name: name, slug: slugify(name), tier_id: tierId };
+                var description = document.getElementById('brands-description').value.trim();
+                var logo = document.getElementById('brands-logo').value.trim();
+                var hero = document.getElementById('brands-hero').value.trim();
+                if (description) payload.description = description;
+                if (logo) payload.logo_url = logo;
+                if (hero) payload.hero_image_url = hero;
+                return payload;
+            }, 'brands');
+
+            wireAddForm(document.getElementById('cabinet-categories-form'), 'cabinet-categories-error', function () {
+                var name = document.getElementById('cabinet-categories-name').value.trim();
+                var roomTypeId = document.getElementById('cabinet-categories-room').value;
+                if (!name) throw new Error('Enter a name.');
+                if (!roomTypeId) throw new Error('Choose a room type.');
+                return { name: name, room_type_id: roomTypeId };
+            }, 'cabinet_categories');
+
+            wireAddForm(document.getElementById('options-form'), 'options-error', function () {
+                var name = document.getElementById('options-name').value.trim();
+                var categoryId = document.getElementById('options-category').value;
+                if (!name) throw new Error('Enter a name.');
+                if (!categoryId) throw new Error('Choose an option category.');
+                var payload = { name: name, option_category_id: categoryId, price_modifier: Number(document.getElementById('options-price').value) || 0 };
+                var image = document.getElementById('options-image').value.trim();
+                if (image) payload.image_url = image;
+                return payload;
+            }, 'options');
+
+            wireAddForm(document.getElementById('cabinets-form'), 'cabinets-error', function () {
+                var name = document.getElementById('cabinets-name').value.trim();
+                var brandId = document.getElementById('cabinets-brand').value;
+                var categoryId = document.getElementById('cabinets-category').value;
+                if (!name) throw new Error('Enter a name.');
+                if (!brandId) throw new Error('Choose a brand.');
+                if (!categoryId) throw new Error('Choose a category.');
+                var payload = { name: name, brand_id: brandId, category_id: categoryId };
+                var image = document.getElementById('cabinets-image').value.trim();
+                var description = document.getElementById('cabinets-description').value.trim();
+                if (image) payload.image_url = image;
+                if (description) payload.description = description;
+                return payload;
+            }, 'cabinets');
+
+            wireAddForm(document.getElementById('dimensions-form'), 'dimensions-error', function () {
+                var cabinetId = document.getElementById('dimensions-cabinet').value;
+                var width = document.getElementById('dimensions-width').value;
+                var sku = document.getElementById('dimensions-sku').value.trim();
+                var price = document.getElementById('dimensions-price').value;
+                if (!cabinetId) throw new Error('Choose a cabinet.');
+                if (!width) throw new Error('Enter a width.');
+                if (!sku) throw new Error('Enter a SKU.');
+                if (!price) throw new Error('Enter a price.');
+                var payload = { cabinet_id: cabinetId, width_in: Number(width), sku: sku, price: Number(price) };
+                var height = document.getElementById('dimensions-height').value;
+                var depth = document.getElementById('dimensions-depth').value;
+                if (height) payload.height_in = Number(height);
+                if (depth) payload.depth_in = Number(depth);
+                return payload;
+            }, 'cabinet_dimensions');
+
+            // ---- Auth ----
+            function showAdmin(user) {
+                adminGreeting.textContent = 'Signed in as ' + user.email;
+                stageLogin.hidden = true;
+                stageAdmin.hidden = false;
+                quickNav.hidden = false;
+                loadAll();
+            }
+            function showLogin() {
+                stageAdmin.hidden = true;
+                quickNav.hidden = true;
+                stageLogin.hidden = false;
+                loginForm.reset();
+            }
+
+            loginForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                loginError.hidden = true;
+                loginSubmitBtn.disabled = true;
+                loginSubmitBtn.textContent = 'Signing In…';
+
+                supabase.auth.signInWithPassword({
+                    email: loginEmail.value.trim(),
+                    password: loginPassword.value
+                }).then(function (result) {
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = 'Sign In';
+                    if (result.error) {
+                        loginError.textContent = 'Incorrect email or password.';
+                        loginError.hidden = false;
+                        return;
+                    }
+                    showAdmin(result.data.user);
+                }).catch(function () {
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = 'Sign In';
+                    loginError.textContent = 'Could not reach the sign-in service. Check your connection and try again.';
+                    loginError.hidden = false;
+                });
+            });
+
+            logoutBtn.addEventListener('click', function () {
+                supabase.auth.signOut().then(showLogin);
+            });
+
+            supabase.auth.getSession().then(function (result) {
+                if (result.data.session) showAdmin(result.data.session.user);
+            });
+        })();
+    </script>
+</body>
+</html>
