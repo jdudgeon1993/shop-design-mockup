@@ -85,6 +85,23 @@
         .content-head { text-align: center; margin-bottom: 8px; }
         .content-sub { text-align: center; max-width: 560px; margin: 0 auto 48px; color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.6; }
 
+        /* Catalog switcher — the top-level scope everything below reads
+           from and writes into. Deliberately styled apart from the plain
+           .admin-section cards below so it reads as the one control that
+           governs all of them, not just another section in the list. */
+        .catalog-bar {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            margin: 0 0 12px; padding: 16px 20px; border: 1px solid rgba(212,175,55,0.35);
+            border-radius: 8px; background: rgba(212,175,55,0.06);
+        }
+        .catalog-bar .field-label { margin: 0; }
+        .catalog-bar select { width: auto; max-width: 220px; }
+        .catalog-bar-actions { margin-left: auto; }
+        .new-catalog-form { flex-basis: 100%; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+        .new-catalog-form input { max-width: 220px; }
+        .new-catalog-form .note { margin: 0; flex-basis: 100%; }
+        .catalog-bar-hint { margin: 0 0 32px; font-size: 12px; color: rgba(255,255,255,0.4); }
+
         .admin-section {
             margin-bottom: 20px; padding: 28px; border: 1px solid var(--border); border-radius: 8px;
             background: rgba(255,255,255,0.03); scroll-margin-top: 110px;
@@ -177,6 +194,23 @@
             Every dropdown below reads straight from Supabase, live — add something in one section and it's
             immediately available to pick from in every section below it, no reload needed.
         </p>
+
+        <!-- Catalog switcher — the top-level scope. Cabinets today; a future
+             product line (granite, sinks, ...) gets added as a new catalog
+             here and reuses every section below, scoped to it. -->
+        <div class="catalog-bar" id="catalog-bar">
+            <label class="field-label" for="catalog-select">Catalog</label>
+            <select class="room-select" id="catalog-select"></select>
+            <div class="catalog-bar-actions">
+                <button class="btn-secondary btn-small" type="button" id="new-catalog-toggle">+ New Catalog</button>
+            </div>
+            <form class="new-catalog-form" id="new-catalog-form" hidden>
+                <input class="room-input" type="text" id="new-catalog-name" placeholder="e.g. Granite" required>
+                <button class="btn-pill btn-small" type="submit">Create</button>
+                <p class="note error-note" id="new-catalog-error" hidden></p>
+            </form>
+        </div>
+        <p class="catalog-bar-hint">Everything below only ever shows and adds to this catalog — nothing gets mixed between catalogs.</p>
 
         <!-- 1. Tiers -->
         <section class="admin-section" id="sec-tiers">
@@ -369,11 +403,14 @@
             // write — this is what keeps every dropdown/list live instead
             // of going stale the moment someone adds something new.
             var state = {
-                tiers: [], roomTypes: [], optionCategories: [], brands: [],
+                catalogs: [], tiers: [], roomTypes: [], optionCategories: [], brands: [],
                 cabinetCategories: [], options: [], brandOptions: [],
                 cabinets: [], dimensions: []
             };
             var selectedBrandOptionsId = '';
+            var selectedCatalogId = '';
+
+            function byCatalog(row) { return row.catalog_id === selectedCatalogId; }
 
             function slugify(raw) {
                 return raw.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -408,6 +445,7 @@
             // ---- Load everything, then render everything ----
             function loadAll() {
                 return Promise.all([
+                    supabase.from('catalogs').select('*').order('sort_order'),
                     supabase.from('tiers').select('*').order('sort_order'),
                     supabase.from('room_types').select('*').order('sort_order'),
                     supabase.from('option_categories').select('*').order('sort_order'),
@@ -418,77 +456,129 @@
                     supabase.from('cabinets').select('*, brands(name), cabinet_categories(name)').order('created_at', { ascending: false }),
                     supabase.from('cabinet_dimensions').select('*, cabinets(name)').order('created_at', { ascending: false })
                 ]).then(function (results) {
-                    state.tiers = results[0].data || [];
-                    state.roomTypes = results[1].data || [];
-                    state.optionCategories = results[2].data || [];
-                    state.brands = results[3].data || [];
-                    state.cabinetCategories = results[4].data || [];
-                    state.options = results[5].data || [];
-                    state.brandOptions = results[6].data || [];
-                    state.cabinets = results[7].data || [];
-                    state.dimensions = results[8].data || [];
+                    state.catalogs = results[0].data || [];
+                    state.tiers = results[1].data || [];
+                    state.roomTypes = results[2].data || [];
+                    state.optionCategories = results[3].data || [];
+                    state.brands = results[4].data || [];
+                    state.cabinetCategories = results[5].data || [];
+                    state.options = results[6].data || [];
+                    state.brandOptions = results[7].data || [];
+                    state.cabinets = results[8].data || [];
+                    state.dimensions = results[9].data || [];
+
+                    computeCatalogIds();
+
+                    if (!selectedCatalogId || !state.catalogs.some(function (c) { return c.id === selectedCatalogId; })) {
+                        selectedCatalogId = state.catalogs.length ? state.catalogs[0].id : '';
+                    }
+
                     renderAll();
                 });
             }
 
+            // brands/cabinet_categories/options/cabinets/dimensions/brand_options don't
+            // store catalog_id themselves — each already hangs off a table that does
+            // (tiers, room_types, option_categories) through an existing foreign key,
+            // so its catalog is derived here instead of duplicated in the database.
+            function computeCatalogIds() {
+                var tierCatalog = {};
+                state.tiers.forEach(function (t) { tierCatalog[t.id] = t.catalog_id; });
+                var roomTypeCatalog = {};
+                state.roomTypes.forEach(function (r) { roomTypeCatalog[r.id] = r.catalog_id; });
+                var optionCategoryCatalog = {};
+                state.optionCategories.forEach(function (c) { optionCategoryCatalog[c.id] = c.catalog_id; });
+
+                state.brands.forEach(function (b) { b.catalog_id = tierCatalog[b.tier_id]; });
+                state.cabinetCategories.forEach(function (c) { c.catalog_id = roomTypeCatalog[c.room_type_id]; });
+                state.options.forEach(function (o) { o.catalog_id = optionCategoryCatalog[o.option_category_id]; });
+
+                var brandCatalog = {};
+                state.brands.forEach(function (b) { brandCatalog[b.id] = b.catalog_id; });
+                state.cabinets.forEach(function (c) { c.catalog_id = brandCatalog[c.brand_id]; });
+                state.brandOptions.forEach(function (bo) { bo.catalog_id = brandCatalog[bo.brand_id]; });
+
+                var cabinetCatalog = {};
+                state.cabinets.forEach(function (c) { cabinetCatalog[c.id] = c.catalog_id; });
+                state.dimensions.forEach(function (d) { d.catalog_id = cabinetCatalog[d.cabinet_id]; });
+            }
+
             function renderAll() {
-                renderList(document.getElementById('tiers-list'), state.tiers,
-                    function (t) { return entryRow(t.name, ''); }, 'No tiers yet.');
+                renderCatalogSelect();
 
-                renderList(document.getElementById('room-types-list'), state.roomTypes,
-                    function (r) { return entryRow(r.name, ''); }, 'No room types yet.');
+                var catTiers = state.tiers.filter(byCatalog);
+                var catRoomTypes = state.roomTypes.filter(byCatalog);
+                var catOptionCategories = state.optionCategories.filter(byCatalog);
+                var catBrands = state.brands.filter(byCatalog);
+                var catCabinetCategories = state.cabinetCategories.filter(byCatalog);
+                var catOptions = state.options.filter(byCatalog);
+                var catCabinets = state.cabinets.filter(byCatalog);
+                var catDimensions = state.dimensions.filter(byCatalog);
 
-                renderList(document.getElementById('option-categories-list'), state.optionCategories,
-                    function (c) { return entryRow(c.name, ''); }, 'No option categories yet.');
+                renderList(document.getElementById('tiers-list'), catTiers,
+                    function (t) { return entryRow(t.name, ''); }, 'No tiers yet in this catalog.');
 
-                renderList(document.getElementById('brands-list'), state.brands,
+                renderList(document.getElementById('room-types-list'), catRoomTypes,
+                    function (r) { return entryRow(r.name, ''); }, 'No room types yet in this catalog.');
+
+                renderList(document.getElementById('option-categories-list'), catOptionCategories,
+                    function (c) { return entryRow(c.name, ''); }, 'No option categories yet in this catalog.');
+
+                renderList(document.getElementById('brands-list'), catBrands,
                     function (b) {
                         var tierName = b.tiers ? b.tiers.name : '—';
                         var status = b.active === false
                             ? '<span class="dot inactive"></span>inactive'
                             : '<span class="dot"></span>active';
                         return entryRow(b.name, '<span class="badge">' + tierName + '</span> &nbsp; ' + status);
-                    }, 'No brands yet.');
+                    }, 'No brands yet in this catalog.');
 
-                renderList(document.getElementById('cabinet-categories-list'), state.cabinetCategories,
-                    function (c) { return entryRow(c.name, c.room_types ? c.room_types.name : '—'); }, 'No cabinet categories yet.');
+                renderList(document.getElementById('cabinet-categories-list'), catCabinetCategories,
+                    function (c) { return entryRow(c.name, c.room_types ? c.room_types.name : '—'); }, 'No cabinet categories yet in this catalog.');
 
-                renderList(document.getElementById('options-list'), state.options,
+                renderList(document.getElementById('options-list'), catOptions,
                     function (o) {
                         var catName = o.option_categories ? o.option_categories.name : '—';
                         return entryRow(o.name, '<span class="badge">' + catName + '</span> &nbsp; ' + currency(o.price_modifier));
-                    }, 'No options yet.');
+                    }, 'No options yet in this catalog.');
 
-                renderList(document.getElementById('cabinets-list'), state.cabinets,
+                renderList(document.getElementById('cabinets-list'), catCabinets,
                     function (c) {
                         var brandName = c.brands ? c.brands.name : '—';
                         var catName = c.cabinet_categories ? c.cabinet_categories.name : '—';
                         return entryRow(c.name, '<span class="badge">' + brandName + '</span> &nbsp; ' + catName);
-                    }, 'No cabinets yet.');
+                    }, 'No cabinets yet in this catalog.');
 
-                renderList(document.getElementById('dimensions-list'), state.dimensions,
+                renderList(document.getElementById('dimensions-list'), catDimensions,
                     function (d) {
                         var cabName = d.cabinets ? d.cabinets.name : '—';
                         return entryRow(cabName + ' — ' + d.width_in + '" wide', 'SKU ' + d.sku + ' &nbsp; ' + currency(d.price));
-                    }, 'No dimensions yet.');
+                    }, 'No dimensions yet in this catalog.');
 
-                populateSelect(document.getElementById('brands-tier'), state.tiers, 'id', function (t) { return t.name; }, 'Choose a tier…');
-                populateSelect(document.getElementById('cabinet-categories-room'), state.roomTypes, 'id', function (r) { return r.name; }, 'Choose a room type…');
-                populateSelect(document.getElementById('options-category'), state.optionCategories, 'id', function (c) { return c.name; }, 'Choose an option category…');
-                populateSelect(document.getElementById('cabinets-brand'), state.brands, 'id', function (b) { return b.name; }, 'Choose a brand…');
-                populateSelect(document.getElementById('cabinets-category'), state.cabinetCategories, 'id', function (c) { return c.name; }, 'Choose a category…');
-                populateSelect(document.getElementById('dimensions-cabinet'), state.cabinets, 'id', function (c) { return c.name; }, 'Choose a cabinet…');
-                populateSelect(document.getElementById('brand-options-brand'), state.brands, 'id', function (b) { return b.name; }, 'Choose a brand…');
+                populateSelect(document.getElementById('brands-tier'), catTiers, 'id', function (t) { return t.name; }, 'Choose a tier…');
+                populateSelect(document.getElementById('cabinet-categories-room'), catRoomTypes, 'id', function (r) { return r.name; }, 'Choose a room type…');
+                populateSelect(document.getElementById('options-category'), catOptionCategories, 'id', function (c) { return c.name; }, 'Choose an option category…');
+                populateSelect(document.getElementById('cabinets-brand'), catBrands, 'id', function (b) { return b.name; }, 'Choose a brand…');
+                populateSelect(document.getElementById('cabinets-category'), catCabinetCategories, 'id', function (c) { return c.name; }, 'Choose a category…');
+                populateSelect(document.getElementById('dimensions-cabinet'), catCabinets, 'id', function (c) { return c.name; }, 'Choose a cabinet…');
+                populateSelect(document.getElementById('brand-options-brand'), catBrands, 'id', function (b) { return b.name; }, 'Choose a brand…');
 
-                renderBrandOptionsPanel();
+                renderBrandOptionsPanel(catOptions);
+            }
+
+            function renderCatalogSelect() {
+                var sel = document.getElementById('catalog-select');
+                sel.innerHTML = state.catalogs.map(function (c) {
+                    return '<option value="' + c.id + '"' + (c.id === selectedCatalogId ? ' selected' : '') + '>' + c.name + '</option>';
+                }).join('');
             }
 
             // ---- Brand Options: a per-brand toggle checklist ----
-            function renderBrandOptionsPanel() {
+            function renderBrandOptionsPanel(catOptions) {
                 var placeholder = document.getElementById('brand-options-placeholder');
                 var groupsEl = document.getElementById('brand-options-groups');
 
-                if (!selectedBrandOptionsId || !state.brands.some(function (b) { return b.id === selectedBrandOptionsId; })) {
+                if (!selectedBrandOptionsId || !state.brands.some(function (b) { return b.id === selectedBrandOptionsId && b.catalog_id === selectedCatalogId; })) {
                     placeholder.hidden = false;
                     groupsEl.classList.remove('is-visible');
                     clear(groupsEl);
@@ -503,7 +593,7 @@
                 });
 
                 var byCategory = {};
-                state.options.forEach(function (opt) {
+                catOptions.forEach(function (opt) {
                     var catName = opt.option_categories ? opt.option_categories.name : 'Other';
                     if (!byCategory[catName]) byCategory[catName] = [];
                     byCategory[catName].push(opt);
@@ -561,7 +651,7 @@
 
             document.getElementById('brand-options-brand').addEventListener('change', function (e) {
                 selectedBrandOptionsId = e.target.value;
-                renderBrandOptionsPanel();
+                renderBrandOptionsPanel(state.options.filter(byCatalog));
             });
 
             // ---- Generic "add a row" form wiring ----
@@ -597,13 +687,15 @@
             wireAddForm(document.getElementById('tiers-form'), 'tiers-error', function () {
                 var name = document.getElementById('tiers-name').value.trim();
                 if (!name) throw new Error('Enter a name.');
-                return { name: name, sort_order: Number(document.getElementById('tiers-sort').value) || 0 };
+                if (!selectedCatalogId) throw new Error('Choose a catalog above first.');
+                return { name: name, sort_order: Number(document.getElementById('tiers-sort').value) || 0, catalog_id: selectedCatalogId };
             }, 'tiers');
 
             wireAddForm(document.getElementById('room-types-form'), 'room-types-error', function () {
                 var name = document.getElementById('room-types-name').value.trim();
                 if (!name) throw new Error('Enter a name.');
-                var payload = { name: name, slug: slugify(name) };
+                if (!selectedCatalogId) throw new Error('Choose a catalog above first.');
+                var payload = { name: name, slug: slugify(name), catalog_id: selectedCatalogId };
                 var image = document.getElementById('room-types-image').value.trim();
                 if (image) payload.image_url = image;
                 return payload;
@@ -612,7 +704,8 @@
             wireAddForm(document.getElementById('option-categories-form'), 'option-categories-error', function () {
                 var name = document.getElementById('option-categories-name').value.trim();
                 if (!name) throw new Error('Enter a name.');
-                return { name: name, sort_order: Number(document.getElementById('option-categories-sort').value) || 0 };
+                if (!selectedCatalogId) throw new Error('Choose a catalog above first.');
+                return { name: name, sort_order: Number(document.getElementById('option-categories-sort').value) || 0, catalog_id: selectedCatalogId };
             }, 'option_categories');
 
             wireAddForm(document.getElementById('brands-form'), 'brands-error', function () {
@@ -680,6 +773,46 @@
                 if (depth) payload.depth_in = Number(depth);
                 return payload;
             }, 'cabinet_dimensions');
+
+            // ---- Catalog switcher ----
+            document.getElementById('catalog-select').addEventListener('change', function (e) {
+                selectedCatalogId = e.target.value;
+                renderAll();
+            });
+
+            var newCatalogToggle = document.getElementById('new-catalog-toggle');
+            var newCatalogForm = document.getElementById('new-catalog-form');
+            newCatalogToggle.addEventListener('click', function () {
+                newCatalogForm.hidden = !newCatalogForm.hidden;
+                newCatalogToggle.textContent = newCatalogForm.hidden ? '+ New Catalog' : 'Cancel';
+                if (!newCatalogForm.hidden) document.getElementById('new-catalog-name').focus();
+            });
+
+            newCatalogForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var errorEl = document.getElementById('new-catalog-error');
+                errorEl.hidden = true;
+                var nameInput = document.getElementById('new-catalog-name');
+                var name = nameInput.value.trim();
+                if (!name) { showError(errorEl, new Error('Enter a catalog name.')); return; }
+
+                var submitBtn = newCatalogForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating…';
+
+                supabase.from('catalogs').insert({ name: name, slug: slugify(name), sort_order: state.catalogs.length }).then(function (result) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create';
+                    if (result.error) { showError(errorEl, result.error); return; }
+                    nameInput.value = '';
+                    newCatalogForm.hidden = true;
+                    newCatalogToggle.textContent = '+ New Catalog';
+                    loadAll().then(function () {
+                        var created = state.catalogs.filter(function (c) { return c.name === name; })[0];
+                        if (created) { selectedCatalogId = created.id; renderAll(); }
+                    });
+                });
+            });
 
             // ---- Auth ----
             function showAdmin(user) {
