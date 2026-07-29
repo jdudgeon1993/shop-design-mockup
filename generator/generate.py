@@ -1,9 +1,14 @@
 """Renders the DIY wizard's Jinja2 templates + data/diy_steps.json into
-static HTML/CSS/JS, written to both the production site (diy-wizard/) and
-the proto sandbox (proto/diy-wizard/) so they never drift out of sync.
+static HTML/CSS/JS, written to the proto sandbox (proto/diy-wizard/) only.
 Re-run after editing anything in templates/, data/, or static/.
 
     python3 generator/generate.py
+
+Production's diy-wizard/ used to be generated from this same pipeline, but
+it's now a hand-built, live-Supabase-backed storefront (same pattern as
+proto/diy-flow/) — it no longer belongs to this generator. Don't add it
+back to OUTPUT_DIRS, or the next run will silently overwrite that page with
+this old placeholder wizard.
 """
 import json
 import shutil
@@ -13,7 +18,7 @@ from jinja2 import Environment, FileSystemLoader
 
 GENERATOR_DIR = Path(__file__).parent
 REPO_ROOT = GENERATOR_DIR.parent
-OUTPUT_DIRS = (REPO_ROOT / "diy-wizard", REPO_ROOT / "proto" / "diy-wizard")
+OUTPUT_DIRS = (REPO_ROOT / "proto" / "diy-wizard",)
 
 STATIC_FILES = ("wizard.css", "wizard.js", "thank-you.html")
 
