@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Design Labs - Complete Storefront</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
+            --font-serif: 'Playfair Display', serif;
+
+            /* Real measured height of .navbar (18px padding + 30px logo, both
+               sides) — sections reserve this as top padding so the fixed,
+               translucent navbar never sits over content underneath it. */
+            --navbar-h: 68px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
+            overflow: hidden; overflow-x: hidden; max-width: 100vw;
+        }
+
+        .scroll-container {
+            height: 100dvh; width: 100%; overflow-y: scroll; overflow-x: hidden;
+            scroll-snap-type: y mandatory; overscroll-behavior-y: contain;
+        }
+
+        section {
+            height: 100dvh; width: 100%; scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center; padding: var(--navbar-h) 10% 0;
+            position: relative; color: var(--white);
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+        }
+
+        /* Dark scrim so text stays legible over any photo */
+        section::before {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.65));
+        }
+
+        section > * { position: relative; z-index: 1; }
+
+        /* Navbar: transparent overlay, not a separate bar — sits directly on the dark page */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; display: flex;
+            justify-content: space-between; align-items: center; padding: 18px 5%;
+            z-index: 1000; background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px); color: var(--white); font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .nav-brand { display: flex; align-items: center; }
+        .nav-logo { display: block; height: 30px; width: auto; }
+
+        #nav-toggle { display: none; }
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; z-index: 1001; }
+        .hamburger span { width: 25px; height: 3px; background: var(--white); transition: 0.3s; }
+        #nav-toggle:checked ~ .hamburger span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        #nav-toggle:checked ~ .hamburger span:nth-child(2) { opacity: 0; }
+        #nav-toggle:checked ~ .hamburger span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+        .nav-menu { display: flex; align-items: center; gap: 48px; }
+
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a {
+            color: var(--white); text-decoration: none; font-weight: 600;
+            font-size: 14px; letter-spacing: 0.5px; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--gold); }
+
+        .nav-icons { display: flex; gap: 20px; align-items: center; }
+        .nav-icon { color: var(--white); display: inline-flex; transition: color 0.2s; }
+        .nav-icon:hover { color: var(--gold); }
+        .nav-icon svg { width: 20px; height: 20px; display: block; }
+
+        /* Unified Button */
+        .btn-pill {
+            /* Reset native <button> form-control chrome so it renders identically
+               to an <a> — browsers don't inherit font/appearance into buttons by
+               default, which is why these looked different from each other. */
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+
+            display: inline-block; margin: 24px 0 0; padding: 14px 36px;
+            border: none; border-radius: 999px;
+            background: var(--white); color: var(--black);
+
+            /* When this is a direct child of a column flex container (like
+               these full-screen <section> elements), flexbox's default
+               align-items:stretch would otherwise blow it out to full width
+               regardless of display:inline-block — pin it to content width. */
+            align-self: flex-start;
+
+            font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
+            text-align: center; text-decoration: none;
+            text-transform: uppercase; letter-spacing: 2px;
+
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); transform: scale(1.05); }
+
+        /* Hero — the only section now: the photo, the logo, and the
+           heading/buttons live in .hero-photo; the stat bar is a separate
+           sibling below it. On desktop .hero-photo grows to fill whatever
+           space .hero-stats doesn't need, so the two together still total
+           exactly 100dvh. On mobile .hero-photo gets its own min-height:
+           100dvh instead — the photo gets a full screen to itself so it's
+           actually visible, and .hero-stats becomes a normal section you
+           scroll to, not squeezed into the same screen. */
+        .hero { background-color: var(--black); padding: 0; }
+        .hero::before { content: none; } /* replaced by .hero-photo::before, scoped to just the photo area */
+
+        .hero-photo {
+            position: relative; overflow: hidden;
+            flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between;
+            padding: var(--navbar-h) 0 0;
+        }
+        /* Scrim removed per CEO feedback — the photo was reading too dark.
+           .hero-photo > * still gets z-index:1 so content stays above the
+           .hero-slide photo layers (z-index:0) even without a scrim between
+           them. */
+        .hero-photo > * { position: relative; z-index: 1; }
+
+        .hero-top { padding: 28px 10% 0; }
+
+        /* Two stacked layers crossfade between hero images. JS keeps exactly
+           one of these two elements' background-image up to date and toggles
+           which one is visible — this works for any number of images in the
+           rotation, not just two. */
+        .hero-slide {
+            position: absolute; inset: 0; z-index: 0;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            opacity: 0; transition: opacity 1.2s ease;
+        }
+        .hero-slide.is-active { opacity: 1; }
+
+        /* The logo's tagline text is baked into this PNG, not real HTML text,
+           so it can't take a text-shadow directly — a drop-shadow filter on
+           the whole image gives the same legibility boost against a bright
+           photo without darkening the photo itself (unlike the old scrim). */
+        .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.7)); }
+
+        .hero-content { padding: 0 10%; margin-bottom: 28px; }
+        .hero-heading {
+            font-family: var(--font-serif); font-weight: 700;
+            font-size: clamp(24px, 3.4vw, 38px); line-height: 1.15;
+            max-width: 500px; margin: 0 0 22px;
+        }
+
+        /* Fixed width so all three read as one deliberate set instead of
+           each pill sizing to its own text — the longest label just wraps
+           to a second line rather than stretching its pill wider. */
+        .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+        .btn-hero {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+            display: inline-flex; align-items: center; justify-content: space-between; gap: 10px;
+            width: 290px;
+            background: var(--gold); color: var(--black);
+            padding: 13px 24px; border: none; border-radius: 999px;
+            font: inherit; font-weight: 700; font-size: 12px; line-height: 1.3;
+            text-align: left;
+            text-transform: uppercase; letter-spacing: 0.75px; text-decoration: none;
+            cursor: pointer; transition: 0.25s ease;
+        }
+        .btn-hero:hover, .btn-hero:focus-visible { background: var(--white); }
+        .btn-hero .arrow { transition: transform 0.25s ease; }
+        .btn-hero:hover .arrow, .btn-hero:focus-visible .arrow { transform: translateX(3px); }
+
+        /* Stat bar: a solid strip anchored to the bottom of the hero, not
+           the section's own 10% side padding — full-bleed width with each
+           column keeping its own inset instead. */
+        .hero-stats {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            background: rgba(0,0,0,0.85); border-top: 1px solid rgba(255,255,255,0.12);
+        }
+        .hero-stat {
+            padding: 26px 22px; border-right: 1px solid rgba(255,255,255,0.12);
+            transition: transform 0.25s ease;
+        }
+        .hero-stat:last-child { border-right: none; }
+        .hero-stat:hover { transform: translateY(-3px); }
+        .hero-stat-icon { width: 30px; height: 30px; margin-bottom: 12px; color: var(--white); transition: color 0.25s ease; }
+        .hero-stat-icon svg { width: 100%; height: 100%; }
+        .hero-stat:hover .hero-stat-icon { color: var(--gold); }
+        .hero-stat h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--white); }
+        .hero-stat p { margin: 0; font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,0.6); }
+
+
+        /* Footer: sized to its own content now (no more min-height:100dvh) —
+           simplified down to brand + one flat link list, so forcing it to a
+           full screen would just leave a lot of empty black space. */
+        .site-footer {
+            width: 100%; scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center;
+            background: var(--black); color: var(--white);
+            padding: 80px 10% 40px;
+        }
+        .footer-top { display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; align-items: flex-start; }
+        .footer-brand { flex: 1 1 220px; max-width: 340px; }
+        .footer-logo { height: 34px; width: auto; display: block; margin-bottom: 16px; }
+        .footer-tagline { color: rgba(255,255,255,0.6); margin: 0 0 20px; line-height: 1.5; }
+        .footer-social { display: flex; gap: 16px; }
+        .footer-social a { color: var(--white); display: inline-flex; transition: color 0.2s; }
+        .footer-social a:hover { color: var(--gold); }
+        .footer-social svg { width: 20px; height: 20px; }
+
+        /* One flat list instead of headed Shop/Company/Legal columns — the
+           two links that have no other path to them (Video Consultation,
+           Employee Login) live here alongside About Us and Contact. */
+        .footer-links { display: flex; flex-wrap: wrap; gap: 12px 28px; list-style: none; margin: 0; padding: 0; }
+        .footer-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--gold); }
+
+        .footer-bottom {
+            margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5); font-size: 13px;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+
+            /* Logo stays visible; the links + icons collapse into one dropdown panel */
+            .nav-menu {
+                display: none; flex-direction: column; align-items: flex-start; gap: 20px;
+                position: absolute; top: 68px; left: 0; width: 100%;
+                background: var(--black); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            #nav-toggle:checked ~ .nav-menu { display: flex; }
+            .nav-links { flex-direction: column; gap: 16px; align-items: flex-start; }
+            .nav-icons { flex-direction: row; gap: 24px; }
+
+            /* The photo gets its own screen space — same top/bottom split as
+               desktop (logo top, heading/buttons bottom) — instead of
+               competing with the stat bar. Stats become a normal section
+               below, reached by scrolling, not squeezed. Capped at 60vh
+               (not a full 100dvh) because the photo itself is a wide/
+               panoramic shot — forcing it into a full-height, narrow mobile
+               box crops it down to a sliver of its center; a shorter box
+               keeps far more of the actual kitchen in frame. */
+            .hero { height: auto; }
+            .hero-photo { min-height: 60vh; padding-bottom: 32px; }
+            .hero-logo-img { max-width: 320px; }
+            .hero-heading { font-size: clamp(28px, 8vw, 40px); }
+            .btn-hero { width: 100%; justify-content: space-between; }
+
+            /* Roomy single column now that stats aren't fighting for
+               vertical space inside the same screen as the photo. */
+            .hero-stats { grid-template-columns: 1fr; }
+            .hero-stat { padding: 22px 8%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.12); }
+            .hero-stat:last-child { border-bottom: none; }
+
+            .site-footer { padding: 60px 10% 30px; }
+        }
+
+        @media (max-width: 420px) {
+            .hero-logo-img { max-width: 260px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <input type="checkbox" id="nav-toggle">
+        <div class="nav-brand"><img class="nav-logo" src="/Assets/Logos/DL-Logo%20White.png" alt="Design Lab"></div>
+        <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
+
+        <div class="nav-menu">
+            <div class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">Catalog</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="nav-icons">
+                <a href="#" class="nav-icon" aria-label="Search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                </a>
+                <a href="#" class="nav-icon" aria-label="Account">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"></path></svg>
+                </a>
+                <a href="#" class="nav-icon" aria-label="Cart">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5L6 7Z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="scroll-container">
+        <section class="hero">
+            <div class="hero-photo">
+                <div class="hero-slide"></div>
+                <div class="hero-slide"></div>
+
+                <div class="hero-top">
+                    <img class="hero-logo-img" src="/Assets/Logos/Hero-Logo%202.0.png" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
+                </div>
+
+                <div class="hero-content">
+                    <h1 class="hero-heading">Cabinetry for Every Room of the House</h1>
+                    <div class="hero-actions">
+                        <a class="btn-hero" href="/diy-wizard/">DIY Shop Here <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                        <a class="btn-hero" href="#">Shop Curated Collections <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                        <a class="btn-hero" href="/consultation/">Meet with a Designer about my Project <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.9 6.4 6.9.6-5.2 4.6 1.6 6.8L12 17l-6.2 3.4 1.6-6.8L2.2 9l6.9-.6Z"></path></svg></div>
+                    <h3>90+ Years of Experience</h3>
+                    <p>Three industry veterans. One shared standard.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"></path></svg></div>
+                    <h3>Thoughtful Design</h3>
+                    <p>Beautiful, functional, organized... happiness.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
+                    <h3>Customer Confidence</h3>
+                    <p>Clarity. Guidance. Review. Approval. Every step.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg></div>
+                    <h3>Built for Real Life</h3>
+                    <p>Quality cabinetry for every room, every style, every budget.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6Z"></path></svg></div>
+                    <h3>We're With You</h3>
+                    <p>From inspiration to installation and beyond.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="site-footer">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <img class="footer-logo" src="/Assets/Logos/DL-Logo%20White.png" alt="Design Lab">
+                    <p class="footer-tagline">Online cabinetry. Customer focused. Best flippin' home on the block.</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Instagram">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line></svg>
+                        </a>
+                        <a href="#" aria-label="Facebook">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"></path></svg>
+                        </a>
+                        <a href="#" aria-label="Pinterest">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 20c1-3 1.8-6 2.5-9M12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0-2.4 3.2"></path></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <ul class="footer-links" aria-label="Sitemap">
+                    <li><a href="/about/">About Us</a></li>
+                    <li><a href="/consultation/">Video Consultation</a></li>
+                    <li><a href="/dashboard/">Employee Login</a></li>
+                    <li><a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 Design Lab. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        (function () {
+            // Hero slideshow. hero-section-i1 must stay first — add future
+            // images by appending to this array, never prepending, so it
+            // keeps being the first thing a visitor sees.
+            var heroImages = [
+                '/Assets/Images/hero-section-i1.png'
+            ];
+
+            var slides = document.querySelectorAll('.hero-slide');
+            if (!slides.length || !heroImages.length) return;
+
+            slides.forEach(function (slide) {
+                slide.style.backgroundImage = "url('" + heroImages[0] + "')";
+            });
+            slides[0].classList.add('is-active');
+
+            // Nothing to rotate to yet, or the visitor has asked for less motion.
+            if (heroImages.length < 2) return;
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            var activeLayer = 0;
+            var nextIndex = 1;
+
+            setInterval(function () {
+                var showing = slides[activeLayer];
+                var hidden = slides[1 - activeLayer];
+                hidden.style.backgroundImage = "url('" + heroImages[nextIndex] + "')";
+                hidden.classList.add('is-active');
+                showing.classList.remove('is-active');
+                activeLayer = 1 - activeLayer;
+                nextIndex = (nextIndex + 1) % heroImages.length;
+            }, 5000);
+        })();
+    </script>
+</body>
+</html>

@@ -86,19 +86,18 @@
                 submitBtn.disabled = true;
 
                 supabase.auth.signInWithPassword({ email: email, password: password }).then(function (result) {
-                    submitBtn.disabled = false;
                     if (result.error || !result.data.session) {
+                        submitBtn.disabled = false;
                         errorEl.textContent = 'Incorrect email or password.';
                         errorEl.hidden = false;
                         return;
                     }
-                    // This page alone can't verify "is this person an employee" —
-                    // that check needs a server, which is exactly what's being
-                    // wired up next. For right now this just confirms Supabase
-                    // accepted the credentials; it doesn't unlock anything.
-                    errorEl.style.color = '#8fe0ac';
-                    errorEl.textContent = "Signed in — full access isn't wired up on this page yet.";
-                    errorEl.hidden = false;
+                    // Correct credentials are enough to move on here — this page
+                    // is deliberately not linked from anywhere and isn't search-
+                    // indexed (see robots.txt), so this is a "keep it off the
+                    // public's radar before launch" gate, not a defense against
+                    // someone deliberately hunting for the real URL.
+                    window.location.href = '/home/';
                 });
             });
         })();
