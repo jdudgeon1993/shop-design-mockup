@@ -123,12 +123,23 @@
         .entry-list { list-style: none; margin: 0 0 20px; padding: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; max-height: 260px; overflow-y: auto; }
         .entry-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
         .entry-list li:last-child { border-bottom: none; }
+        .entry-list li.is-editing { background: rgba(212,175,55,0.08); }
+        .entry-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
         .entry-name { font-weight: 700; }
         .entry-meta { color: rgba(255,255,255,0.5); font-size: 12px; }
         .entry-empty { padding: 14px; font-size: 13px; color: rgba(255,255,255,0.4); font-style: italic; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(212,175,55,0.15); color: var(--gold); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #8fe0ac; margin-right: 4px; }
         .dot.inactive { background: rgba(255,255,255,0.25); }
+
+        .entry-actions { flex-shrink: 0; display: flex; gap: 6px; }
+        .btn-icon {
+            appearance: none; background: transparent; border: 1px solid var(--border); color: rgba(255,255,255,0.6);
+            font: inherit; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 4px 10px; border-radius: 999px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-icon:hover, .btn-icon:focus-visible { border-color: var(--gold); color: var(--gold); }
+        .btn-icon-danger:hover, .btn-icon-danger:focus-visible { border-color: rgba(220,80,80,0.6); color: #ff9a9a; }
 
         /* Brand Options — a per-brand checklist instead of an add-row form */
         .toggle-groups { display: none; }
@@ -224,6 +235,7 @@
                 </div>
                 <div class="form-actions">
                     <button class="btn-pill" type="submit">Add Tier</button>
+                    <button class="btn-secondary btn-small cancel-edit-btn" type="button" hidden>Cancel</button>
                     <p class="note error-note" id="tiers-error" hidden></p>
                 </div>
             </form>
@@ -241,6 +253,7 @@
                 </div>
                 <div class="form-actions">
                     <button class="btn-pill" type="submit">Add Room Type</button>
+                    <button class="btn-secondary btn-small cancel-edit-btn" type="button" hidden>Cancel</button>
                     <p class="note error-note" id="room-types-error" hidden></p>
                 </div>
             </form>
@@ -258,6 +271,7 @@
                 </div>
                 <div class="form-actions">
                     <button class="btn-pill" type="submit">Add Option Category</button>
+                    <button class="btn-secondary btn-small cancel-edit-btn" type="button" hidden>Cancel</button>
                     <p class="note error-note" id="option-categories-error" hidden></p>
                 </div>
             </form>
@@ -280,6 +294,7 @@
                 </div>
                 <div class="form-actions">
                     <button class="btn-pill" type="submit">Add Brand</button>
+                    <button class="btn-secondary btn-small cancel-edit-btn" type="button" hidden>Cancel</button>
                     <p class="note error-note" id="brands-error" hidden></p>
                 </div>
             </form>
@@ -297,6 +312,7 @@
                 </div>
                 <div class="form-actions">
                     <button class="btn-pill" type="submit">Add Cabinet Category</button>
+                    <button class="btn-secondary btn-small cancel-edit-btn" type="button" hidden>Cancel</button>
                     <p class="note error-note" id="cabinet-categories-error" hidden></p>
                 </div>
             </form>
@@ -318,6 +334,7 @@
                 </div>
                 <div class="form-actions">
                     <button class="btn-pill" type="submit">Add Option</button>
+                    <button class="btn-secondary btn-small cancel-edit-btn" type="button" hidden>Cancel</button>
                     <p class="note error-note" id="options-error" hidden></p>
                 </div>
             </form>
@@ -350,6 +367,7 @@
                 </div>
                 <div class="form-actions">
                     <button class="btn-pill" type="submit">Add Cabinet</button>
+                    <button class="btn-secondary btn-small cancel-edit-btn" type="button" hidden>Cancel</button>
                     <p class="note error-note" id="cabinets-error" hidden></p>
                 </div>
             </form>
@@ -373,6 +391,7 @@
                 </div>
                 <div class="form-actions">
                     <button class="btn-pill" type="submit">Add Dimension</button>
+                    <button class="btn-secondary btn-small cancel-edit-btn" type="button" hidden>Cancel</button>
                     <p class="note error-note" id="dimensions-error" hidden></p>
                 </div>
             </form>
@@ -423,9 +442,22 @@
             }
             function humanizeDbError(msg) {
                 if (msg.indexOf('duplicate key') !== -1) return 'That already exists — check the list above.';
+                if (msg.indexOf('is still referenced from table') !== -1) return "Can't delete this — other things in the catalog still depend on it. Remove those first.";
                 if (msg.indexOf('violates foreign key') !== -1) return 'One of the things you picked no longer exists — refresh and try again.';
                 if (msg.indexOf('violates row-level security') !== -1) return 'Your session may have expired — sign out and back in, then try again.';
                 return msg;
+            }
+            // Maps a Supabase table name back to its key in `state`, so a
+            // row can be looked up fresh (not from a stale render-time
+            // closure) whenever an Edit/Delete button is clicked.
+            var TABLE_STATE_KEY = {
+                tiers: 'tiers', room_types: 'roomTypes', option_categories: 'optionCategories',
+                brands: 'brands', cabinet_categories: 'cabinetCategories', options: 'options',
+                cabinets: 'cabinets', cabinet_dimensions: 'dimensions'
+            };
+            function findRowById(table, id) {
+                var rows = state[TABLE_STATE_KEY[table]] || [];
+                return rows.filter(function (r) { return r.id === id; })[0] || null;
             }
             function populateSelect(selectEl, rows, valueKey, labelFn, placeholder) {
                 var current = selectEl.value;
@@ -434,8 +466,13 @@
                 selectEl.innerHTML = html;
                 if (rows.some(function (r) { return r[valueKey] === current; })) selectEl.value = current;
             }
-            function entryRow(name, meta) {
-                return '<li><span class="entry-name">' + name + '</span><span class="entry-meta">' + (meta || '') + '</span></li>';
+            function entryRow(name, meta, id) {
+                return '<li data-id="' + id + '">' +
+                    '<span class="entry-info"><span class="entry-name">' + name + '</span><span class="entry-meta">' + (meta || '') + '</span></span>' +
+                    '<span class="entry-actions">' +
+                    '<button type="button" class="btn-icon" data-action="edit">Edit</button>' +
+                    '<button type="button" class="btn-icon btn-icon-danger" data-action="delete">Delete</button>' +
+                    '</span></li>';
             }
             function renderList(el, rows, renderFn, emptyText) {
                 if (!rows.length) { el.innerHTML = '<li class="entry-empty">' + emptyText + '</li>'; return; }
@@ -516,13 +553,13 @@
                 var catDimensions = state.dimensions.filter(byCatalog);
 
                 renderList(document.getElementById('tiers-list'), catTiers,
-                    function (t) { return entryRow(t.name, ''); }, 'No tiers yet in this catalog.');
+                    function (t) { return entryRow(t.name, '', t.id); }, 'No tiers yet in this catalog.');
 
                 renderList(document.getElementById('room-types-list'), catRoomTypes,
-                    function (r) { return entryRow(r.name, ''); }, 'No room types yet in this catalog.');
+                    function (r) { return entryRow(r.name, '', r.id); }, 'No room types yet in this catalog.');
 
                 renderList(document.getElementById('option-categories-list'), catOptionCategories,
-                    function (c) { return entryRow(c.name, ''); }, 'No option categories yet in this catalog.');
+                    function (c) { return entryRow(c.name, '', c.id); }, 'No option categories yet in this catalog.');
 
                 renderList(document.getElementById('brands-list'), catBrands,
                     function (b) {
@@ -530,29 +567,29 @@
                         var status = b.active === false
                             ? '<span class="dot inactive"></span>inactive'
                             : '<span class="dot"></span>active';
-                        return entryRow(b.name, '<span class="badge">' + tierName + '</span> &nbsp; ' + status);
+                        return entryRow(b.name, '<span class="badge">' + tierName + '</span> &nbsp; ' + status, b.id);
                     }, 'No brands yet in this catalog.');
 
                 renderList(document.getElementById('cabinet-categories-list'), catCabinetCategories,
-                    function (c) { return entryRow(c.name, c.room_types ? c.room_types.name : '—'); }, 'No cabinet categories yet in this catalog.');
+                    function (c) { return entryRow(c.name, c.room_types ? c.room_types.name : '—', c.id); }, 'No cabinet categories yet in this catalog.');
 
                 renderList(document.getElementById('options-list'), catOptions,
                     function (o) {
                         var catName = o.option_categories ? o.option_categories.name : '—';
-                        return entryRow(o.name, '<span class="badge">' + catName + '</span> &nbsp; ' + currency(o.price_modifier));
+                        return entryRow(o.name, '<span class="badge">' + catName + '</span> &nbsp; ' + currency(o.price_modifier), o.id);
                     }, 'No options yet in this catalog.');
 
                 renderList(document.getElementById('cabinets-list'), catCabinets,
                     function (c) {
                         var brandName = c.brands ? c.brands.name : '—';
                         var catName = c.cabinet_categories ? c.cabinet_categories.name : '—';
-                        return entryRow(c.name, '<span class="badge">' + brandName + '</span> &nbsp; ' + catName);
+                        return entryRow(c.name, '<span class="badge">' + brandName + '</span> &nbsp; ' + catName, c.id);
                     }, 'No cabinets yet in this catalog.');
 
                 renderList(document.getElementById('dimensions-list'), catDimensions,
                     function (d) {
                         var cabName = d.cabinets ? d.cabinets.name : '—';
-                        return entryRow(cabName + ' — ' + d.width_in + '" wide', 'SKU ' + d.sku + ' &nbsp; ' + currency(d.price));
+                        return entryRow(cabName + ' — ' + d.width_in + '" wide', 'SKU ' + d.sku + ' &nbsp; ' + currency(d.price), d.id);
                     }, 'No dimensions yet in this catalog.');
 
                 populateSelect(document.getElementById('brands-tier'), catTiers, 'id', function (t) { return t.name; }, 'Choose a tier…');
@@ -654,129 +691,316 @@
                 renderBrandOptionsPanel(state.options.filter(byCatalog));
             });
 
-            // ---- Generic "add a row" form wiring ----
-            function wireAddForm(formEl, errorId, buildPayload, table) {
-                formEl.addEventListener('submit', function (e) {
+            // ---- Generic "add/edit/delete a row" section wiring ----
+            // One form doubles as both the add-form and the edit-form: Edit
+            // pre-fills it and flips the submit into an UPDATE scoped to
+            // that row's id; Delete confirms, then deletes outright. Every
+            // section built on this gets all three for free.
+            var sectionControllers = [];
+            function wireSection(cfg) {
+                // cfg: { formEl, listEl, errorId, table, buildPayload, populateFields, rowLabel, addLabel }
+                var errorEl = document.getElementById(cfg.errorId);
+                var submitBtn = cfg.formEl.querySelector('button[type="submit"]');
+                var cancelBtn = cfg.formEl.querySelector('.cancel-edit-btn');
+                var editingId = null;
+
+                function setEditingRow(id) {
+                    var prev = cfg.listEl.querySelector('li.is-editing');
+                    if (prev) prev.classList.remove('is-editing');
+                    if (id) {
+                        var li = cfg.listEl.querySelector('li[data-id="' + id + '"]');
+                        if (li) li.classList.add('is-editing');
+                    }
+                }
+
+                function startEdit(row) {
+                    editingId = row.id;
+                    cfg.populateFields(row);
+                    submitBtn.textContent = 'Save Changes';
+                    cancelBtn.hidden = false;
+                    errorEl.hidden = true;
+                    setEditingRow(row.id);
+                    cfg.formEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                function cancelEdit() {
+                    if (!editingId) return;
+                    editingId = null;
+                    cfg.formEl.reset();
+                    submitBtn.textContent = cfg.addLabel;
+                    cancelBtn.hidden = true;
+                    errorEl.hidden = true;
+                    setEditingRow(null);
+                }
+                cancelBtn.addEventListener('click', cancelEdit);
+
+                cfg.formEl.addEventListener('submit', function (e) {
                     e.preventDefault();
-                    var errorEl = document.getElementById(errorId);
                     errorEl.hidden = true;
 
                     var payload;
                     try {
-                        payload = buildPayload();
+                        payload = cfg.buildPayload();
                     } catch (err) {
                         showError(errorEl, err);
                         return;
                     }
 
-                    var submitBtn = formEl.querySelector('button[type="submit"]');
-                    var originalLabel = submitBtn.textContent;
+                    var wasEditing = !!editingId;
                     submitBtn.disabled = true;
-                    submitBtn.textContent = 'Adding…';
+                    submitBtn.textContent = wasEditing ? 'Saving…' : 'Adding…';
 
-                    supabase.from(table).insert(payload).then(function (result) {
+                    var query = wasEditing
+                        ? supabase.from(cfg.table).update(payload).eq('id', editingId)
+                        : supabase.from(cfg.table).insert(payload);
+
+                    query.then(function (result) {
                         submitBtn.disabled = false;
-                        submitBtn.textContent = originalLabel;
-                        if (result.error) { showError(errorEl, result.error); return; }
-                        formEl.reset();
+                        if (result.error) {
+                            submitBtn.textContent = wasEditing ? 'Save Changes' : cfg.addLabel;
+                            showError(errorEl, result.error);
+                            return;
+                        }
+                        editingId = null;
+                        cfg.formEl.reset();
+                        submitBtn.textContent = cfg.addLabel;
+                        cancelBtn.hidden = true;
                         loadAll();
                     });
                 });
+
+                cfg.listEl.addEventListener('click', function (e) {
+                    var btn = e.target.closest('button[data-action]');
+                    if (!btn) return;
+                    var li = btn.closest('li[data-id]');
+                    if (!li) return;
+                    var id = li.getAttribute('data-id');
+                    var row = findRowById(cfg.table, id);
+                    if (!row) return;
+
+                    if (btn.getAttribute('data-action') === 'edit') {
+                        startEdit(row);
+                    } else if (btn.getAttribute('data-action') === 'delete') {
+                        if (!window.confirm('Delete "' + cfg.rowLabel(row) + '"? This can\'t be undone.')) return;
+                        errorEl.hidden = true;
+                        supabase.from(cfg.table).delete().eq('id', id).then(function (result) {
+                            if (result.error) { showError(errorEl, result.error); return; }
+                            if (editingId === id) cancelEdit();
+                            loadAll();
+                        });
+                    }
+                });
+
+                var controller = { cancelEdit: cancelEdit };
+                sectionControllers.push(controller);
+                return controller;
             }
 
-            wireAddForm(document.getElementById('tiers-form'), 'tiers-error', function () {
-                var name = document.getElementById('tiers-name').value.trim();
-                if (!name) throw new Error('Enter a name.');
-                if (!selectedCatalogId) throw new Error('Choose a catalog above first.');
-                return { name: name, sort_order: Number(document.getElementById('tiers-sort').value) || 0, catalog_id: selectedCatalogId };
-            }, 'tiers');
+            function cancelAllEdits() {
+                sectionControllers.forEach(function (c) { c.cancelEdit(); });
+            }
 
-            wireAddForm(document.getElementById('room-types-form'), 'room-types-error', function () {
-                var name = document.getElementById('room-types-name').value.trim();
-                if (!name) throw new Error('Enter a name.');
-                if (!selectedCatalogId) throw new Error('Choose a catalog above first.');
-                var payload = { name: name, slug: slugify(name), catalog_id: selectedCatalogId };
-                var image = document.getElementById('room-types-image').value.trim();
-                if (image) payload.image_url = image;
-                return payload;
-            }, 'room_types');
+            wireSection({
+                formEl: document.getElementById('tiers-form'),
+                listEl: document.getElementById('tiers-list'),
+                errorId: 'tiers-error',
+                table: 'tiers',
+                addLabel: 'Add Tier',
+                buildPayload: function () {
+                    var name = document.getElementById('tiers-name').value.trim();
+                    if (!name) throw new Error('Enter a name.');
+                    if (!selectedCatalogId) throw new Error('Choose a catalog above first.');
+                    return { name: name, sort_order: Number(document.getElementById('tiers-sort').value) || 0, catalog_id: selectedCatalogId };
+                },
+                populateFields: function (row) {
+                    document.getElementById('tiers-name').value = row.name;
+                    document.getElementById('tiers-sort').value = row.sort_order;
+                },
+                rowLabel: function (row) { return row.name; }
+            });
 
-            wireAddForm(document.getElementById('option-categories-form'), 'option-categories-error', function () {
-                var name = document.getElementById('option-categories-name').value.trim();
-                if (!name) throw new Error('Enter a name.');
-                if (!selectedCatalogId) throw new Error('Choose a catalog above first.');
-                return { name: name, sort_order: Number(document.getElementById('option-categories-sort').value) || 0, catalog_id: selectedCatalogId };
-            }, 'option_categories');
+            wireSection({
+                formEl: document.getElementById('room-types-form'),
+                listEl: document.getElementById('room-types-list'),
+                errorId: 'room-types-error',
+                table: 'room_types',
+                addLabel: 'Add Room Type',
+                buildPayload: function () {
+                    var name = document.getElementById('room-types-name').value.trim();
+                    if (!name) throw new Error('Enter a name.');
+                    if (!selectedCatalogId) throw new Error('Choose a catalog above first.');
+                    var payload = { name: name, slug: slugify(name), catalog_id: selectedCatalogId };
+                    var image = document.getElementById('room-types-image').value.trim();
+                    if (image) payload.image_url = image;
+                    return payload;
+                },
+                populateFields: function (row) {
+                    document.getElementById('room-types-name').value = row.name;
+                    document.getElementById('room-types-image').value = row.image_url || '';
+                },
+                rowLabel: function (row) { return row.name; }
+            });
 
-            wireAddForm(document.getElementById('brands-form'), 'brands-error', function () {
-                var name = document.getElementById('brands-name').value.trim();
-                var tierId = document.getElementById('brands-tier').value;
-                if (!name) throw new Error('Enter a name.');
-                if (!tierId) throw new Error('Choose a tier.');
-                var payload = { name: name, slug: slugify(name), tier_id: tierId };
-                var description = document.getElementById('brands-description').value.trim();
-                var logo = document.getElementById('brands-logo').value.trim();
-                var hero = document.getElementById('brands-hero').value.trim();
-                if (description) payload.description = description;
-                if (logo) payload.logo_url = logo;
-                if (hero) payload.hero_image_url = hero;
-                return payload;
-            }, 'brands');
+            wireSection({
+                formEl: document.getElementById('option-categories-form'),
+                listEl: document.getElementById('option-categories-list'),
+                errorId: 'option-categories-error',
+                table: 'option_categories',
+                addLabel: 'Add Option Category',
+                buildPayload: function () {
+                    var name = document.getElementById('option-categories-name').value.trim();
+                    if (!name) throw new Error('Enter a name.');
+                    if (!selectedCatalogId) throw new Error('Choose a catalog above first.');
+                    return { name: name, sort_order: Number(document.getElementById('option-categories-sort').value) || 0, catalog_id: selectedCatalogId };
+                },
+                populateFields: function (row) {
+                    document.getElementById('option-categories-name').value = row.name;
+                    document.getElementById('option-categories-sort').value = row.sort_order;
+                },
+                rowLabel: function (row) { return row.name; }
+            });
 
-            wireAddForm(document.getElementById('cabinet-categories-form'), 'cabinet-categories-error', function () {
-                var name = document.getElementById('cabinet-categories-name').value.trim();
-                var roomTypeId = document.getElementById('cabinet-categories-room').value;
-                if (!name) throw new Error('Enter a name.');
-                if (!roomTypeId) throw new Error('Choose a room type.');
-                return { name: name, room_type_id: roomTypeId };
-            }, 'cabinet_categories');
+            wireSection({
+                formEl: document.getElementById('brands-form'),
+                listEl: document.getElementById('brands-list'),
+                errorId: 'brands-error',
+                table: 'brands',
+                addLabel: 'Add Brand',
+                buildPayload: function () {
+                    var name = document.getElementById('brands-name').value.trim();
+                    var tierId = document.getElementById('brands-tier').value;
+                    if (!name) throw new Error('Enter a name.');
+                    if (!tierId) throw new Error('Choose a tier.');
+                    var payload = { name: name, slug: slugify(name), tier_id: tierId };
+                    var description = document.getElementById('brands-description').value.trim();
+                    var logo = document.getElementById('brands-logo').value.trim();
+                    var hero = document.getElementById('brands-hero').value.trim();
+                    if (description) payload.description = description;
+                    if (logo) payload.logo_url = logo;
+                    if (hero) payload.hero_image_url = hero;
+                    return payload;
+                },
+                populateFields: function (row) {
+                    document.getElementById('brands-name').value = row.name;
+                    document.getElementById('brands-tier').value = row.tier_id;
+                    document.getElementById('brands-description').value = row.description || '';
+                    document.getElementById('brands-logo').value = row.logo_url || '';
+                    document.getElementById('brands-hero').value = row.hero_image_url || '';
+                },
+                rowLabel: function (row) { return row.name; }
+            });
 
-            wireAddForm(document.getElementById('options-form'), 'options-error', function () {
-                var name = document.getElementById('options-name').value.trim();
-                var categoryId = document.getElementById('options-category').value;
-                if (!name) throw new Error('Enter a name.');
-                if (!categoryId) throw new Error('Choose an option category.');
-                var payload = { name: name, option_category_id: categoryId, price_modifier: Number(document.getElementById('options-price').value) || 0 };
-                var image = document.getElementById('options-image').value.trim();
-                if (image) payload.image_url = image;
-                return payload;
-            }, 'options');
+            wireSection({
+                formEl: document.getElementById('cabinet-categories-form'),
+                listEl: document.getElementById('cabinet-categories-list'),
+                errorId: 'cabinet-categories-error',
+                table: 'cabinet_categories',
+                addLabel: 'Add Cabinet Category',
+                buildPayload: function () {
+                    var name = document.getElementById('cabinet-categories-name').value.trim();
+                    var roomTypeId = document.getElementById('cabinet-categories-room').value;
+                    if (!name) throw new Error('Enter a name.');
+                    if (!roomTypeId) throw new Error('Choose a room type.');
+                    return { name: name, room_type_id: roomTypeId };
+                },
+                populateFields: function (row) {
+                    document.getElementById('cabinet-categories-name').value = row.name;
+                    document.getElementById('cabinet-categories-room').value = row.room_type_id;
+                },
+                rowLabel: function (row) { return row.name; }
+            });
 
-            wireAddForm(document.getElementById('cabinets-form'), 'cabinets-error', function () {
-                var name = document.getElementById('cabinets-name').value.trim();
-                var brandId = document.getElementById('cabinets-brand').value;
-                var categoryId = document.getElementById('cabinets-category').value;
-                if (!name) throw new Error('Enter a name.');
-                if (!brandId) throw new Error('Choose a brand.');
-                if (!categoryId) throw new Error('Choose a category.');
-                var payload = { name: name, brand_id: brandId, category_id: categoryId };
-                var image = document.getElementById('cabinets-image').value.trim();
-                var description = document.getElementById('cabinets-description').value.trim();
-                if (image) payload.image_url = image;
-                if (description) payload.description = description;
-                return payload;
-            }, 'cabinets');
+            wireSection({
+                formEl: document.getElementById('options-form'),
+                listEl: document.getElementById('options-list'),
+                errorId: 'options-error',
+                table: 'options',
+                addLabel: 'Add Option',
+                buildPayload: function () {
+                    var name = document.getElementById('options-name').value.trim();
+                    var categoryId = document.getElementById('options-category').value;
+                    if (!name) throw new Error('Enter a name.');
+                    if (!categoryId) throw new Error('Choose an option category.');
+                    var payload = { name: name, option_category_id: categoryId, price_modifier: Number(document.getElementById('options-price').value) || 0 };
+                    var image = document.getElementById('options-image').value.trim();
+                    if (image) payload.image_url = image;
+                    return payload;
+                },
+                populateFields: function (row) {
+                    document.getElementById('options-name').value = row.name;
+                    document.getElementById('options-category').value = row.option_category_id;
+                    document.getElementById('options-price').value = row.price_modifier;
+                    document.getElementById('options-image').value = row.image_url || '';
+                },
+                rowLabel: function (row) { return row.name; }
+            });
 
-            wireAddForm(document.getElementById('dimensions-form'), 'dimensions-error', function () {
-                var cabinetId = document.getElementById('dimensions-cabinet').value;
-                var width = document.getElementById('dimensions-width').value;
-                var sku = document.getElementById('dimensions-sku').value.trim();
-                var price = document.getElementById('dimensions-price').value;
-                if (!cabinetId) throw new Error('Choose a cabinet.');
-                if (!width) throw new Error('Enter a width.');
-                if (!sku) throw new Error('Enter a SKU.');
-                if (!price) throw new Error('Enter a price.');
-                var payload = { cabinet_id: cabinetId, width_in: Number(width), sku: sku, price: Number(price) };
-                var height = document.getElementById('dimensions-height').value;
-                var depth = document.getElementById('dimensions-depth').value;
-                if (height) payload.height_in = Number(height);
-                if (depth) payload.depth_in = Number(depth);
-                return payload;
-            }, 'cabinet_dimensions');
+            wireSection({
+                formEl: document.getElementById('cabinets-form'),
+                listEl: document.getElementById('cabinets-list'),
+                errorId: 'cabinets-error',
+                table: 'cabinets',
+                addLabel: 'Add Cabinet',
+                buildPayload: function () {
+                    var name = document.getElementById('cabinets-name').value.trim();
+                    var brandId = document.getElementById('cabinets-brand').value;
+                    var categoryId = document.getElementById('cabinets-category').value;
+                    if (!name) throw new Error('Enter a name.');
+                    if (!brandId) throw new Error('Choose a brand.');
+                    if (!categoryId) throw new Error('Choose a category.');
+                    var payload = { name: name, brand_id: brandId, category_id: categoryId };
+                    var image = document.getElementById('cabinets-image').value.trim();
+                    var description = document.getElementById('cabinets-description').value.trim();
+                    if (image) payload.image_url = image;
+                    if (description) payload.description = description;
+                    return payload;
+                },
+                populateFields: function (row) {
+                    document.getElementById('cabinets-name').value = row.name;
+                    document.getElementById('cabinets-brand').value = row.brand_id;
+                    document.getElementById('cabinets-category').value = row.category_id;
+                    document.getElementById('cabinets-image').value = row.image_url || '';
+                    document.getElementById('cabinets-description').value = row.description || '';
+                },
+                rowLabel: function (row) { return row.name; }
+            });
+
+            wireSection({
+                formEl: document.getElementById('dimensions-form'),
+                listEl: document.getElementById('dimensions-list'),
+                errorId: 'dimensions-error',
+                table: 'cabinet_dimensions',
+                addLabel: 'Add Dimension',
+                buildPayload: function () {
+                    var cabinetId = document.getElementById('dimensions-cabinet').value;
+                    var width = document.getElementById('dimensions-width').value;
+                    var sku = document.getElementById('dimensions-sku').value.trim();
+                    var price = document.getElementById('dimensions-price').value;
+                    if (!cabinetId) throw new Error('Choose a cabinet.');
+                    if (!width) throw new Error('Enter a width.');
+                    if (!sku) throw new Error('Enter a SKU.');
+                    if (!price) throw new Error('Enter a price.');
+                    var payload = { cabinet_id: cabinetId, width_in: Number(width), sku: sku, price: Number(price) };
+                    var height = document.getElementById('dimensions-height').value;
+                    var depth = document.getElementById('dimensions-depth').value;
+                    if (height) payload.height_in = Number(height);
+                    if (depth) payload.depth_in = Number(depth);
+                    return payload;
+                },
+                populateFields: function (row) {
+                    document.getElementById('dimensions-cabinet').value = row.cabinet_id;
+                    document.getElementById('dimensions-width').value = row.width_in;
+                    document.getElementById('dimensions-height').value = row.height_in || '';
+                    document.getElementById('dimensions-depth').value = row.depth_in || '';
+                    document.getElementById('dimensions-sku').value = row.sku;
+                    document.getElementById('dimensions-price').value = row.price;
+                },
+                rowLabel: function (row) { return (row.cabinets ? row.cabinets.name : 'this dimension') + ' — SKU ' + row.sku; }
+            });
 
             // ---- Catalog switcher ----
             document.getElementById('catalog-select').addEventListener('change', function (e) {
                 selectedCatalogId = e.target.value;
+                cancelAllEdits();
                 renderAll();
             });
 
@@ -809,7 +1033,7 @@
                     newCatalogToggle.textContent = '+ New Catalog';
                     loadAll().then(function () {
                         var created = state.catalogs.filter(function (c) { return c.name === name; })[0];
-                        if (created) { selectedCatalogId = created.id; renderAll(); }
+                        if (created) { selectedCatalogId = created.id; cancelAllEdits(); renderAll(); }
                     });
                 });
             });
