@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Coming Soon</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         html, body {
             height: 100%; margin: 0; background: #1a1a1a; color: #ffffff;
@@ -17,6 +18,34 @@
             letter-spacing: 0.5px;
         }
         p { margin: 14px 0 0; color: rgba(255,255,255,0.5); font-size: 15px; }
+
+        /* Deliberately unobtrusive — a small dot, not a login button.
+           Nothing about this page should read as "there's a door here." */
+        .access-toggle {
+            position: fixed; bottom: 18px; right: 18px; width: 10px; height: 10px;
+            border-radius: 50%; background: rgba(255,255,255,0.15); border: none;
+            cursor: pointer; padding: 0;
+        }
+        .access-toggle:hover, .access-toggle:focus-visible { background: rgba(255,255,255,0.35); }
+
+        .access-panel {
+            position: fixed; bottom: 40px; right: 18px; width: 220px;
+            background: #222; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+            padding: 16px; text-align: left;
+        }
+        .access-panel input {
+            width: 100%; box-sizing: border-box; margin-bottom: 8px; padding: 8px 10px;
+            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px;
+            color: #fff; font-size: 13px;
+        }
+        .access-panel input:focus { outline: none; border-color: rgba(255,255,255,0.4); }
+        .access-panel button[type="submit"] {
+            width: 100%; padding: 8px; border: none; border-radius: 4px; background: rgba(255,255,255,0.9);
+            color: #1a1a1a; font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+        .access-error { margin: 8px 0 0; font-size: 11px; color: #ff9a9a; }
+
+        [hidden] { display: none !important; }
     </style>
 </head>
 <body>
@@ -24,5 +53,68 @@
         <h1>Something big is coming soon.</h1>
         <p>Check back shortly.</p>
     </div>
+
+    <button class="access-toggle" id="access-toggle" type="button" aria-label="Access"></button>
+    <form class="access-panel" id="access-form" hidden>
+        <input type="email" id="access-email" placeholder="Email" autocomplete="username" required>
+        <input type="password" id="access-password" placeholder="Password" autocomplete="current-password" required>
+        <button type="submit">Sign In</button>
+        <p class="access-error" id="access-error" hidden></p>
+    </form>
+
+    <script>
+        (function () {
+            var SUPABASE_URL = 'https://nutgbxgnkvvruaoloqch.supabase.co';
+            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51dGdieGdua3Z2cnVhb2xvcWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NDEzNDgsImV4cCI6MjEwMDIxNzM0OH0.v9hXYtxOslhyXOu-mZVjm_EFaUIdTqTWKn9P3B7BY64';
+            var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            var toggle = document.getElementById('access-toggle');
+            var form = document.getElementById('access-form');
+            var errorEl = document.getElementById('access-error');
+
+            toggle.addEventListener('click', function () {
+                form.hidden = !form.hidden;
+                if (!form.hidden) document.getElementById('access-email').focus();
+            });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                errorEl.hidden = true;
+                var email = document.getElementById('access-email').value.trim();
+                var password = document.getElementById('access-password').value;
+                var submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+
+                supabase.auth.signInWithPassword({ email: email, password: password }).then(function (result) {
+                    if (result.error || !result.data.session) {
+                        submitBtn.disabled = false;
+                        errorEl.textContent = 'Incorrect email or password.';
+                        errorEl.hidden = false;
+                        return;
+                    }
+                    // This gate's own cookie is what static-server.js actually
+                    // checks — the Supabase client session alone doesn't
+                    // unlock anything server-side.
+                    fetch('/api/session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ access_token: result.data.session.access_token })
+                    }).then(function (res) {
+                        if (!res.ok) {
+                            submitBtn.disabled = false;
+                            errorEl.textContent = 'That account isn\'t authorized for this.';
+                            errorEl.hidden = false;
+                            return;
+                        }
+                        window.location.reload();
+                    }).catch(function () {
+                        submitBtn.disabled = false;
+                        errorEl.textContent = 'Could not reach the server. Try again.';
+                        errorEl.hidden = false;
+                    });
+                });
+            });
+        })();
+    </script>
 </body>
 </html>

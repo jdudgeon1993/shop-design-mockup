@@ -1,8 +1,8 @@
 {
-  "name": "design-lab-admin-static-host",
-  "version": "1.0.0",
+  "name": "design-lab-gatekeeper",
+  "version": "2.0.0",
   "private": true,
-  "description": "Serves this repo's static site as-is (no build step, no dependencies) — used by the two admin.shopdesignlab.com Railway services described in ADMIN-HOSTING.md. GitHub Pages remains the host for the real shopdesignlab.com production domain; this only exists for internal preview/staging.",
+  "description": "Serves this repo's static site, but gated: every path requires a real, server-verified Supabase session belonging to an employee, or it gets coming-soon/index.html instead. Meant to run on Railway in front of the real shopdesignlab.com domain while the site isn't public yet — see the deploy notes shared alongside this file.",
   "engines": {
     "node": ">=18"
   },
