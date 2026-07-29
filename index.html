@@ -117,14 +117,10 @@
             flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between;
             padding: var(--navbar-h) 0 0;
         }
-        /* The scrim is normally z-index:auto; pin it explicitly so it's
-           unambiguous relative to the slide layers below and the real
-           content above (both use z-index:1, but the scrim still paints
-           first since ::before always precedes other content). */
-        .hero-photo::before {
-            content: ""; position: absolute; inset: 0; z-index: 1;
-            background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.65));
-        }
+        /* Scrim removed per CEO feedback — the photo was reading too dark.
+           .hero-photo > * still gets z-index:1 so content stays above the
+           .hero-slide photo layers (z-index:0) even without a scrim between
+           them. */
         .hero-photo > * { position: relative; z-index: 1; }
 
         .hero-top { padding: 28px 10% 0; }
@@ -140,7 +136,11 @@
         }
         .hero-slide.is-active { opacity: 1; }
 
-        .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; }
+        /* The logo's tagline text is baked into this PNG, not real HTML text,
+           so it can't take a text-shadow directly — a drop-shadow filter on
+           the whole image gives the same legibility boost against a bright
+           photo without darkening the photo itself (unlike the old scrim). */
+        .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.7)); }
 
         .hero-content { padding: 0 10%; margin-bottom: 28px; }
         .hero-heading {
@@ -233,12 +233,16 @@
             .nav-links { flex-direction: column; gap: 16px; align-items: flex-start; }
             .nav-icons { flex-direction: row; gap: 24px; }
 
-            /* The photo gets a full screen to itself — same top/bottom
-               split as desktop (logo top, heading/buttons bottom) — instead
-               of competing with the stat bar for space. Stats become a
-               normal section below, reached by scrolling, not squeezed. */
+            /* The photo gets its own screen space — same top/bottom split as
+               desktop (logo top, heading/buttons bottom) — instead of
+               competing with the stat bar. Stats become a normal section
+               below, reached by scrolling, not squeezed. Capped at 60vh
+               (not a full 100dvh) because the photo itself is a wide/
+               panoramic shot — forcing it into a full-height, narrow mobile
+               box crops it down to a sliver of its center; a shorter box
+               keeps far more of the actual kitchen in frame. */
             .hero { height: auto; }
-            .hero-photo { min-height: 100dvh; padding-bottom: 32px; }
+            .hero-photo { min-height: 60vh; padding-bottom: 32px; }
             .hero-logo-img { max-width: 320px; }
             .hero-heading { font-size: clamp(28px, 8vw, 40px); }
             .btn-hero { width: 100%; justify-content: space-between; }
