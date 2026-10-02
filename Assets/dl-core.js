@@ -237,6 +237,105 @@
         }
     };
 
+    // ---------- Product photos ----------
+    // Photos live in the PRIVATE `product-images` bucket. public.product_images says
+    // which photo belongs to which product / door style / finish; the `image-urls`
+    // Edge Function signs short-lived URLs for them. Photos are painted as CSS
+    // backgrounds under a transparent cover (no <img> to right-click/drag/long-press
+    // save). This deters casual saving; screenshots can't be blocked, which is why the
+    // uploaded copies carry a watermark and the full-size originals never go online.
+    var PHOTO_CACHE_KEY = 'dl_photo_urls_v1';
+    var photoIndex = null;   // Promise<rows>
+    var photoUrls = {};      // path -> { url, exp }
+    try { photoUrls = JSON.parse(sessionStorage.getItem(PHOTO_CACHE_KEY) || '{}'); } catch (e) { photoUrls = {}; }
+
+    var photoCss = document.createElement('style');
+    photoCss.textContent =
+        '.dl-photo{position:relative;background:#fff center/contain no-repeat;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}' +
+        '.dl-photo::after{content:"";position:absolute;inset:0}' +
+        '.dl-photo.is-loading{background-color:#f4f4f4}';
+    document.head.appendChild(photoCss);
+    ['contextmenu', 'dragstart'].forEach(function (type) {
+        document.addEventListener(type, function (e) {
+            if (e.target.closest && e.target.closest('.dl-photo')) e.preventDefault();
+        });
+    });
+
+    function loadPhotoIndex() {
+        if (!photoIndex) {
+            photoIndex = fetchAll(function (a, b) {
+                return supabase.from('product_images')
+                    .select('product_id,family_id,door_style_id,finish_id,kind,media,view,hinge,storage_path,sort_order')
+                    .order('sort_order').order('id').range(a, b);
+            }).catch(function () { return []; });
+        }
+        return photoIndex;
+    }
+
+    // Best photo for a product (or family) in a door style + finish. Falls back from the
+    // exact finish -> any-finish drawing -> another finish of the same style.
+    function pickPhoto(rows, o) {
+        function score(r) {
+            if (o.styleId != null && r.door_style_id !== o.styleId) return -1;
+            var s = 0;
+            if (o.finishId != null && r.finish_id === o.finishId) s += 40;
+            else if (r.finish_id == null) s += 20;
+            else if (o.strictFinish) return -1;
+            if ((r.view === '5p') === !!o.fivePiece) s += 8;
+            if (!r.hinge) s += 2;
+            return s;
+        }
+        function best(list) {
+            var top = null, topScore = -1;
+            list.forEach(function (r) { var s = score(r); if (s > topScore) { top = r; topScore = s; } });
+            return top;
+        }
+        var hit = null;
+        if (o.productId != null) hit = best(rows.filter(function (r) { return r.kind === 'product' && r.product_id === o.productId; }));
+        if (!hit && o.familyId != null) hit = best(rows.filter(function (r) { return r.kind === 'family' && r.family_id === o.familyId; }));
+        return hit ? hit.storage_path : null;
+    }
+
+    function signPhotos(paths) {
+        var now = Date.now();
+        var need = paths.filter(function (p, i) {
+            return p && paths.indexOf(p) === i && !(photoUrls[p] && photoUrls[p].exp > now + 60000);
+        });
+        var batches = [];
+        for (var i = 0; i < need.length; i += 100) batches.push(need.slice(i, i + 100));
+        return Promise.all(batches.map(function (batch) {
+            return supabase.functions.invoke('image-urls', { body: { paths: batch } }).then(function (res) {
+                var urls = (res.data && res.data.urls) || {};
+                var exp = Date.now() + ((res.data && res.data.expiresIn) || 3600) * 1000;
+                Object.keys(urls).forEach(function (p) { photoUrls[p] = { url: urls[p], exp: exp }; });
+            }).catch(function () {});
+        })).then(function () {
+            try { sessionStorage.setItem(PHOTO_CACHE_KEY, JSON.stringify(photoUrls)); } catch (e) {}
+            var out = {};
+            paths.forEach(function (p) { if (p && photoUrls[p]) out[p] = photoUrls[p].url; });
+            return out;
+        });
+    }
+
+    // Paint every [data-photo] element under root. Elements whose photo can't be signed
+    // keep whatever fallback they already show.
+    function paintPhotos(root) {
+        var els = Array.prototype.slice.call((root || document).querySelectorAll('[data-photo]'));
+        if (!els.length) return Promise.resolve();
+        return signPhotos(els.map(function (el) { return el.getAttribute('data-photo'); })).then(function (urls) {
+            els.forEach(function (el) {
+                var url = urls[el.getAttribute('data-photo')];
+                el.classList.remove('is-loading');
+                if (!url) return;
+                el.classList.add('dl-photo');
+                el.style.backgroundImage = 'url("' + url + '")';
+                el.dispatchEvent(new CustomEvent('dl-photo-painted', { bubbles: true }));
+            });
+        });
+    }
+
+    var photos = { load: loadPhotoIndex, pick: pickPhoto, sign: signPhotos, paint: paintPhotos };
+
     window.DL = {
         supabase: supabase,
         formatMoney: formatMoney,
@@ -244,6 +343,7 @@
         escapeHtml: escapeHtml,
         cart: cart,
         doorSvg: doorSvg,
-        doorGuide: doorGuide
+        doorGuide: doorGuide,
+        photos: photos
     };
 })();
