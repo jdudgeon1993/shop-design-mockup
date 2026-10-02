@@ -98,6 +98,36 @@
         .style-art svg { height: 150px; width: auto; }
         .style-art.is-drawing { background: linear-gradient(135deg, #2b2b2b, #1f1f1f); }
 
+        /* ---------- Structure | 3 ---------- */
+        .s3 { display: grid; grid-template-columns: 1fr; margin-bottom: 30px; border: 1px solid var(--gold); border-radius: 16px; overflow: hidden;
+              background: radial-gradient(120% 140% at 100% 0%, rgba(212,175,55,0.14), rgba(212,175,55,0) 55%), #151515; }
+        @media (min-width: 860px) { .s3 { grid-template-columns: 1.05fr 1fr; } }
+        .s3-photos { position: relative; min-height: 260px; }
+        @media (min-width: 860px) { .s3-photos { min-height: 440px; } }
+        .s3-slide { position: absolute; inset: 0; background: #222 center / cover no-repeat; opacity: 0; transition: opacity 1.2s ease; }
+        .s3-slide.is-active { opacity: 1; }
+        .s3-body { padding: 28px 28px 30px; display: flex; flex-direction: column; gap: 12px; }
+        @media (min-width: 860px) { .s3-body { padding: 40px 40px 36px; justify-content: center; } }
+        .s3-badge { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+        .s3-name { margin: 0; display: flex; align-items: center; gap: 14px; font-family: 'Playfair Display', serif; font-weight: 600;
+                   font-size: clamp(30px, 4.4vw, 46px); letter-spacing: 6px; line-height: 1; }
+        .s3-bar { width: 3px; align-self: stretch; background: var(--gold); border-radius: 2px; }
+        .s3-tag { margin: 0; font-size: 15px; letter-spacing: 1px; color: rgba(255,255,255,0.85); }
+        .s3-copy { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; max-width: 520px; }
+        .s3-facts { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+        .s3-facts li { font-size: 12.5px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 999px; color: rgba(255,255,255,0.8); }
+        .s3-facts b { color: var(--gold); }
+        .s3-next { margin: 2px 0 0; font-size: 13px; color: rgba(255,255,255,0.75); }
+        .s3-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+        .s3-form input { flex: 1 1 220px; min-width: 0; padding: 12px 14px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.06); color: var(--white); font: inherit; font-size: 14px; }
+        .s3-form input:focus { outline: none; border-color: var(--gold); }
+        .s3-msg { margin: 0; font-size: 13px; color: var(--gold); }
+        .s3-msg.is-error { color: #ff9a8a; }
+        .s3-link { font-size: 13px; color: rgba(255,255,255,0.75); }
+        .s3-link:hover { color: var(--gold); }
+        .partner-label { margin: 0 0 12px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
         .finish-pick { margin-top: 26px; padding: 22px; border: 1px solid var(--gold); border-radius: 14px; background: rgba(212,175,55,0.05); scroll-margin-top: 90px; }
         .finish-pick h2 { margin: 0 0 4px; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; }
         .finish-pick > p { margin: 0 0 16px; color: var(--muted); font-size: 13.5px; }
@@ -328,7 +358,37 @@
         <p class="intro-sub" id="step-sub"></p>
 
         <section class="step" id="step-mfr" hidden aria-label="Choose your manufacturer">
-            <div class="pick-grid three" id="mfr-grid"></div>
+            <!-- Structure | 3: Design Lab's own line. Featured above the partner lines. -->
+            <article class="s3" aria-labelledby="s3-name">
+                <div class="s3-photos" aria-hidden="true">
+                    <span class="s3-slide is-active" style="background-image:url('/Assets/Images/structure3/walk-in-island.webp')"></span>
+                    <span class="s3-slide" style="background-image:url('/Assets/Images/structure3/walk-in-slate.webp')"></span>
+                    <span class="s3-slide" style="background-image:url('/Assets/Images/structure3/reach-in-beach.webp')"></span>
+                    <span class="s3-slide" style="background-image:url('/Assets/Images/structure3/walk-in-bench.webp')"></span>
+                    <span class="s3-slide" style="background-image:url('/Assets/Images/structure3/reach-in-slate.webp')"></span>
+                </div>
+                <div class="s3-body">
+                    <p class="s3-badge">Exclusively by Design Lab &middot; Coming soon</p>
+                    <h2 class="s3-name" id="s3-name">STRUCTURE<span class="s3-bar" aria-hidden="true"></span>3</h2>
+                    <p class="s3-tag">Organization. Framework. Purpose.</p>
+                    <p class="s3-copy">Our own line, built by the three people behind Design Lab. Luxury at mid-level pricing: engineered materials that stay true and won&rsquo;t warp or twist, a lifetime build, and matching TAG hardware to finish it off.</p>
+                    <ul class="s3-facts">
+                        <li><b>20</b> colors, 4 ship in 10 days</li>
+                        <li><b>Walk-in</b> &amp; reach-in closets</li>
+                        <li><b>Lifetime</b> product</li>
+                    </ul>
+                    <p class="s3-next">Closets first. Kitchen, bath and garage to follow.</p>
+                    <form class="s3-form" id="s3-form" novalidate>
+                        <label class="sr-only" for="s3-email">Email</label>
+                        <input type="email" id="s3-email" placeholder="you@email.com" autocomplete="email" required>
+                        <button class="btn-primary" type="submit" id="s3-submit">Be first to know</button>
+                    </form>
+                    <p class="s3-msg" id="s3-msg" role="status" hidden></p>
+                    <a class="s3-link" href="https://heyzine.com/flip-book/60855d8229.html" target="_blank" rel="noopener">Flip through the closet lookbook &rarr;</a>
+                </div>
+            </article>
+            <p class="partner-label">Partner lines</p>
+            <div class="pick-grid" id="mfr-grid"></div>
         </section>
 
         <section class="step" id="step-style" hidden aria-label="Choose your door style and finish">
@@ -1197,7 +1257,6 @@
         // URL carries it too (?style=L5P&finish=L10) so links and the Back button work.
         var LOOK_KEY = 'dl_diy_look_v1';
         var COMING_SOON = [
-            { name: 'Structure | 3', blurb: 'A second cabinetry partner is joining the Design Lab lineup.' },
             { name: 'Stow', blurb: 'Storage-focused cabinetry, coming to the DIY Shop soon.' }
         ];
         var look = null;          // { vendorId, styleId, finishId }
@@ -1244,7 +1303,7 @@
         }
 
         var STEP_TEXT = {
-            mfr: ['Step 1 of 4', 'Choose your manufacturer', 'Every Design Lab cabinet comes from a manufacturer we trust. Start with theirs; more lines are on the way.'],
+            mfr: ['Step 1 of 4', 'Choose your manufacturer', 'Our own Structure | 3 line is on its way. Until then, shop the partner lines we trust.'],
             style: ['Step 2 of 4', 'Choose your door style & finish', 'This sets the look of every cabinet you’ll see next. You can change it anytime.'],
             shop: ['Step 3 of 4', 'Every cabinet, your way.', '']
         };
@@ -1404,6 +1463,32 @@
             DL.kitchen.render(document.getElementById('kitchen-strip'), { space: state.space === 'Bath' ? 'Bath' : 'Kitchen' });
         }
         DL.cart.onChange(paintKitchen);
+        // Structure | 3: rotate the closet photos and collect "be first to know" emails.
+        (function () {
+            var slides = document.querySelectorAll('.s3-slide'), i = 0;
+            if (slides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                setInterval(function () {
+                    if (step !== 'mfr') return;
+                    slides[i].classList.remove('is-active'); i = (i + 1) % slides.length; slides[i].classList.add('is-active');
+                }, 5000);
+            }
+            var form = document.getElementById('s3-form'), input = document.getElementById('s3-email'),
+                btn = document.getElementById('s3-submit'), msg = document.getElementById('s3-msg');
+            function say(text, isError) { msg.textContent = text; msg.hidden = false; msg.classList.toggle('is-error', !!isError); }
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var email = input.value.trim();
+                if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say('Please enter a valid email address.', true); input.focus(); return; }
+                btn.disabled = true; btn.textContent = 'Saving…';
+                sb.from('launch_signups').insert({ email: email, line: 'structure-3', source: 'diy-step-1' }).then(function (res) {
+                    btn.disabled = false; btn.textContent = 'Be first to know';
+                    // 23505 = already signed up, which is still a yes.
+                    if (res.error && res.error.code !== '23505') { say('Sorry, that didn’t go through. Please try again.', true); return; }
+                    form.hidden = true;
+                    say('You’re on the list. We’ll email you the moment Structure | 3 opens.');
+                });
+            });
+        })();
         document.getElementById('step-guide-link').addEventListener('click', openGuide);
         document.getElementById('p-look-change').addEventListener('click', function () {
             closePanel();
