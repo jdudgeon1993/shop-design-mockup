@@ -241,6 +241,8 @@
         .panel-img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: linear-gradient(135deg, #2b2b2b, #1f1f1f) center / cover no-repeat; }
         .panel-img.dl-photo { background-size: contain; background-origin: content-box; padding: 28px; box-sizing: border-box; }
         .img-wrap.has-photo .p-preview svg { display: none; }
+        .opt-hint { margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
+        .panel-img.is-tinted { background-blend-mode: multiply; }
         .photo-note { position: absolute; left: 12px; bottom: 12px; z-index: 2; background: rgba(17,17,17,0.82); color: #fff; font-size: 11.5px; padding: 6px 10px; border-radius: 6px; max-width: calc(100% - 24px); }
         .photo-note b { color: var(--gold); }
         @media (min-width: 860px) { .photo-note { bottom: auto; top: 72px; left: 14px; } }
@@ -403,6 +405,9 @@
                     <h2 id="p-title"></h2>
                     <p class="sub" id="p-sub"></p>
 
+                    <div class="opt" id="p-type-opt" hidden><h3>Type <span id="p-type-label"></span></h3><div class="chips" id="p-types"></div><p class="opt-hint" id="p-type-hint" hidden></p></div>
+                    <div class="opt" id="p-height-opt" hidden><h3>Height <span id="p-height-label"></span></h3><div class="chips" id="p-heights"></div><p class="opt-hint" id="p-height-hint" hidden></p></div>
+                    <div class="opt" id="p-depth-opt" hidden><h3>Depth <span id="p-depth-label"></span></h3><div class="chips" id="p-depths"></div><p class="opt-hint" id="p-depth-hint" hidden></p></div>
                     <div class="opt"><h3 id="p-size-title">Width <span id="p-size-label"></span></h3><div class="chips" id="p-sizes"></div></div>
                     <div class="opt" id="p-config-opt"><h3>Configuration <span id="p-config-label"></span></h3><div class="chips" id="p-configs"></div></div>
                     <div class="opt" id="p-look-opt" hidden><h3>Door Style &amp; Finish</h3>
@@ -480,6 +485,82 @@
         var state = { space: 'Kitchen', types: {}, styles: {}, widths: {}, search: '', sort: 'featured' };
         var data = { families: {}, products: [], byFamily: {}, offers: {}, styles: [], styleById: {}, finishesByStyle: {}, lines: {}, photoRows: [] };
 
+        // ---------- cabinet groups ----------
+        // One card per kind of cabinet; sizes become options in the panel. A family's
+        // label (when set) becomes a "Type" choice; height and depth rows appear on
+        // their own whenever a group's cabinets differ in them. TEST: lives here until
+        // the grouping is agreed, then moves to the database.
+        var GROUPS = [
+            { key: 'wall', name: 'Wall Cabinets', image: '30-high-wall-cabinet',
+              hint: { height: '8′ ceilings? Most kitchens use 30″. 9′ ceilings: 36″ or 42″.' },
+              members: ['30-high-wall-cabinet', '36-high-wall-cabinet', '42-high-wall-cabinet', '30-high-1-door-wall-cabinet',
+                        '36-high-1-door-wall-cabinet', '42-high-1-door-wall-cabinet', '30-high-4-door-wall-cabinet'] },
+            { key: 'wall-short', name: 'Short Wall Cabinets', image: '15-high-wall-cabinet',
+              hint: { height: 'For above the fridge, range hood or microwave.', depth: '24″ deep lines up with the front of a fridge.' },
+              members: ['12-high-wall-cabinet', '15-high-wall-cabinet', '18-high-wall-cabinet', '24-high-wall-cabinet',
+                        '18-high-1-door-wall-cabinet', '24-high-1-door-wall-cabinet', '24-high-4-door-wall-cabinet',
+                        '12-high-wall-cabinet-24-deep', '15-high-wall-cabinet-24-deep', '18-high-wall-cabinet-24-deep',
+                        '24-high-wall-cabinet-24-deep', '24-high-wall-cabinet-15-deep'] },
+            { key: 'wall-corner', name: 'Corner Wall Cabinets', image: '30-high-diagonal-corner-wall-cabinet',
+              members: [['30-high-blind-wall-cabinet', 'Blind corner'], ['36-high-blind-wall-cabinet', 'Blind corner'], ['42-high-blind-wall-cabinet', 'Blind corner'],
+                        ['30-high-diagonal-corner-wall-cabinet', 'Diagonal corner'], ['36-high-diagonal-corner-wall-cabinet', 'Diagonal corner'], ['42-high-diagonal-corner-wall-cabinet', 'Diagonal corner'],
+                        ['30-high-square-corner-wall-cabinet', 'Square corner'], ['36-high-square-corner-wall-cabinet', 'Square corner'], ['42-high-square-corner-wall-cabinet', 'Square corner']] },
+            { key: 'wall-special', name: 'Open & Specialty Wall Cabinets', image: '30-high-open-wall-cabinet',
+              members: [['30-high-open-wall-cabinet', 'Open shelf'], ['microwave-wall-cabinet', 'Microwave'], ['single-door-wall-end-cabinet', 'Wall end']] },
+            { key: 'base', name: 'Base Cabinets', image: '2-drawer-2-door-base-cabinet',
+              hint: { type: 'Full-height doors skip the top drawer for one tall door: easier access to big pots.' },
+              members: [['1-door-base-cabinet', 'Standard'], ['1-drawer-2-door-base-cabinet', 'Standard'], ['2-drawer-2-door-base-cabinet', 'Standard'], ['2-drawer-4-door-base-cabinet', 'Standard'],
+                        ['1-door-base-cabinet-full-height', 'Full-height doors'], ['1-drawer-2-door-base-cabinet-full-height', 'Full-height doors'],
+                        ['2-drawer-2-door-base-cabinet-full-height', 'Full-height doors'], ['2-drawer-4-door-base-cabinet-full-height', 'Full-height doors']] },
+            { key: 'sink', name: 'Sink Base Cabinets', image: '2-drawer-front-2-door-sink-base',
+              members: [['1-drawer-front-1-door-sink-base', 'Standard'], ['1-drawer-front-2-door-sink-base', 'Standard'], ['2-drawer-front-2-door-sink-base', 'Standard'],
+                        ['2-drawer-4-door-sink-base-cabinet', 'Standard'], ['combination-sink-base-cabinet', 'Sink + drawers'],
+                        ['double-door-farm-sink-base-cabinet', 'Farm sink'], ['2-door-removable-sink-base-cabinet', 'Removable (ADA)']] },
+            { key: 'base-corner', name: 'Corner Base Cabinets', image: 'lazy-susan-corner-base-cabinet',
+              members: [['lazy-susan-corner-base-cabinet', 'Lazy Susan'], ['easy-reach-corner-base-cabinet', 'Easy reach'], ['carousel-corner-base-cabinet', 'Carousel'],
+                        ['blind-base-cabinet', 'Blind corner'], ['blind-base-cabinet-full-height', 'Blind corner, full-height door'],
+                        ['diagonal-corner-sink-base-cabinet', 'Diagonal sink base']] },
+            { key: 'base-special', name: 'Specialty Base Cabinets', image: 'waste-basket-cabinet',
+              members: [['waste-basket-cabinet', 'Waste basket'], ['waste-basket-cabinet-full-height', 'Waste basket, full-height door'], ['base-spice-cabinet', 'Spice pull-out'],
+                        ['microwave-base-cabinet', 'Microwave'], ['base-end-cabinet', 'End cabinet'], ['angle-base-end-cabinet', 'Angled end'], ['desk-drawer', 'Desk drawer']] },
+            { key: 'tall', name: 'Pantry & Oven Cabinets', image: 'double-door-utility-cabinet',
+              members: [['single-door-utility-cabinet', 'Pantry, 1 door'], ['double-door-utility-cabinet', 'Pantry, 2 doors'],
+                        ['double-door-oven-cabinet', 'Single oven'], ['double-oven-cabinet', 'Double oven']] },
+            { key: 'vanity-sink', name: 'Vanity Sink Bases', image: '2-door-vanity-sink-base-cabinet',
+              members: [['1-door-vanity-sink-base-cabinet', 'Doors'], ['2-door-vanity-sink-base-cabinet', 'Doors'], ['4-door-vanity-sink-base-cabinet', 'Doors'],
+                        ['1-door-2-drawer-vanity-sink-base-cabinet', 'Doors + drawers'], ['2-door-2-drawer-vanity-sink-base-cabinet', 'Doors + drawers'],
+                        ['2-door-4-drawer-vanity-sink-base-cabinet', 'Doors + drawers'], ['removable-vanity-base', 'Removable (ADA)']] },
+            { key: 'vanity-base', name: 'Vanity Bases & Drawers', image: '3-door-vanity-base-cabinet',
+              members: [['1-door-vanity-base-cabinet', 'Doors'], ['3-door-vanity-base-cabinet', 'Doors'], ['4-door-vanity-base-cabinet', 'Doors'],
+                        ['2-door-6-drawer-vanity-base-cabinet', 'Doors + drawers'], ['vanity-drawer-base-cabinet', 'Drawers only']] },
+            { key: 'medicine', name: 'Medicine Cabinets', image: 'single-door-medicine-cabinet',
+              members: [['single-door-medicine-cabinet', '1 door'], ['double-door-medicine-cabinet', '2 doors']] }
+        ];
+        var groupByFamily = {}, labelByFamily = {}, groupByKey = {};
+        function initGroups() {
+            var bySlug = {};
+            Object.keys(data.families).forEach(function (id) { bySlug[data.families[id].slug] = data.families[id]; });
+            GROUPS.forEach(function (g) {
+                g.familyIds = [];
+                g.members.forEach(function (m) {
+                    var slug = Array.isArray(m) ? m[0] : m, f = bySlug[slug];
+                    if (!f) return;
+                    g.familyIds.push(f.id); groupByFamily[f.id] = g.key;
+                    if (Array.isArray(m)) labelByFamily[f.id] = m[1];
+                });
+                g.imageFamily = bySlug[g.image] || data.families[g.familyIds[0]];
+                g.sort_order = Math.min.apply(null, g.familyIds.map(function (id) { return data.families[id].sort_order; }));
+                groupByKey[g.key] = g;
+            });
+        }
+        // A card: a group, or a family that isn't in one.
+        function cardFor(p) {
+            var key = groupByFamily[p.family_id];
+            if (key) { var g = groupByKey[key]; return { key: 'g:' + key, name: g.name, sort_order: g.sort_order, imageFamily: g.imageFamily, group: g }; }
+            var f = data.families[p.family_id];
+            return { key: 'f:' + f.id, name: f.name, sort_order: f.sort_order, imageFamily: f, group: null };
+        }
+
         // ---------- load ----------
         function load() {
             return Promise.all([
@@ -511,6 +592,7 @@
                 r[4].data.forEach(function (f) { (data.finishesByStyle[f.door_style_id] = data.finishesByStyle[f.door_style_id] || []).push(f); });
                 r[5].data.forEach(function (l) { data.lines[l.id] = l; });
                 data.upgrades = r[6].data;
+                initGroups();
 
                 // Parts tab: one chip per parts family.
                 TYPES.Parts = Object.keys(data.families).map(function (id) { return data.families[id]; })
@@ -587,7 +669,8 @@
                 if (!productMatches(p)) return;
                 var price = minPrice(p);
                 if (price == null) return;
-                var g = groups[p.family_id] = groups[p.family_id] || { fam: data.families[p.family_id], products: [], min: null, styles: {} };
+                var card = cardFor(p);
+                var g = groups[card.key] = groups[card.key] || { card: card, fam: card.imageFamily, products: [], min: null, styles: {} };
                 g.products.push(p);
                 if (g.min == null || price < g.min) g.min = price;
                 Object.keys(data.offers[p.id]).forEach(function (id) { if (data.offers[p.id][id].base != null) g.styles[id] = true; });
@@ -596,8 +679,8 @@
             list.sort(function (a, b) {
                 if (state.sort === 'price-asc') return a.min - b.min;
                 if (state.sort === 'price-desc') return b.min - a.min;
-                if (state.sort === 'name') return a.fam.name.localeCompare(b.fam.name);
-                return a.fam.sort_order - b.fam.sort_order;
+                if (state.sort === 'name') return a.card.name.localeCompare(b.card.name);
+                return a.card.sort_order - b.card.sort_order;
             });
 
             var count = list.length;
@@ -612,10 +695,10 @@
                     : g.products.length + (g.products.length === 1 ? ' item' : ' items');
                 var styleTags = look ? '' : data.styles.filter(function (s) { return g.styles[s.id]; })
                     .map(function (s) { return '<span>' + esc(s.name) + '</span>'; }).join('');
-                return '<button type="button" class="card" data-family="' + g.fam.id + '">' +
+                return '<button type="button" class="card" data-card="' + esc(g.card.key) + '">' +
                     cardImage(g) +
-                    '<div class="card-body"><h3>' + esc(g.fam.name) + '</h3>' +
-                    '<div class="meta">' + esc(sizeText) + (g.products.length > 1 && widths.length ? ' · ' + g.products.length + ' options' : '') + '</div>' +
+                    '<div class="card-body"><h3>' + esc(g.card.name) + '</h3>' +
+                    '<div class="meta">' + esc(sizeText) + cardExtra(g) + '</div>' +
                     '<div class="styles">' + styleTags + '</div>' +
                     '<div class="price">From ' + fm(g.min) + '</div></div></button>';
             }).join('');
@@ -623,6 +706,12 @@
         }
 
         function render() { renderTabs(); renderFilters(); renderGrid(); }
+        function cardExtra(g) {
+            var heights = distinct(g.products.map(function (p) { return Number(p.height); }));
+            if (g.card.group && heights.length > 1) return ' · ' + heights.length + ' heights';
+            return g.products.length > 1 ? ' · ' + g.products.length + ' options' : '';
+        }
+        function distinct(list) { var out = []; list.forEach(function (v) { if (v != null && !isNaN(v) && out.indexOf(v) === -1) out.push(v); }); return out.sort(function (a, b) { return a - b; }); }
 
         // ---------- photos ----------
         // Cards show the filtered door style when there is one, else Luxor; finish
@@ -640,6 +729,14 @@
         function cardPhoto(g) {
             if (!data.photoRows.length) return null;
             var styles = cardLookStyles();
+            // Browsing shows CNC's line drawings (one look for every line); color photos live in the panel.
+            var fams = [g.fam.id].concat(g.card.group ? g.card.group.familyIds : []);
+            for (var d = 0; d < styles.length; d++) {
+                for (var f = 0; f < fams.length; f++) {
+                    var drawing = DL.photos.pick(data.photoRows, { familyId: fams[f], styleId: styles[d], media: 'drawing' });
+                    if (drawing) return drawing;
+                }
+            }
             for (var i = 0; i < styles.length; i++) {
                 for (var j = 0; j < g.products.length; j++) {
                     var path = DL.photos.pick(data.photoRows, { productId: g.products[j].id, styleId: styles[i], finishId: defaultFinish(styles[i]) });
@@ -656,16 +753,30 @@
             return '<div class="card-img' + (path ? ' is-loading' : '') + '" role="img" aria-label="' + esc(g.fam.name) + '"' +
                 (path ? ' data-photo="' + esc(path) + '"' : '') + fallback + '></div>';
         }
+        function softTint(hex) {
+            var n = parseInt(hex.slice(1), 16);
+            return 'rgb(' + [n >> 16, (n >> 8) & 255, n & 255].map(function (c) { return Math.round(c + (255 - c) * 0.5); }).join(',') + ')';
+        }
         function paintPanelPhoto() {
-            var el = document.getElementById('p-img'), wrap = el.parentNode;
-            var row = DL.photos.pickRow(data.photoRows, {
-                productId: sel.product.id, familyId: sel.family.id, styleId: sel.styleId,
-                finishId: sel.finishId, fivePiece: sel.upgrade
-            });
+            var el = document.getElementById('p-img'), wrap = el.parentNode, p = sel.product;
+            var rows = data.photoRows, base = { styleId: sel.styleId, finishId: sel.finishId, fivePiece: sel.upgrade };
+            function o(extra) { var x = {}; Object.keys(base).forEach(function (k) { x[k] = base[k]; }); Object.keys(extra).forEach(function (k) { x[k] = extra[k]; }); return x; }
+            // 1) the real photo in this exact finish, 2) CNC's drawing tinted to the finish,
+            // 3) a family photo in this finish, 4) anything (labelled with the finish it shows).
+            var row = DL.photos.pickRow(rows, o({ productId: p.id, strictFinish: true, media: 'render' })) ||
+                      DL.photos.pickRow(rows, o({ productId: p.id, media: 'drawing' })) ||
+                      DL.photos.pickRow(rows, o({ familyId: p.family_id, media: 'drawing' })) ||
+                      DL.photos.pickRow(rows, o({ familyId: p.family_id, strictFinish: true })) ||
+                      DL.photos.pickRow(rows, o({ productId: p.id, familyId: p.family_id }));
             var path = row ? row.storage_path : null;
+            var fin = (data.finishesByStyle[sel.styleId] || []).filter(function (f) { return f.id === sel.finishId; })[0];
+            // A soft wash of the finish color (half-way to white) so the drawing still reads.
+            var tint = row && row.media === 'drawing' && fin && fin.swatch_hex && softTint(fin.swatch_hex);
+            el.classList.toggle('is-tinted', !!tint);
+            el.style.backgroundColor = tint || '';
             // Never let a photo pass for a finish it isn't: say which finish it shows.
             var note = document.getElementById('p-photo-note');
-            var shown = row && row.finish_id != null && row.finish_id !== sel.finishId
+            var shown = row && row.media !== 'drawing' && row.finish_id != null && row.finish_id !== sel.finishId
                 ? (data.finishesByStyle[sel.styleId] || []).filter(function (f) { return f.id === row.finish_id; })[0] : null;
             var chosen = (data.finishesByStyle[sel.styleId] || []).filter(function (f) { return f.id === sel.finishId; })[0];
             note.hidden = !(shown && chosen);
@@ -721,30 +832,68 @@
                 label += ' (' + p.mfg_sku + ')';
             return label;
         }
+        // ---- choosing within a card: type -> height -> depth -> width -> configuration ----
+        function typeOf(p) { return labelByFamily[p.family_id] || ''; }
+        function poolFor(level, p) {
+            // products sharing p's choices above `level`
+            return sel.products.filter(function (x) {
+                if (level > 0 && typeOf(x) !== typeOf(p)) return false;
+                if (level > 1 && Number(x.height) !== Number(p.height)) return false;
+                if (level > 2 && Number(x.depth) !== Number(p.depth)) return false;
+                return true;
+            });
+        }
+        // Switch one choice and keep the others as close as possible.
+        function pickClosest(pool) {
+            if (!pool.length) return;
+            var cur = sel.product;
+            function cost(x) {
+                return (typeOf(x) === typeOf(cur) ? 0 : 1000) + Math.abs(Number(x.height) - Number(cur.height)) * 10 +
+                    Math.abs(Number(x.depth) - Number(cur.depth)) * 5 + Math.abs((Number(x.width) || 0) - (Number(cur.width) || 0)) +
+                    (x.subtype === cur.subtype ? 0 : 0.5);
+            }
+            selectProduct(pool.slice().sort(function (a, b) { return cost(a) - cost(b); })[0]);
+        }
         function selectWidth(w) {
-            var same = sel.products.filter(function (x) { return Number(x.width) === w; });
-            var match = same.filter(function (x) { return x.subtype === sel.product.subtype; })[0] || same[0];
-            if (match) selectProduct(match);
+            pickClosest(poolFor(3, sel.product).filter(function (x) { return Number(x.width) === w; }));
         }
         function openFamily(familyId, preferProductId) {
-            var fam = data.families[familyId];
-            var products = (data.byFamily[familyId] || []).filter(function (p) {
+            var key = groupByFamily[familyId];
+            if (key && !preferProductId) {
+                var first = (data.byFamily[familyId] || []).filter(productMatches)[0] || (data.byFamily[familyId] || [])[0];
+                preferProductId = first && first.id;
+            }
+            openCard(key ? 'g:' + key : 'f:' + familyId, preferProductId);
+        }
+        function openCard(cardKey, preferProductId) {
+            var isGroup = cardKey.indexOf('g:') === 0, g = isGroup ? groupByKey[cardKey.slice(2)] : null;
+            var famIds = g ? g.familyIds : [Number(cardKey.slice(2))];
+            var fam = g ? g.imageFamily : data.families[famIds[0]];
+            var products = [];
+            famIds.forEach(function (id) { products = products.concat(data.byFamily[id] || []); });
+            products = products.filter(function (p) {
                 return Object.keys(data.offers[p.id]).some(function (id) { return data.offers[p.id][id].base != null; });
             });
             if (!fam || !products.length) return;
-            products.sort(function (a, b) { return (Number(a.width) || 0) - (Number(b.width) || 0) || a.sort_order - b.sort_order; });
+            var typeOrder = g ? g.members.map(function (m) { return Array.isArray(m) ? m[1] : ''; }) : [];
+            function isAda(p) { return /^ADA/.test(p.subtype || ''); }
+            products.sort(function (a, b) {
+                return (typeOrder.indexOf(typeOf(a)) - typeOrder.indexOf(typeOf(b))) || (isAda(a) - isAda(b)) || (Number(a.height) || 0) - (Number(b.height) || 0) ||
+                    (Number(a.width) || 0) - (Number(b.width) || 0) || a.sort_order - b.sort_order;
+            });
             var start = products.filter(function (p) { return p.id === preferProductId; })[0] ||
                         products.filter(productMatches)[0] || products[0];
-            sel = { family: fam, products: products, product: null, styleId: null, finishId: null, upgrade: false, hinge: null, mods: {}, qty: 1, modList: [] };
+            var title = g ? g.name : fam.name;
+            sel = { family: fam, group: g, title: title, products: products, product: null, styleId: null, finishId: null, upgrade: false, hinge: null, mods: {}, qty: 1, modList: [] };
             document.getElementById('p-img').removeAttribute('data-photo');
-            document.getElementById('p-img').setAttribute('aria-label', fam.name);
-            document.getElementById('p-title').textContent = fam.name;
+            document.getElementById('p-img').setAttribute('aria-label', title);
+            document.getElementById('p-title').textContent = title;
             document.getElementById('p-qty').value = 1;
             selectProduct(start);
             document.getElementById('overlay').hidden = false;
             document.body.style.overflow = 'hidden';
             document.getElementById('p-close').focus();
-            var q = new URLSearchParams(location.search); q.set('family', fam.slug);
+            var q = new URLSearchParams(location.search); q.set('family', data.families[start.family_id].slug);
             history.replaceState(history.state, '', location.pathname + '?' + q.toString());
         }
         function closePanel() {
@@ -811,12 +960,41 @@
             return Math.round((base + mods) * 100) / 100;
         }
 
+        function paintChoiceRows(p) {
+            var g = sel.group;
+            function row(id, values, current, fmt, attr, hintKey) {
+                var show = values.length > 1;
+                document.getElementById('p-' + id + '-opt').hidden = !show;
+                if (!show) return;
+                document.getElementById('p-' + id + '-label').textContent = fmt(current);
+                document.getElementById('p-' + id + 's').innerHTML = values.map(function (v) {
+                    return chip(esc(fmt(v)), v === current, ' ' + attr + '="' + esc(String(v)) + '"');
+                }).join('');
+                var hint = document.getElementById('p-' + id + '-hint'), text = g && g.hint && g.hint[hintKey];
+                hint.hidden = !text; hint.textContent = text || '';
+            }
+            var types = [];
+            sel.products.forEach(function (x) { var t = typeOf(x); if (t && types.indexOf(t) === -1) types.push(t); });
+            row('type', types, typeOf(p), function (v) { return v; }, 'data-type-pick', 'type');
+            var pool1 = poolFor(1, p);
+            // Heights that only exist as ADA cabinets read better as "ADA" than as a number.
+            function heightLabel(v) {
+                var at = pool1.filter(function (x) { return Number(x.height) === v; });
+                var ada = at.length && at.every(function (x) { return /^ADA/.test(x.subtype || ''); });
+                return ada ? 'ADA ' + v + '″' : (sel.group && /base|sink/.test(sel.group.key) ? 'Standard ' + v + '″' : v + '″ high');
+            }
+            var heights = distinct(pool1.map(function (x) { return Number(x.height); }));
+            heights.sort(function (a, b) { return (heightLabel(a).indexOf('ADA') === 0) - (heightLabel(b).indexOf('ADA') === 0) || a - b; });
+            row('height', heights, Number(p.height), heightLabel, 'data-height-pick', 'height');
+            row('depth', distinct(poolFor(2, p).map(function (x) { return Number(x.depth); })), Number(p.depth), function (v) { return v + '″ deep'; }, 'data-depth-pick', 'depth');
+        }
         function paintPanel() {
             var p = sel.product, style = data.styleById[sel.styleId];
             document.getElementById('p-sub').textContent = p.description + ' · Item # ' + p.mfg_sku;
 
             // Parts (no width): one chip per item. Cabinets: width chips, then a
             // configuration row (standard / pull-out shelves / ADA...) when a width has several.
+            paintChoiceRows(p);
             var hasWidth = p.width != null;
             document.getElementById('p-size-title').firstChild.nodeValue = hasWidth ? 'Width ' : 'Item ';
             document.getElementById('p-size-label').textContent = hasWidth ? sizeLabel(p) : p.description;
@@ -825,13 +1003,12 @@
                     return chip(esc(x.description), x.id === p.id, ' data-product="' + x.id + '"');
                 }).join('');
             } else {
-                var widths = [];
-                sel.products.forEach(function (x) { var w = Number(x.width); if (widths.indexOf(w) === -1) widths.push(w); });
+                var widths = distinct(poolFor(3, p).map(function (x) { return Number(x.width); }));
                 document.getElementById('p-sizes').innerHTML = widths.map(function (w) {
                     return chip(w + '"', w === Number(p.width), ' data-width-pick="' + w + '"');
                 }).join('');
             }
-            var siblings = hasWidth ? sel.products.filter(function (x) { return Number(x.width) === Number(p.width); }) : [];
+            var siblings = hasWidth ? poolFor(3, p).filter(function (x) { return Number(x.width) === Number(p.width); }) : [];
             document.getElementById('p-config-opt').hidden = siblings.length < 2;
             document.getElementById('p-config-label').textContent = configLabel(p, siblings);
             document.getElementById('p-configs').innerHTML = siblings.map(function (x) {
@@ -932,16 +1109,16 @@
                 modification_ids: mods.map(function (m) { return m.modification_id; }),
                 quantity: sel.qty,
                 display: {
-                    title: sel.family.name + (p.width != null ? ' — ' + Number(p.width) + '"' : ''),
+                    title: data.families[p.family_id].name + (p.width != null ? ' — ' + Number(p.width) + '"' : ''),
                     detail: detail.join(' · '),
                     sku: p.mfg_sku,
-                    image: sel.family.image_url,
+                    image: data.families[p.family_id].image_url,
                     unit_price: unitPrice(),
-                    link: '/diy-wizard/?family=' + encodeURIComponent(sel.family.slug)
+                    link: '/diy-wizard/?family=' + encodeURIComponent(data.families[p.family_id].slug)
                 }
             });
             var toast = document.getElementById('toast');
-            document.getElementById('toast-text').textContent = 'Added ' + sel.qty + ' × ' + sel.family.name;
+            document.getElementById('toast-text').textContent = 'Added ' + sel.qty + ' × ' + data.families[p.family_id].name;
             toast.classList.add('show');
             clearTimeout(toast._t);
             toast._t = setTimeout(function () { toast.classList.remove('show'); }, 3500);
@@ -979,8 +1156,8 @@
         });
         document.getElementById('sort').addEventListener('change', function (e) { state.sort = e.target.value; renderGrid(); });
         document.getElementById('grid').addEventListener('click', function (e) {
-            var c = e.target.closest('[data-family]');
-            if (c) openFamily(Number(c.dataset.family));
+            var c = e.target.closest('[data-card]');
+            if (c) openCard(c.dataset.card);
         });
 
         document.getElementById('p-close').addEventListener('click', closePanel);
@@ -989,7 +1166,10 @@
         document.querySelector('.panel').addEventListener('click', function (e) {
             var b = e.target.closest('button');
             if (!b || !sel) return;
-            if (b.dataset.widthPick) selectWidth(Number(b.dataset.widthPick));
+            if (b.dataset.typePick != null) pickClosest(sel.products.filter(function (x) { return typeOf(x) === b.dataset.typePick; }));
+            else if (b.dataset.heightPick) pickClosest(poolFor(1, sel.product).filter(function (x) { return Number(x.height) === Number(b.dataset.heightPick); }));
+            else if (b.dataset.depthPick) pickClosest(poolFor(2, sel.product).filter(function (x) { return Number(x.depth) === Number(b.dataset.depthPick); }));
+            else if (b.dataset.widthPick) selectWidth(Number(b.dataset.widthPick));
             else if (b.dataset.product) selectProduct(sel.products.filter(function (p) { return p.id === Number(b.dataset.product); })[0]);
             else if (b.dataset.stylePick) selectStyle(b.dataset.stylePick);
             else if (b.dataset.finish) { sel.finishId = Number(b.dataset.finish); paintPanel(); }

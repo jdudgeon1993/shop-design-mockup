@@ -277,6 +277,7 @@
     function pickPhoto(rows, o) {
         function score(r) {
             if (o.styleId != null && r.door_style_id !== o.styleId) return -1;
+            if (o.media && r.media !== o.media) return -1;
             var s = 0;
             if (o.finishId != null && r.finish_id === o.finishId) s += 40;
             else if (r.finish_id == null) s += 20;
