@@ -293,8 +293,9 @@
         var hit = null;
         if (o.productId != null) hit = best(rows.filter(function (r) { return r.kind === 'product' && r.product_id === o.productId; }));
         if (!hit && o.familyId != null) hit = best(rows.filter(function (r) { return r.kind === 'family' && r.family_id === o.familyId; }));
-        return hit ? hit.storage_path : null;
+        return hit;
     }
+    function pickPhotoPath(rows, o) { var r = pickPhoto(rows, o); return r ? r.storage_path : null; }
 
     function signPhotos(paths) {
         var now = Date.now();
@@ -334,7 +335,7 @@
         });
     }
 
-    var photos = { load: loadPhotoIndex, pick: pickPhoto, sign: signPhotos, paint: paintPhotos };
+    var photos = { load: loadPhotoIndex, pick: pickPhotoPath, pickRow: pickPhoto, sign: signPhotos, paint: paintPhotos };
 
     window.DL = {
         supabase: supabase,
