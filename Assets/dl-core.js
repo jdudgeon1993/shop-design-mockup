@@ -338,6 +338,164 @@
 
     var photos = { load: loadPhotoIndex, pick: pickPhotoPath, pickRow: pickPhoto, sign: signPhotos, paint: paintPhotos };
 
+    // ---------- "Your kitchen so far" ----------
+    // A simple front view of the cabinets in the cart, drawn to scale in the chosen
+    // finish: base cabinets along the floor under a countertop, wall cabinets above,
+    // tall cabinets at the end. Pieces added since the last draw drop in.
+    var KITCHEN_SEEN_KEY = 'dl_kitchen_seen_v1';
+    var kitchenProducts = {}, kitchenFinishes = null;
+
+    var kitchenCss = document.createElement('style');
+    kitchenCss.textContent =
+        '.dl-kitchen{display:block;width:100%;height:auto;border-radius:6px;overflow:hidden}' +
+        '.dl-kitchen .kp-new{animation:dlKitchenIn .6s cubic-bezier(.2,.8,.3,1.2) both}' +
+        '@keyframes dlKitchenIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}' +
+        '@media (prefers-reduced-motion:reduce){.dl-kitchen .kp-new{animation:none}}';
+    document.head.appendChild(kitchenCss);
+
+    // Resolve cart lines to drawable pieces (cabinets only; parts and collections are skipped).
+    function kitchenPieces(lines) {
+        var ids = lines.filter(function (l) { return l.type === 'product' && !kitchenProducts[l.product_id]; })
+            .map(function (l) { return l.product_id; });
+        var needProducts = ids.length
+            ? supabase.from('products').select('id,kind,space,room_type,subtype,width,height,doors,drawers').in('id', ids)
+                .then(function (r) { (r.data || []).forEach(function (p) { kitchenProducts[p.id] = p; }); })
+            : Promise.resolve();
+        var needFinishes = kitchenFinishes ? Promise.resolve() : supabase.from('finishes').select('id,swatch_hex')
+            .then(function (r) { kitchenFinishes = {}; (r.data || []).forEach(function (f) { kitchenFinishes[f.id] = f.swatch_hex; }); });
+        return Promise.all([needProducts, needFinishes]).then(function () {
+            var pieces = [];
+            lines.forEach(function (l) {
+                var p = l.type === 'product' && kitchenProducts[l.product_id];
+                if (!p || p.kind !== 'cabinet' || !(Number(p.width) > 0)) return;
+                for (var i = 0; i < Math.min(l.quantity || 1, 12); i++) {
+                    pieces.push({
+                        key: l.id + '#' + i, space: p.space === 'Bath' ? 'Bath' : 'Kitchen', room: p.room_type,
+                        medicine: /Medicine/.test(p.subtype || ''), w: Number(p.width),
+                        h: Number(p.height) || (p.room_type === 'Wall' ? 30 : 34.5),
+                        doors: p.doors || 0, drawers: p.drawers || 0, hex: kitchenFinishes[l.finish_id] || '#cfc8bd'
+                    });
+                }
+            });
+            return pieces;
+        });
+    }
+
+    function kitchenFront(x, y, w, h, piece, edge) {
+        // Drawers stacked on top, doors side by side below; each gets a shaker-style inset.
+        var out = '', inset = Math.min(2, w / 8), gap = 0.4;
+        var drawers = piece.drawers, doors = piece.doors;
+        if (!drawers && !doors) doors = w > 24 ? 2 : 1;
+        var drawerH = drawers ? (doors ? Math.min(6, h / 4) : (h - gap) / drawers) : 0;
+        for (var d = 0; d < drawers; d++) {
+            var dy = y + gap + d * drawerH, dh = drawerH - gap;
+            out += '<rect x="' + (x + gap) + '" y="' + dy + '" width="' + (w - 2 * gap) + '" height="' + dh + '" fill="none" stroke="' + edge + '" stroke-width=".35"/>' +
+                '<rect x="' + (x + w / 2 - 2) + '" y="' + (dy + dh / 2 - 0.3) + '" width="4" height=".6" rx=".3" fill="' + edge + '"/>';
+        }
+        if (doors) {
+            var top = y + gap + drawers * drawerH, dw = (w - gap) / doors, dh2 = h - (top - y) - gap;
+            for (var k = 0; k < doors; k++) {
+                var dx = x + gap + k * dw;
+                out += '<rect x="' + dx + '" y="' + top + '" width="' + (dw - gap) + '" height="' + dh2 + '" fill="none" stroke="' + edge + '" stroke-width=".35"/>' +
+                    '<rect x="' + (dx + inset) + '" y="' + (top + inset) + '" width="' + Math.max(0, dw - gap - 2 * inset) + '" height="' + Math.max(0, dh2 - 2 * inset) + '" fill="none" stroke="' + edge + '" stroke-width=".25" opacity=".7"/>';
+                var hx = doors === 1 ? (dx + dw - gap - inset / 1.5) : (k === 0 ? dx + dw - gap - inset / 1.5 : dx + inset / 1.5);
+                var hy = piece.room === 'Wall' ? top + dh2 - 4 : top + 1.2;
+                out += '<rect x="' + (hx - 0.3) + '" y="' + hy + '" width=".6" height="3" rx=".3" fill="' + edge + '"/>';
+            }
+        }
+        return out;
+    }
+
+    function kShade(hex, f) {
+        var n = parseInt((hex || '#cccccc').slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+        function c(v) { return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }
+        return 'rgb(' + c(r) + ',' + c(g) + ',' + c(b) + ')';
+    }
+
+    // Returns an SVG string for one space ('Kitchen' or 'Bath'), or '' when it has no pieces.
+    function kitchenSvg(pieces, space, seen) {
+        var list = pieces.filter(function (p) { return p.space === space; });
+        if (!list.length) return '';
+        var counterTop = space === 'Bath' ? 33 : 36, upperBottom = space === 'Bath' ? 50 : 54;
+        var base = list.filter(function (p) { return p.room !== 'Wall' && p.room !== 'Tall' && !p.medicine; });
+        var upper = list.filter(function (p) { return p.room === 'Wall' || p.medicine; });
+        var tall = list.filter(function (p) { return p.room === 'Tall'; });
+        var baseW = base.reduce(function (n, p) { return n + p.w; }, 0);
+        var upperW = upper.reduce(function (n, p) { return n + p.w; }, 0);
+        var talls = tall.reduce(function (n, p) { return n + p.w; }, 0);
+        var runW = Math.max(baseW, upperW);
+        // At least a 12' wall, with the cabinets centered on it, so small carts still read as a room.
+        var contentW = runW + talls, totalW = Math.max(contentW, 144), H = 100, pad = 4, x0 = (totalW - contentW) / 2;
+        var body = '';
+        function piece(p, x, yTop) {
+            var edge = kShade(p.hex, -0.35), cls = seen[p.key] ? '' : ' class="kp-new"';
+            return '<g' + cls + '><rect x="' + x + '" y="' + yTop + '" width="' + p.w + '" height="' + p.h + '" fill="' + p.hex + '" stroke="' + edge + '" stroke-width=".4"/>' +
+                kitchenFront(x, yTop, p.w, p.h, p, edge) + '</g>';
+        }
+        var x = x0;
+        base.forEach(function (p) {
+            var cabH = Math.min(p.h, counterTop - 1.5), toe = 4;
+            var edge = kShade(p.hex, -0.35), cls = seen[p.key] ? '' : ' class="kp-new"';
+            body += '<g' + cls + '><rect x="' + (x + 0.6) + '" y="' + (H - toe) + '" width="' + (p.w - 1.2) + '" height="' + toe + '" fill="' + kShade(p.hex, -0.55) + '"/>' +
+                '<rect x="' + x + '" y="' + (H - cabH) + '" width="' + p.w + '" height="' + (cabH - toe) + '" fill="' + p.hex + '" stroke="' + edge + '" stroke-width=".4"/>' +
+                kitchenFront(x, H - cabH, p.w, cabH - toe, p, edge) + '</g>';
+            x += p.w;
+        });
+        if (baseW) body += '<rect x="' + (x0 - 1) + '" y="' + (H - counterTop) + '" width="' + (baseW + 2) + '" height="1.5" rx=".4" fill="#e8e4dc" stroke="#9c958a" stroke-width=".3"/>';
+        x = x0;
+        upper.forEach(function (p) { body += piece(p, x, H - upperBottom - p.h); x += p.w; });
+        x = x0 + runW;
+        tall.forEach(function (p) { body += piece(p, x, H - p.h); x += p.w; });
+        var vbH = H + pad, top = H - upperBottom - 42 - pad;
+        return '<svg class="dl-kitchen" viewBox="' + (-pad) + ' ' + top + ' ' + (totalW + 2 * pad) + ' ' + (vbH - top) + '" role="img" aria-label="Preview of the ' +
+            (space === 'Bath' ? 'bathroom' : 'kitchen') + ' cabinets in your cart">' +
+            // A light wall and floor behind the cabinets so dark and white finishes both read.
+            '<rect x="' + (-pad) + '" y="' + top + '" width="' + (totalW + 2 * pad) + '" height="' + (H - top) + '" fill="#ece7df"/>' +
+            '<rect x="' + (-pad) + '" y="' + H + '" width="' + (totalW + 2 * pad) + '" height="' + pad + '" fill="#c9bba6"/>' + body + '</svg>';
+    }
+
+    function feetInches(inches) {
+        var ft = Math.floor(inches / 12), inch = Math.round(inches % 12);
+        return (ft ? ft + '′' : '') + (inch ? inch + '″' : (ft ? '' : '0″'));
+    }
+
+    // Draw into el. opts.space limits to one space; opts.onEmpty(el) handles an empty cart.
+    function renderKitchen(el, opts) {
+        opts = opts || {};
+        return kitchenPieces(readCart()).then(function (pieces) {
+            var seen = {};
+            try { seen = JSON.parse(sessionStorage.getItem(KITCHEN_SEEN_KEY) || '{}'); } catch (e) {}
+            var spaces = opts.space ? [opts.space] : ['Kitchen', 'Bath'];
+            var html = spaces.map(function (space) {
+                var svg = kitchenSvg(pieces, space, seen);
+                if (!svg) return '';
+                var mine = pieces.filter(function (p) { return p.space === space; });
+                var baseRun = mine.filter(function (p) { return p.room !== 'Wall' && p.room !== 'Tall' && !p.medicine; })
+                    .reduce(function (n, p) { return n + p.w; }, 0);
+                return '<figure class="dl-kitchen-fig"><figcaption><b>Your ' + (space === 'Bath' ? 'bathroom' : 'kitchen') + ' so far</b>' +
+                    '<span>' + mine.length + (mine.length === 1 ? ' cabinet' : ' cabinets') + (baseRun ? ' · ' + feetInches(baseRun) + ' of base' : '') + '</span></figcaption>' + svg + '</figure>';
+            }).join('');
+            el.innerHTML = html;
+            el.hidden = !html && !opts.keepEmpty;
+            if (!html && opts.onEmpty) opts.onEmpty(el);
+            pieces.forEach(function (p) { seen[p.key] = true; });
+            try { sessionStorage.setItem(KITCHEN_SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
+            return pieces;
+        });
+    }
+
+    // One cabinet on its own (cart thumbnails when there's no photo in the chosen finish).
+    function cabinetSvg(p) {
+        var edge = kShade(p.hex, -0.35), base = p.room !== 'Wall' && p.room !== 'Tall' && !p.medicine;
+        var toe = base ? 4 : 0, h = base ? Math.min(p.h, 34.5) : p.h, m = Math.max(p.w, h) * 0.12;
+        return '<svg viewBox="' + (-m) + ' ' + (-m) + ' ' + (p.w + 2 * m) + ' ' + (h + 2 * m) + '" role="img" aria-label="Cabinet drawing" style="width:100%;height:100%;display:block">' +
+            (toe ? '<rect x=".6" y="' + (h - toe) + '" width="' + (p.w - 1.2) + '" height="' + toe + '" fill="' + kShade(p.hex, -0.55) + '"/>' : '') +
+            '<rect x="0" y="0" width="' + p.w + '" height="' + (h - toe) + '" fill="' + p.hex + '" stroke="' + edge + '" stroke-width=".5"/>' +
+            kitchenFront(0, 0, p.w, h - toe, p, edge) + '</svg>';
+    }
+
+    var kitchen = { render: renderKitchen, pieces: kitchenPieces, svg: kitchenSvg, cabinet: cabinetSvg };
+
     window.DL = {
         supabase: supabase,
         formatMoney: formatMoney,
@@ -346,6 +504,7 @@
         cart: cart,
         doorSvg: doorSvg,
         doorGuide: doorGuide,
-        photos: photos
+        photos: photos,
+        kitchen: kitchen
     };
 })();

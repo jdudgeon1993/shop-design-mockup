@@ -38,6 +38,14 @@
         h1, h2 { font-family: 'Playfair Display', serif; font-weight: 600; }
         .intro-heading { margin: 0 0 24px; font-size: clamp(30px, 4.5vw, 42px); }
 
+        .kitchen-wrap { display: grid; gap: 14px; margin: 0 0 24px; }
+        @media (min-width: 900px) { .kitchen-wrap.two { grid-template-columns: 1fr 1fr; } }
+        .dl-kitchen-fig { margin: 0; padding: 14px 16px 12px; border: 1px solid var(--border); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)); }
+        .dl-kitchen-fig figcaption { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+        .dl-kitchen-fig figcaption b { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--gold); }
+        .dl-kitchen-fig figcaption span { color: var(--muted); }
+        .dl-kitchen-fig svg { max-height: 240px; margin: 0 auto; }
+
         /* Same 4-step bar as the DIY Shop; the cart is step 4 (Review). */
         .stepper { list-style: none; display: flex; gap: 6px; margin: 0 0 28px; padding: 0; overflow-x: auto; }
         .stepper li { flex: 1 1 0; min-width: 130px; }
@@ -62,7 +70,9 @@
         .lines { display: flex; flex-direction: column; gap: 14px; }
         .line { display: grid; grid-template-columns: 96px 1fr; gap: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.03); }
         @media (max-width: 560px) { .line { grid-template-columns: 72px 1fr; gap: 12px; } }
-        .line img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; background: #2a2a2a; display: block; }
+        .line-img { width: 100%; aspect-ratio: 1; border-radius: 8px; background: #2a2a2a center / cover no-repeat; display: block; }
+        .line-img.is-drawing { background: #ece7df; padding: 8px; }
+        .line-img.dl-photo { background-color: #fff; background-size: contain; background-repeat: no-repeat; background-position: center; background-origin: content-box; padding: 6px; }
         .line-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
         .line-title { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.3; }
         .line-title a { color: inherit; text-decoration: none; }
@@ -167,6 +177,7 @@
         <section id="cart-view">
             <p class="kicker">Your Cart</p>
             <h1 class="intro-heading">Review your order</h1>
+            <div class="kitchen-wrap" id="kitchen-wrap" hidden aria-live="polite"></div>
 
             <div class="empty" id="empty" hidden>
                 <h2>Your cart is empty</h2>
@@ -260,7 +271,8 @@
             }
             var title = d.link && editable ? '<a href="' + esc(d.link) + '">' + esc(d.title) + '</a>' : esc(d.title);
             return '<article class="line' + (l.unavailable && editable ? ' unavailable' : '') + '" data-id="' + esc(l.id) + '">' +
-                '<img src="' + esc(d.image || '') + '" alt="" loading="lazy" onerror="this.removeAttribute(\'src\')">' +
+                '<div class="line-img"' + (l.type === 'product' ? ' data-line-photo="' + l.product_id + '|' + l.finish_id + '|' + (l.upgrade_id ? 1 : 0) + '"' : '') +
+                    (d.image ? ' style="background-image:url(\'' + esc(d.image) + '\')"' : '') + '></div>' +
                 '<div><div class="line-head"><div>' +
                 '<span class="badge ' + (l.type === 'collection' ? 'coll">Curated Collection' : 'diy">DIY') + '</span>' +
                 '<h3 class="line-title">' + title + '</h3></div>' +
@@ -276,12 +288,47 @@
                 '<strong>' + fm((d.unit_price || 0) * l.quantity) + '</strong></div></div></div></article>';
         }
 
+        var finishStyles = null; // finish id -> door style id
+        function lineFinishes() {
+            if (!finishStyles) finishStyles = DL.supabase.from('finishes').select('id,door_style_id').then(function (res) {
+                var m = {}; (res.data || []).forEach(function (f) { m[f.id] = f.door_style_id; }); return m;
+            });
+            return finishStyles;
+        }
+        // Real product photo (in the line's style + finish) in place of the placeholder thumbnail.
+        function paintLinePhotos(root) {
+            Promise.all([DL.photos.load(), lineFinishes()]).then(function (r) {
+                var rows = r[0], styleOf = r[1];
+                root.querySelectorAll('[data-line-photo]').forEach(function (el) {
+                    var k = el.getAttribute('data-line-photo').split('|');
+                    // Exact finish only: a thumbnail has no room to say "shown in another finish".
+                    var path = DL.photos.pick(rows, { productId: Number(k[0]), styleId: styleOf[k[1]], finishId: Number(k[1]), strictFinish: true, fivePiece: k[2] === '1' });
+                    if (path) { el.setAttribute('data-photo', path); return; }
+                    var line = DL.cart.lines().filter(function (l) { return l.product_id === Number(k[0]) && String(l.finish_id) === k[1]; })[0];
+                    if (line) DL.kitchen.pieces([line]).then(function (pieces) {
+                        if (!pieces.length) return;
+                        el.classList.add('is-drawing');
+                        el.style.backgroundImage = '';
+                        el.innerHTML = DL.kitchen.cabinet(pieces[0]);
+                    });
+                });
+                DL.photos.paint(root);
+            });
+        }
+        function paintKitchen() {
+            var wrap = document.getElementById('kitchen-wrap');
+            DL.kitchen.render(wrap).then(function () {
+                wrap.classList.toggle('two', wrap.querySelectorAll('figure').length > 1);
+            });
+        }
         function render() {
+            paintKitchen();
             var lines = DL.cart.lines();
             document.getElementById('empty').hidden = lines.length > 0;
             document.getElementById('layout').hidden = lines.length === 0;
             if (!lines.length) return;
             document.getElementById('lines').innerHTML = lines.map(function (l) { return lineHtml(l, true); }).join('');
+            paintLinePhotos(document.getElementById('lines'));
             // Unavailable lines can't be ordered, so they don't count toward the estimate.
             var orderable = lines.filter(function (l) { return !l.unavailable; });
             var count = orderable.reduce(function (n, l) { return n + l.quantity; }, 0);
@@ -371,6 +418,7 @@
             document.getElementById('c-email').textContent = email;
             document.getElementById('c-num').textContent = 'Order #' + result.order_number;
             document.getElementById('c-lines').innerHTML = lines.map(function (l) { return lineHtml(l, false); }).join('');
+            paintLinePhotos(document.getElementById('c-lines'));
             // The server's total is the one that counts.
             document.getElementById('c-total').textContent = fm(result.subtotal);
             window.scrollTo(0, 0);
