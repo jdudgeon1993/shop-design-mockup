@@ -59,6 +59,11 @@
         }
         .coll-card:hover, .coll-card:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
         .coll-card img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; }
+        /* No photo yet: the set drawn to scale (same drawing as "your kitchen so far"). */
+        .coll-scene { width: 100%; aspect-ratio: 16 / 10; display: flex; align-items: flex-start; justify-content: center; padding: 7% 14% 30%; box-sizing: border-box; background: #ece7df; }
+        .coll-scene svg { width: 100%; height: 100%; }
+        .gallery-scene { width: 100%; aspect-ratio: 4 / 3; border-radius: 14px; display: flex; align-items: center; justify-content: center; padding: 8%; box-sizing: border-box; background: #ece7df; }
+        .gallery-scene svg { width: 100%; height: 100%; }
         .coll-card .shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0) 70%); }
         .coll-card .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 24px; }
         .coll-card .space { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
@@ -177,6 +182,7 @@
             <div class="detail">
                 <div>
                     <img class="gallery-main" id="d-main" alt="">
+                    <div class="gallery-scene" id="d-scene" role="img" aria-label="Drawing of the cabinets in this collection" hidden></div>
                     <div class="thumbs" id="d-thumbs"></div>
                 </div>
                 <div class="buy">
@@ -252,7 +258,7 @@
                 r[1].data.forEach(function (s) { data.styles[s.id] = s; });
                 r[2].data.forEach(function (f) { (data.finishesByStyle[f.door_style_id] = data.finishesByStyle[f.door_style_id] || []).push(f); });
                 var productIds = r[0].data.map(function (i) { return i.product_id; });
-                return sb.from('products').select('id,sku,mfg_sku,family_id,description,width,height,depth').in('id', productIds);
+                return sb.from('products').select('id,sku,mfg_sku,family_id,description,width,height,depth,doors,drawers,kind,space,room_type,subtype').in('id', productIds);
             }).then(function (res) {
                 if (res.error) throw res.error;
                 res.data.forEach(function (p) { data.products[p.id] = p; });
@@ -271,6 +277,26 @@
             return (data.items[c.id] || []).reduce(function (n, i) { return n + i.quantity; }, 0);
         }
 
+        // ---------- drawn scene (collections without photos) ----------
+        function defaultHex(c) {
+            var fs = data.finishesByStyle[cheapest(c).door_style_id] || [];
+            return fs.length ? fs[Math.min(1, fs.length - 1)].swatch_hex : '#cfc8bd';
+        }
+        function sceneSvg(c, hex) {
+            var pieces = [], seen = {};
+            (data.items[c.id] || []).forEach(function (it, n) {
+                var p = data.products[it.product_id];
+                if (!p || p.kind !== 'cabinet' || !(Number(p.width) > 0)) return;
+                for (var q = 0; q < Math.min(it.quantity, 12); q++) {
+                    var key = c.id + ':' + n + ':' + q; seen[key] = true;
+                    pieces.push({ key: key, space: p.space === 'Bath' ? 'Bath' : 'Kitchen', room: p.room_type, medicine: /Medicine/.test(p.subtype || ''),
+                        w: Number(p.width), h: Number(p.height) || 34.5, doors: p.doors || 0, drawers: p.drawers || 0, hex: hex || '#cfc8bd' });
+                }
+            });
+            if (!pieces.length) return '';
+            return DL.kitchen.svg(pieces, pieces[0].space, seen, 84); // a tighter frame than the 12' cart view
+        }
+
         // ---------- list ----------
         function showList() {
             document.getElementById('detail-view').hidden = true;
@@ -279,7 +305,7 @@
                 var o = cheapest(c);
                 var pct = Math.round((1 - o.flat / o.individual) * 100);
                 return '<a class="coll-card" href="?c=' + encodeURIComponent(c.slug) + '" data-slug="' + esc(c.slug) + '">' +
-                    '<img src="' + esc(c.hero) + '" alt="" loading="lazy"><div class="shade"></div>' +
+                    (c.hero ? '<img src="' + esc(c.hero) + '" alt="" loading="lazy">' : '<div class="coll-scene">' + sceneSvg(c, defaultHex(c)) + '</div>') + '<div class="shade"></div>' +
                     '<div class="info"><span class="space">' + esc(c.space) + ' · ' + itemCount(c) + ' pieces</span>' +
                     '<h2>' + esc(c.name) + '</h2><p>' + esc(c.tagline || '') + '</p>' +
                     '<div class="price-row">From <strong>' + fm(o.flat) + '</strong><span class="save-pill">Save ' + pct + '% vs. separately</span></div>' +
@@ -322,8 +348,14 @@
         }
         function paint() {
             var c = sel.c, o = c.offers.filter(function (x) { return x.door_style_id === sel.styleId; })[0];
-            var gallery = [c.hero].concat(c.gallery);
-            document.getElementById('d-main').src = sel.img;
+            var gallery = [c.hero].concat(c.gallery).filter(Boolean);
+            var main = document.getElementById('d-main'), scene = document.getElementById('d-scene');
+            main.hidden = !gallery.length; scene.hidden = !!gallery.length;
+            if (gallery.length) main.src = sel.img || gallery[0];
+            else {
+                var fsel = (data.finishesByStyle[sel.styleId] || []).filter(function (f) { return f.id === sel.finishId; })[0];
+                scene.innerHTML = sceneSvg(c, fsel && fsel.swatch_hex);
+            }
             document.getElementById('d-thumbs').innerHTML = gallery.length > 1 ? gallery.map(function (u) {
                 return '<button type="button" data-img="' + esc(u) + '" aria-pressed="' + (u === sel.img) + '"><img src="' + esc(u) + '" alt=""></button>';
             }).join('') : '';

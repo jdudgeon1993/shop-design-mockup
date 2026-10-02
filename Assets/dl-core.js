@@ -423,7 +423,7 @@
     }
 
     // Returns an SVG string for one space ('Kitchen' or 'Bath'), or '' when it has no pieces.
-    function kitchenSvg(pieces, space, seen) {
+    function kitchenSvg(pieces, space, seen, minWall) {
         var list = pieces.filter(function (p) { return p.space === space; });
         if (!list.length) return '';
         var counterTop = space === 'Bath' ? 33 : 36, upperBottom = space === 'Bath' ? 50 : 54;
@@ -435,7 +435,7 @@
         var talls = tall.reduce(function (n, p) { return n + p.w; }, 0);
         var runW = Math.max(baseW, upperW);
         // At least a 12' wall, with the cabinets centered on it, so small carts still read as a room.
-        var contentW = runW + talls, totalW = Math.max(contentW, 144), H = 100, pad = 4, x0 = (totalW - contentW) / 2;
+        var contentW = runW + talls, totalW = Math.max(contentW, minWall || 144), H = 100, pad = 4, x0 = (totalW - contentW) / 2;
         var body = '';
         function piece(p, x, yTop) {
             var edge = kShade(p.hex, -0.35), cls = seen[p.key] ? '' : ' class="kp-new"';
@@ -457,6 +457,12 @@
         x = x0 + runW;
         tall.forEach(function (p) { body += piece(p, x, H - p.h); x += p.w; });
         var vbH = H + pad, top = H - upperBottom - 42 - pad;
+        if (minWall) {   // framed view (collections): crop the empty wall above the tallest cabinet
+            var tallest = Math.max(baseW ? counterTop : 0,
+                upper.reduce(function (m, p) { return Math.max(m, upperBottom + p.h); }, 0),
+                tall.reduce(function (m, p) { return Math.max(m, p.h); }, 0));
+            top = H - tallest - 12;
+        }
         return '<svg class="dl-kitchen" viewBox="' + (-pad) + ' ' + top + ' ' + (totalW + 2 * pad) + ' ' + (vbH - top) + '" role="img" aria-label="Preview of the ' +
             (space === 'Bath' ? 'bathroom' : 'kitchen') + ' cabinets in your cart">' +
             // A light wall and floor behind the cabinets so dark and white finishes both read.
