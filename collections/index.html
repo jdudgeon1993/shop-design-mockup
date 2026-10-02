@@ -1,0 +1,376 @@
+<!-- Curated Collections: pre-spec'd sets of catalog cabinets at a flat price per door style.
+     Data (public, live from Supabase): storefront_collections (flat price + individual price per
+     door style), curated_collection_items, products, product_families, door_styles, finishes.
+     Cart is shared with DIY and /cart/ (Assets/dl-core.js). -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/Assets/site-gate.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curated Collections - Design Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/Assets/dl-core.js"></script>
+    <style>
+        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --panel: #222; --border: rgba(255,255,255,0.15); --muted: rgba(255,255,255,0.58); }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); }
+        button { font-family: inherit; }
+
+        .top-bar {
+            position: sticky; top: 0; z-index: 15; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 14px 5%; border-bottom: 1px solid var(--border); background: rgba(26,26,26,0.96); backdrop-filter: blur(6px);
+        }
+        .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .back-link:hover { text-decoration: underline; }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
+        @media (max-width: 640px) { .page-title { display: none; } }
+        .cart-link {
+            display: inline-flex; align-items: center; gap: 8px; color: var(--white); text-decoration: none;
+            font-size: 13px; font-weight: 700; padding: 8px 14px; border: 1px solid var(--border); border-radius: 999px;
+        }
+        .cart-link:hover, .cart-link:focus-visible { border-color: var(--gold); color: var(--gold); }
+        .cart-link svg { width: 18px; height: 18px; }
+        .cart-count {
+            min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--gold); color: var(--black);
+            font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;
+        }
+
+        .content { max-width: 1200px; margin: 0 auto; padding: 32px 5% 100px; }
+        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
+        h1, h2 { font-family: 'Playfair Display', serif; font-weight: 600; }
+        .intro-heading { margin: 0 0 8px; font-size: clamp(30px, 4.5vw, 44px); }
+        .intro-sub { margin: 0 0 32px; color: var(--muted); font-size: 15px; max-width: 640px; line-height: 1.55; }
+        .loading { padding: 60px 0; text-align: center; color: var(--muted); }
+
+        /* ---------- list ---------- */
+        .list { display: grid; grid-template-columns: 1fr; gap: 24px; }
+        @media (min-width: 860px) { .list { grid-template-columns: 1fr 1fr; } }
+        .coll-card {
+            position: relative; display: block; text-decoration: none; color: var(--white); border-radius: 14px; overflow: hidden;
+            border: 1px solid var(--border); background: #111; transition: 0.2s;
+        }
+        .coll-card:hover, .coll-card:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
+        .coll-card img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; }
+        .coll-card .shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0) 70%); }
+        .coll-card .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 24px; }
+        .coll-card .space { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+        .coll-card h2 { margin: 0 0 4px; font-size: 30px; }
+        .coll-card p { margin: 0 0 12px; font-size: 14px; color: rgba(255,255,255,0.8); }
+        .coll-card .price-row { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; font-size: 14px; }
+        .coll-card .price-row strong { color: var(--gold); font-size: 20px; }
+        .save-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: rgba(212,175,55,0.18); color: var(--gold); font-size: 12px; font-weight: 700; }
+
+        /* ---------- detail ---------- */
+        .detail-back { appearance: none; background: none; border: none; color: var(--gold); cursor: pointer; font-size: 14px; padding: 0; margin-bottom: 22px; }
+        .detail-back:hover { text-decoration: underline; }
+        .detail { display: grid; grid-template-columns: 1fr; gap: 32px; }
+        @media (min-width: 960px) { .detail { grid-template-columns: 1.15fr 0.85fr; align-items: start; } }
+        .gallery-main { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; display: block; background: #111; }
+        .thumbs { display: flex; gap: 10px; margin-top: 10px; }
+        .thumbs button { appearance: none; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; width: 92px; background: none; }
+        .thumbs button[aria-pressed="true"] { border-color: var(--gold); }
+        .thumbs img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+        .buy h1 { margin: 0 0 6px; font-size: clamp(32px, 4vw, 44px); }
+        .buy .tagline { margin: 0 0 16px; color: var(--gold); font-size: 15px; font-weight: 600; }
+        .buy .desc { margin: 0 0 24px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
+        .opt { margin-bottom: 22px; }
+        .opt h3 { margin: 0 0 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,255,255,0.55); }
+        .opt h3 span { text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--white); margin-left: 6px; }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            appearance: none; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: rgba(255,255,255,0.85);
+            font-size: 13px; font-weight: 600; padding: 9px 15px; border-radius: 999px; cursor: pointer;
+        }
+        .chip:hover, .chip:focus-visible { border-color: var(--gold); outline: none; }
+        .chip[aria-pressed="true"] { background: rgba(212,175,55,0.18); border-color: var(--gold); color: var(--gold); }
+        .chip small { opacity: 0.7; font-weight: 600; margin-left: 4px; }
+        .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+        .swatch {
+            appearance: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; padding: 0;
+            border: 2px solid rgba(255,255,255,0.25); box-shadow: inset 0 0 0 2px var(--black);
+        }
+        .swatch:hover, .swatch:focus-visible { border-color: rgba(212,175,55,0.7); outline: none; }
+        .swatch[aria-pressed="true"] { border-color: var(--gold); box-shadow: inset 0 0 0 2px var(--black), 0 0 0 2px rgba(212,175,55,0.35); }
+        .price-box { border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin: 6px 0 18px; background: rgba(255,255,255,0.03); }
+        .price-box .flat { font-size: 32px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+        .price-box .compare { margin-top: 4px; font-size: 13px; color: var(--muted); }
+        .price-box .compare s { color: rgba(255,255,255,0.45); }
+        .btn-primary {
+            appearance: none; width: 100%; background: var(--gold); border: none; color: var(--black); padding: 15px 28px; border-radius: 999px;
+            font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+        }
+        .btn-primary:hover, .btn-primary:focus-visible { filter: brightness(1.08); }
+
+        .included { margin-top: 40px; }
+        .included h2 { margin: 0 0 6px; font-size: 26px; }
+        .included p { margin: 0 0 16px; font-size: 14px; color: var(--muted); }
+        .inc-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .inc-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        .inc-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); vertical-align: top; }
+        .inc-table td.qty { width: 60px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+        .inc-table td.sku { white-space: nowrap; color: rgba(255,255,255,0.75); font-variant-numeric: tabular-nums; }
+        .inc-table .name { font-weight: 600; }
+        .inc-table .desc { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+        .inc-table a { color: inherit; text-decoration: none; }
+        .inc-table a:hover .name { color: var(--gold); }
+
+        .toast {
+            position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); z-index: 40; opacity: 0;
+            background: var(--panel); border: 1px solid var(--gold); border-radius: 999px; padding: 12px 20px; font-size: 14px;
+            display: flex; gap: 14px; align-items: center; transition: 0.25s; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
+        .toast a { color: var(--gold); font-weight: 700; text-decoration: none; }
+
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <a class="back-link" href="/home/">&larr; Back to storefront</a>
+        <span class="page-title">Curated Collections</span>
+        <a class="cart-link" href="/cart/" aria-label="View cart">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5L6 7Z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
+            Cart <span class="cart-count" data-cart-count hidden>0</span>
+        </a>
+    </header>
+
+    <main class="content">
+        <div class="loading" id="loading">Loading collections&hellip;</div>
+
+        <section id="list-view" hidden>
+            <p class="kicker">Curated Collections</p>
+            <h1 class="intro-heading">Designed together. Priced together.</h1>
+            <p class="intro-sub">Complete, pre-planned sets at one flat price, built from the same cabinets as our DIY Shop. Choose your door style and finish, and every piece arrives matched.</p>
+            <div class="list" id="list"></div>
+        </section>
+
+        <section id="detail-view" hidden>
+            <button class="detail-back" id="detail-back" type="button">&larr; All collections</button>
+            <div class="detail">
+                <div>
+                    <img class="gallery-main" id="d-main" alt="">
+                    <div class="thumbs" id="d-thumbs"></div>
+                </div>
+                <div class="buy">
+                    <p class="kicker" id="d-space"></p>
+                    <h1 id="d-name"></h1>
+                    <p class="tagline" id="d-tagline"></p>
+                    <p class="desc" id="d-desc"></p>
+                    <div class="opt"><h3>Door Style <span id="d-style-label"></span></h3><div class="chips" id="d-styles"></div></div>
+                    <div class="opt"><h3>Finish <span id="d-finish-label"></span></h3><div class="swatches" id="d-finishes"></div></div>
+                    <div class="price-box">
+                        <div class="flat" id="d-flat"></div>
+                        <div class="compare" id="d-compare"></div>
+                    </div>
+                    <button class="btn-primary" id="d-add" type="button">Add Collection to Cart</button>
+                </div>
+            </div>
+
+            <div class="included">
+                <h2>What's included</h2>
+                <p id="d-inc-count"></p>
+                <table class="inc-table">
+                    <thead><tr><th>Qty</th><th>Item</th><th>Item #</th></tr></thead>
+                    <tbody id="d-items"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast" role="status"><span id="toast-text">Added to cart</span><a href="/cart/">View cart &rarr;</a></div>
+
+    <script>
+    (function () {
+        var sb = DL.supabase, fm = DL.formatMoney, esc = DL.escapeHtml;
+        var data = { collections: [], bySlug: {}, items: {}, products: {}, families: {}, styles: {}, finishesByStyle: {} };
+        var sel = null;
+
+        function load() {
+            return sb.from('storefront_collections').select('*').order('sort_order').then(function (res) {
+                if (res.error) throw res.error;
+                // One row per collection x door style -> group per collection.
+                res.data.forEach(function (row) {
+                    var c = data.bySlug[row.slug];
+                    if (!c) {
+                        c = data.bySlug[row.slug] = { id: row.collection_id, slug: row.slug, name: row.name, tagline: row.tagline,
+                            description: row.description, space: row.space, hero: row.hero_image_url, gallery: row.gallery_urls || [], offers: [] };
+                        data.collections.push(c);
+                    }
+                    c.offers.push({ door_style_id: row.door_style_id, door_style: row.door_style, flat: Number(row.flat_price), individual: Number(row.individual_price) });
+                });
+                var ids = data.collections.map(function (c) { return c.id; });
+                return Promise.all([
+                    sb.from('curated_collection_items').select('collection_id,product_id,quantity,sort_order').in('collection_id', ids).order('sort_order'),
+                    sb.from('door_styles').select('id,name,line_id,door_design,sort_order').order('sort_order'),
+                    sb.from('finishes').select('id,door_style_id,code,name,swatch_hex,sort_order').eq('is_active', true).order('sort_order')
+                ]);
+            }).then(function (r) {
+                r.forEach(function (x) { if (x.error) throw x.error; });
+                r[0].data.forEach(function (i) { (data.items[i.collection_id] = data.items[i.collection_id] || []).push(i); });
+                r[1].data.forEach(function (s) { data.styles[s.id] = s; });
+                r[2].data.forEach(function (f) { (data.finishesByStyle[f.door_style_id] = data.finishesByStyle[f.door_style_id] || []).push(f); });
+                var productIds = r[0].data.map(function (i) { return i.product_id; });
+                return sb.from('products').select('id,sku,mfg_sku,family_id,description,width,height,depth').in('id', productIds);
+            }).then(function (res) {
+                if (res.error) throw res.error;
+                res.data.forEach(function (p) { data.products[p.id] = p; });
+                var famIds = res.data.map(function (p) { return p.family_id; });
+                return sb.from('product_families').select('id,name,slug').in('id', famIds);
+            }).then(function (res) {
+                if (res.error) throw res.error;
+                res.data.forEach(function (f) { data.families[f.id] = f; });
+            });
+        }
+
+        function cheapest(c) {
+            return c.offers.reduce(function (best, o) { return !best || o.flat < best.flat ? o : best; }, null);
+        }
+        function itemCount(c) {
+            return (data.items[c.id] || []).reduce(function (n, i) { return n + i.quantity; }, 0);
+        }
+
+        // ---------- list ----------
+        function showList() {
+            document.getElementById('detail-view').hidden = true;
+            document.getElementById('list-view').hidden = false;
+            document.getElementById('list').innerHTML = data.collections.map(function (c) {
+                var o = cheapest(c);
+                var pct = Math.round((1 - o.flat / o.individual) * 100);
+                return '<a class="coll-card" href="?c=' + encodeURIComponent(c.slug) + '" data-slug="' + esc(c.slug) + '">' +
+                    '<img src="' + esc(c.hero) + '" alt="" loading="lazy"><div class="shade"></div>' +
+                    '<div class="info"><span class="space">' + esc(c.space) + ' · ' + itemCount(c) + ' pieces</span>' +
+                    '<h2>' + esc(c.name) + '</h2><p>' + esc(c.tagline || '') + '</p>' +
+                    '<div class="price-row">From <strong>' + fm(o.flat) + '</strong><span class="save-pill">Save ' + pct + '% vs. separately</span></div>' +
+                    '</div></a>';
+            }).join('');
+            document.title = 'Curated Collections - Design Lab';
+        }
+
+        // ---------- detail ----------
+        function showDetail(slug) {
+            var c = data.bySlug[slug];
+            if (!c) return showList();
+            var o = cheapest(c);
+            sel = { c: c, styleId: o.door_style_id, finishId: null, img: c.hero };
+            pickStyle(o.door_style_id);
+            document.getElementById('list-view').hidden = true;
+            document.getElementById('detail-view').hidden = false;
+            document.getElementById('d-space').textContent = c.space + ' Collection';
+            document.getElementById('d-name').textContent = c.name;
+            document.getElementById('d-tagline').textContent = c.tagline || '';
+            document.getElementById('d-desc').textContent = c.description || '';
+
+            var items = (data.items[c.id] || []).slice().sort(function (a, b) { return a.sort_order - b.sort_order; });
+            document.getElementById('d-inc-count').textContent = itemCount(c) + ' pieces in ' + items.length + ' line items. Every piece ships in the door style and finish you choose.';
+            document.getElementById('d-items').innerHTML = items.map(function (i) {
+                var p = data.products[i.product_id], f = data.families[p.family_id];
+                var dims = p.width != null ? Number(p.width) + '"W × ' + Number(p.height) + '"H' + (p.depth != null ? ' × ' + Number(p.depth) + '"D' : '') + ' · ' : '';
+                return '<tr><td class="qty">' + i.quantity + ' ×</td><td><a href="/diy-wizard/?family=' + encodeURIComponent(f.slug) + '">' +
+                    '<div class="name">' + esc(f.name) + '</div><div class="desc">' + esc(dims + p.description) + '</div></a></td>' +
+                    '<td class="sku">' + esc(p.mfg_sku) + '</td></tr>';
+            }).join('');
+            document.title = c.name + ' - Design Lab';
+            window.scrollTo(0, 0);
+        }
+        function pickStyle(styleId) {
+            sel.styleId = Number(styleId);
+            var fins = data.finishesByStyle[sel.styleId] || [];
+            if (!fins.some(function (f) { return f.id === sel.finishId; })) sel.finishId = fins.length ? fins[0].id : null;
+            paint();
+        }
+        function paint() {
+            var c = sel.c, o = c.offers.filter(function (x) { return x.door_style_id === sel.styleId; })[0];
+            var gallery = [c.hero].concat(c.gallery);
+            document.getElementById('d-main').src = sel.img;
+            document.getElementById('d-thumbs').innerHTML = gallery.length > 1 ? gallery.map(function (u) {
+                return '<button type="button" data-img="' + esc(u) + '" aria-pressed="' + (u === sel.img) + '"><img src="' + esc(u) + '" alt=""></button>';
+            }).join('') : '';
+            document.getElementById('d-style-label').textContent = o.door_style;
+            document.getElementById('d-styles').innerHTML = c.offers.map(function (x) {
+                return '<button type="button" class="chip" data-style="' + x.door_style_id + '" aria-pressed="' + (x.door_style_id === sel.styleId) + '">' +
+                    esc(x.door_style) + '<small>' + fm(x.flat) + '</small></button>';
+            }).join('');
+            var fins = data.finishesByStyle[sel.styleId] || [];
+            var fin = fins.filter(function (f) { return f.id === sel.finishId; })[0];
+            document.getElementById('d-finish-label').textContent = fin ? fin.name : '';
+            document.getElementById('d-finishes').innerHTML = fins.map(function (f) {
+                return '<button type="button" class="swatch" data-finish="' + f.id + '" aria-pressed="' + (f.id === sel.finishId) + '" title="' + esc(f.name) +
+                    '" aria-label="' + esc(f.name) + '" style="background:' + esc(f.swatch_hex || '#777') + '"></button>';
+            }).join('');
+            document.getElementById('d-flat').textContent = fm(o.flat);
+            document.getElementById('d-compare').innerHTML = 'Bought separately <s>' + fm(o.individual) + '</s> &middot; you save <strong style="color:var(--gold)">' +
+                fm(o.individual - o.flat) + '</strong>';
+        }
+
+        function addToCart() {
+            var c = sel.c, o = c.offers.filter(function (x) { return x.door_style_id === sel.styleId; })[0];
+            var fin = (data.finishesByStyle[sel.styleId] || []).filter(function (f) { return f.id === sel.finishId; })[0];
+            var items = (data.items[c.id] || []).slice().sort(function (a, b) { return a.sort_order - b.sort_order; });
+            DL.cart.add({
+                type: 'collection',
+                collection_id: c.id,
+                finish_id: fin.id,
+                quantity: 1,
+                display: {
+                    title: c.name,
+                    detail: o.door_style + ' · ' + fin.name,
+                    image: c.hero,
+                    unit_price: o.flat,
+                    link: '/collections/?c=' + encodeURIComponent(c.slug),
+                    // Full list of what's in the box, shown under the collection in the cart.
+                    includes: items.map(function (i) {
+                        var p = data.products[i.product_id], f = data.families[p.family_id];
+                        return { qty: i.quantity, name: f.name, description: p.description, sku: p.mfg_sku };
+                    })
+                }
+            });
+            var toast = document.getElementById('toast');
+            document.getElementById('toast-text').textContent = 'Added ' + c.name + ' (' + o.door_style + ', ' + fin.name + ')';
+            toast.classList.add('show');
+            clearTimeout(toast._t);
+            toast._t = setTimeout(function () { toast.classList.remove('show'); }, 3500);
+        }
+
+        // ---------- events ----------
+        document.getElementById('list').addEventListener('click', function (e) {
+            var a = e.target.closest('[data-slug]');
+            if (!a) return;
+            e.preventDefault();
+            history.pushState(null, '', '?c=' + encodeURIComponent(a.dataset.slug));
+            showDetail(a.dataset.slug);
+        });
+        document.getElementById('detail-back').addEventListener('click', function () {
+            history.pushState(null, '', location.pathname);
+            showList();
+        });
+        window.addEventListener('popstate', route);
+        document.getElementById('detail-view').addEventListener('click', function (e) {
+            var b = e.target.closest('button');
+            if (!b || !sel) return;
+            if (b.dataset.style) pickStyle(b.dataset.style);
+            else if (b.dataset.finish) { sel.finishId = Number(b.dataset.finish); paint(); }
+            else if (b.dataset.img) { sel.img = b.dataset.img; paint(); }
+        });
+        document.getElementById('d-add').addEventListener('click', addToCart);
+
+        function route() {
+            var slug = new URLSearchParams(location.search).get('c');
+            if (slug) showDetail(slug); else showList();
+        }
+
+        load().then(function () {
+            document.getElementById('loading').hidden = true;
+            route();
+        }).catch(function (err) {
+            document.getElementById('loading').textContent = 'Sorry, collections could not be loaded. Please refresh the page.';
+            console.error(err);
+        });
+    })();
+    </script>
+</body>
+</html>
