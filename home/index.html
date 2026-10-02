@@ -5,7 +5,14 @@
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Design Labs - Complete Storefront</title>
+    <title>Design Lab — Online Cabinetry</title>
+    <meta name="description" content="Design Lab: quality cabinetry for every room. Build your own in the DIY Shop, start from a designer-planned Curated Collection, or meet a designer over video.">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="image" href="/Assets/Images/hero-section-i1.webp">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -221,8 +228,34 @@
             color: rgba(255,255,255,0.5); font-size: 13px;
         }
 
+        /* Feature sections (DIY / Curated / Full Service / Why) — full-screen
+           photo with the shared section scrim, copy anchored left or right. */
+        .feature { align-items: flex-start; }
+        .feature.right { align-items: flex-end; text-align: right; }
+        .feature.right .btn-pill, .feature.right .feature-actions { align-self: flex-end; }
+        .feature::before { background: linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.15) 100%); }
+        .feature.right::before { background: linear-gradient(270deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.15) 100%); }
+        .feature-kicker { margin: 0 0 12px; color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; }
+        .feature h2 { margin: 0 0 16px; font-family: var(--font-serif); font-weight: 700; font-size: clamp(30px, 4.6vw, 56px); line-height: 1.08; max-width: 620px; }
+        .feature p { margin: 0; max-width: 520px; font-size: clamp(15px, 1.4vw, 17px); line-height: 1.65; color: rgba(255,255,255,0.85); }
+        .feature-points { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 10px; max-width: 520px; }
+        .feature-points li { font-size: 15px; color: rgba(255,255,255,0.88); padding-left: 22px; position: relative; }
+        .feature.right .feature-points li { padding-left: 0; padding-right: 22px; }
+        .feature-points li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+        .feature.right .feature-points li::before { left: auto; right: 0; }
+        .feature-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+        .feature-actions .btn-pill { align-self: auto; }
+        .btn-link { margin-top: 24px; color: var(--white); font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; border-bottom: 1px solid var(--gold); padding-bottom: 3px; }
+        .btn-link:hover { color: var(--gold); }
+
         /* Mobile */
         @media (max-width: 768px) {
+            .feature, .feature.right { align-items: flex-start; text-align: left; padding: calc(var(--navbar-h) + 20px) 8% 40px; }
+            .feature.right .btn-pill, .feature.right .feature-actions { align-self: flex-start; }
+            .feature::before, .feature.right::before { background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.8)); }
+            .feature.right .feature-points li { padding-left: 22px; padding-right: 0; }
+            .feature.right .feature-points li::before { left: 0; right: auto; }
+
             .hamburger { display: flex; }
 
             /* Logo stays visible; the links + icons collapse into one dropdown panel */
@@ -267,7 +300,7 @@
 
     <nav class="navbar">
         <input type="checkbox" id="nav-toggle">
-        <div class="nav-brand"><img class="nav-logo" src="/Assets/Logos/DL-Logo%20White.png" alt="Design Lab"></div>
+        <div class="nav-brand"><img class="nav-logo" src="/Assets/Logos/dl-logo-white.webp" alt="Design Lab"></div>
         <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
 
         <div class="nav-menu">
@@ -275,14 +308,11 @@
                 <a href="/home/">Home</a>
                 <a href="/diy-wizard/">DIY Shop</a>
                 <a href="/collections/">Collections</a>
-                <a href="#">Contact</a>
+                <a href="mailto:hello@shopdesignlab.com">Contact</a>
             </div>
             <div class="nav-icons">
-                <a href="#" class="nav-icon" aria-label="Search">
+                <a href="/diy-wizard/?focus=search" class="nav-icon" aria-label="Search the catalog">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                </a>
-                <a href="#" class="nav-icon" aria-label="Account">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"></path></svg>
                 </a>
                 <a href="/cart/" class="nav-icon" aria-label="Cart">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5L6 7Z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
@@ -298,7 +328,7 @@
                 <div class="hero-slide"></div>
 
                 <div class="hero-top">
-                    <img class="hero-logo-img" src="/Assets/Logos/Hero-Logo%202.0.png" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
+                    <img class="hero-logo-img" src="/Assets/Logos/hero-logo.webp" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
                 </div>
 
                 <div class="hero-content">
@@ -340,10 +370,45 @@
             </div>
         </section>
 
+        <section class="feature" style="background-image: url('/Assets/Images/diy-section.webp')" aria-labelledby="diy-heading">
+            <p class="feature-kicker">DIY Shop</p>
+            <h2 id="diy-heading">Design it yourself, down to the drawer front.</h2>
+            <p>Every cabinet in the line, filterable by room, type, width and door style. Pick your size, finish and upgrades, and watch the price update as you go.</p>
+            <a class="btn-pill" href="/diy-wizard/">Shop DIY</a>
+        </section>
+
+        <section class="feature right" style="background-image: url('/Assets/Images/curated-section.webp')" aria-labelledby="curated-heading">
+            <p class="feature-kicker">Curated Collections</p>
+            <h2 id="curated-heading">Designed together. Priced together.</h2>
+            <p>Complete kitchens and baths planned by our designers, at one flat price that beats buying piece by piece. Choose the door style and finish; every piece arrives matched.</p>
+            <a class="btn-pill" href="/collections/">Explore Collections</a>
+        </section>
+
+        <section class="feature" style="background-image: url('/Assets/Images/full-service-section.webp')" aria-labelledby="service-heading">
+            <p class="feature-kicker">Full Service</p>
+            <h2 id="service-heading">Rather have a designer handle it?</h2>
+            <p>Meet face to face over video, from anywhere. We'll measure, plan and spec your space with you, then build the order for your approval.</p>
+            <div class="feature-actions">
+                <a class="btn-pill" href="mailto:hello@shopdesignlab.com?subject=Design%20consultation">Talk to a Designer</a>
+                <a class="btn-link" href="/consultation/">Have a room code? Join here</a>
+            </div>
+        </section>
+
+        <section class="feature right" style="background-image: url('/Assets/Images/why-choose-us.webp')" aria-labelledby="why-heading">
+            <p class="feature-kicker">Why Design Lab</p>
+            <h2 id="why-heading">A retail experience, at the source.</h2>
+            <ul class="feature-points">
+                <li>We partner directly with the manufacturers who build your cabinets.</li>
+                <li>Real prices up front, and every item number in your cart.</li>
+                <li>No surprises: we review every order before anything is invoiced.</li>
+            </ul>
+            <a class="btn-pill" href="/about/">Our Story</a>
+        </section>
+
         <footer class="site-footer">
             <div class="footer-top">
                 <div class="footer-brand">
-                    <img class="footer-logo" src="/Assets/Logos/DL-Logo%20White.png" alt="Design Lab">
+                    <img class="footer-logo" src="/Assets/Logos/dl-logo-white.webp" alt="Design Lab">
                     <p class="footer-tagline">Online cabinetry. Customer focused. Best flippin' home on the block.</p>
                     <div class="footer-social">
                         <a href="#" aria-label="Instagram">
@@ -378,7 +443,7 @@
             // images by appending to this array, never prepending, so it
             // keeps being the first thing a visitor sees.
             var heroImages = [
-                '/Assets/Images/hero-section-i1.png'
+                '/Assets/Images/hero-section-i1.webp'
             ];
 
             var slides = document.querySelectorAll('.hero-slide');

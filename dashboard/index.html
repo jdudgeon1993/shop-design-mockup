@@ -8,6 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Employee Dashboard - Design Lab</title>
+    <meta name="description" content="Design Lab team dashboard.">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <!-- Deliberately not deferred: our own inline script at the end of <body>
          uses window.supabase immediately, so this has to finish executing
@@ -118,6 +122,28 @@
         .group-label:first-of-type { margin-top: 8px; padding-top: 0; border-top: none; }
 
         .catalog-panel { max-width: 420px; text-align: left; }
+        .catalog-links { display: flex; flex-wrap: wrap; gap: 10px; }
+        .orders-panel { max-width: 760px; text-align: left; }
+        .orders-list { list-style: none; margin: 0; padding: 0; }
+        .orders-list > li { border-bottom: 1px solid var(--border); }
+        .orders-list > li:last-child { border-bottom: none; }
+        .orders-list details summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 70px 1fr auto auto; gap: 12px; align-items: center; padding: 12px 4px; font-size: 13px; }
+        .orders-list details summary::-webkit-details-marker { display: none; }
+        .order-num { color: var(--gold); font-weight: 700; }
+        .order-who { min-width: 0; }
+        .order-who b { display: block; font-size: 14px; }
+        .order-who span { color: rgba(255,255,255,0.45); font-size: 12px; }
+        .order-status { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 9px; border-radius: 999px; background: rgba(212,175,55,0.15); color: var(--gold); }
+        .order-total { font-weight: 700; font-variant-numeric: tabular-nums; }
+        .order-items { list-style: none; margin: 0 0 14px; padding: 0 4px 0 82px; font-size: 13px; color: rgba(255,255,255,0.75); }
+        .order-items li { padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+        .order-items small { display: block; color: rgba(255,255,255,0.45); }
+        .order-contact { padding: 0 4px 14px 82px; font-size: 12px; color: rgba(255,255,255,0.5); }
+        @media (max-width: 640px) {
+            .orders-list details summary { grid-template-columns: 56px 1fr auto; }
+            .order-status { display: none; }
+            .order-items, .order-contact { padding-left: 4px; }
+        }
         .catalog-desc { margin: 0 0 18px; font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; }
 
         .proto-panel { max-width: 640px; text-align: left; }
@@ -185,12 +211,21 @@
                     <ul class="rooms-list" id="rooms-list"></ul>
                 </div>
 
+                <p class="group-label">Orders</p>
+                <div class="panel orders-panel">
+                    <h3>Recent Orders</h3>
+                    <p class="note" id="orders-empty" hidden>No orders yet. Submitted orders from the cart show up here.</p>
+                    <ul class="orders-list" id="orders-list"></ul>
+                </div>
                 <p class="group-label">Catalog</p>
-
                 <div class="panel catalog-panel">
-                    <h3>Catalog Admin</h3>
-                    <p class="catalog-desc">Add tiers, brands, cabinets, options, and everything else that feeds the storefront — straight into Supabase, no spreadsheets. Every dropdown here always reflects whatever's currently in the database.</p>
-                    <a class="btn-pill" href="../proto/catalog-admin/index.html" target="_blank" rel="noopener">Open Catalog Admin</a>
+                    <h3>Storefront &amp; Catalog</h3>
+                    <p class="catalog-desc">The DIY Shop and Curated Collections read the catalog live from Supabase. Prices, products, finishes and collections are edited in the Supabase table editor.</p>
+                    <div class="catalog-links">
+                        <a class="btn-secondary btn-small" href="/diy-wizard/" target="_blank" rel="noopener">DIY Shop</a>
+                        <a class="btn-secondary btn-small" href="/collections/" target="_blank" rel="noopener">Collections</a>
+                        <a class="btn-secondary btn-small" href="https://supabase.com/dashboard/project/nutgbxgnkvvruaoloqch/editor" target="_blank" rel="noopener">Supabase Tables</a>
+                    </div>
                 </div>
 
                 <p class="group-label">Team</p>
@@ -205,15 +240,8 @@
 
                 <div class="panel proto-panel">
                     <h3>Prototypes &amp; Experiments</h3>
-                    <p class="proto-intro">Every sandbox page built so far, in one place — nothing here is public or linked from the live site.</p>
+                    <p class="proto-intro">Early sandbox pages kept for reference. Not linked from the live site.</p>
                     <ul class="proto-list">
-                        <li><a href="../proto/index.html" target="_blank" rel="noopener">Prototype Storefront</a><span>Full mirror of the live site — safe to test changes on</span></li>
-                        <li><a href="../proto/about/index.html" target="_blank" rel="noopener">About Us</a><span>Story, pillars, and stats pulled from the Design Lab Playbook</span></li>
-                        <li><a href="../proto/consultation/index.html" target="_blank" rel="noopener">Video Consultation</a><span>Client-facing join flow, plus employee room creation</span></li>
-                        <li><a href="../proto/dashboard/index.html" target="_blank" rel="noopener">Employee Dashboard</a><span>Mirror of this page, for testing changes safely</span></li>
-                        <li><a href="../proto/catalog-admin/index.html" target="_blank" rel="noopener">Catalog Admin</a><span>Add tiers, brands, cabinets, options, and dimensions directly to Supabase</span></li>
-                        <li><a href="../proto/diy-catalog/index.html" target="_blank" rel="noopener">DIY Catalog (Live Database)</a><span>Level &rarr; Brand &rarr; Cabinet &rarr; Customize, wired directly to Supabase</span></li>
-                        <li><a href="../proto/diy-flow/index.html" target="_blank" rel="noopener">DIY Flow (Live Database)</a><span>Room &rarr; Brand &rarr; Finish &rarr; Door Style &rarr; Cabinets &rarr; Account, Katzkin-style step timeline</span></li>
                         <li><a href="../proto/diy-wizard/index.html" target="_blank" rel="noopener">DIY Wizard</a><span>Original accordion-style cabinet builder with cart &amp; pricing</span></li>
                         <li><a href="../proto/vendors/index.html" target="_blank" rel="noopener">Vendor / Curated Showcase</a><span>5 sample vendors, each with curated collections you can customize</span></li>
                     </ul>
@@ -301,7 +329,7 @@
             }
 
             function loadRooms() {
-                supabase.from('consultation_rooms').select('*').order('created_at', { ascending: false })
+                supabase.from('consultation_rooms').select('id,room_name,created_at,created_by,profiles(full_name)').order('created_at', { ascending: false })
                     .then(function (result) {
                         roomsList.innerHTML = '';
                         var rows = result.data || [];
@@ -310,8 +338,8 @@
                             var li = document.createElement('li');
                             var createdAt = new Date(room.created_at).toLocaleString();
                             li.innerHTML =
-                                '<div class="room-info"><span class="room-name">' + room.room_name + '</span>' +
-                                '<span class="room-meta">' + room.created_by + ' &middot; ' + createdAt + '</span></div>' +
+                                '<div class="room-info"><span class="room-name">' + esc(room.room_name) + '</span>' +
+                                '<span class="room-meta">' + esc(roomCreator(room)) + ' &middot; ' + esc(createdAt) + '</span></div>' +
                                 '<div class="room-actions">' +
                                 '<button class="btn-secondary btn-small" type="button" data-copy>Copy</button>' +
                                 '<button class="btn-secondary btn-small btn-danger" type="button" data-delete>Delete</button>' +
@@ -333,12 +361,63 @@
                     });
             }
 
+            function esc(v) {
+                return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+                });
+            }
+            function roomCreator(room) {
+                if (currentUser && room.created_by === currentUser.id) return 'You';
+                return (room.profiles && room.profiles.full_name) || 'Team member';
+            }
+
+            var money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+            function loadOrders() {
+                var list = document.getElementById('orders-list');
+                supabase.from('orders')
+                    .select('order_number,status,contact_name,contact_email,contact_phone,shipping_address,customer_notes,subtotal,created_at,order_items(item_type,name_snapshot,sku_snapshot,finish_snapshot,hinge_side,mods_snapshot,unit_price,quantity,line_total)')
+                    .order('created_at', { ascending: false }).limit(15)
+                    .then(function (res) {
+                        var rows = res.data || [];
+                        document.getElementById('orders-empty').hidden = rows.length > 0;
+                        list.innerHTML = rows.map(function (o) {
+                            var items = (o.order_items || []).map(function (i) {
+                                var extra = [i.finish_snapshot, i.sku_snapshot ? 'Item # ' + i.sku_snapshot : '', i.hinge_side ? 'Hinge ' + i.hinge_side : '']
+                                    .filter(Boolean).join(' · ');
+                                var mods = (i.mods_snapshot || []).map(function (m) {
+                                    return i.item_type === 'collection' ? m.quantity + ' × ' + m.mfg_sku : m.name;
+                                }).join(', ');
+                                return '<li>' + i.quantity + ' × ' + esc(i.name_snapshot) + ' — ' + money.format(i.line_total) +
+                                    '<small>' + esc(extra) + (mods ? '<br>' + (i.item_type === 'collection' ? 'Includes: ' : 'Mods: ') + esc(mods) : '') + '</small></li>';
+                            }).join('');
+                            var a = o.shipping_address;
+                            var contact = [o.contact_email, o.contact_phone, a ? [a.line1, a.city, a.state, a.zip].filter(Boolean).join(', ') : '']
+                                .filter(Boolean).join(' · ');
+                            return '<li><details><summary><span class="order-num">#' + o.order_number + '</span>' +
+                                '<span class="order-who"><b>' + esc(o.contact_name) + '</b><span>' + esc(new Date(o.created_at).toLocaleString()) + '</span></span>' +
+                                '<span class="order-status">' + esc(o.status.replace(/_/g, ' ')) + '</span>' +
+                                '<span class="order-total">' + money.format(o.subtotal) + '</span></summary>' +
+                                '<ul class="order-items">' + items + '</ul>' +
+                                '<div class="order-contact">' + esc(contact) + (o.customer_notes ? '<br>Notes: ' + esc(o.customer_notes) : '') + '</div>' +
+                                '</details></li>';
+                        }).join('');
+                    });
+            }
+
+            // Only employee/admin profiles get the dashboard; anyone else is signed back out.
+            function checkTeamAccess(user) {
+                return supabase.from('profiles').select('role').eq('id', user.id).maybeSingle().then(function (res) {
+                    return !!(res.data && (res.data.role === 'employee' || res.data.role === 'admin'));
+                });
+            }
+
             function showDashboard(user) {
                 currentUser = user;
                 dashboardGreeting.textContent = 'Signed in as ' + user.email;
                 stageLogin.hidden = true;
                 stageDashboard.hidden = false;
                 loadRooms();
+                loadOrders();
 
                 // authuser hints Google to prefer this account if it's one of
                 // several already signed into this browser — it can't sign anyone
@@ -373,7 +452,12 @@
                         loginError.hidden = false;
                         return;
                     }
-                    showDashboard(result.data.user);
+                    return checkTeamAccess(result.data.user).then(function (ok) {
+                        if (ok) return showDashboard(result.data.user);
+                        loginError.textContent = 'This account does not have team access.';
+                        loginError.hidden = false;
+                        return supabase.auth.signOut();
+                    });
                 }).catch(function () {
                     loginSubmitBtn.disabled = false;
                     loginSubmitBtn.textContent = 'Sign In';
@@ -421,7 +505,7 @@
                     // failed insert here can't block actually starting the call.
                     return supabase.from('consultation_rooms').insert({
                         room_name: slug,
-                        created_by: currentUser.email
+                        created_by: currentUser.id
                     });
                 }).then(function () {
                     loadRooms();
@@ -491,9 +575,11 @@
 
             // Restore a signed-in session on page reload instead of asking again.
             supabase.auth.getSession().then(function (result) {
-                if (result.data.session) {
-                    showDashboard(result.data.session.user);
-                }
+                var user = result.data.session && result.data.session.user;
+                if (!user) return;
+                checkTeamAccess(user).then(function (ok) {
+                    if (ok) showDashboard(user); else supabase.auth.signOut();
+                });
             });
         })();
     </script>

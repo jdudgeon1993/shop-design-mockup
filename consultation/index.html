@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Consultation - Design Lab</title>
+    <meta name="description" content="Meet your Design Lab designer over video, from anywhere. Enter your private room code to join.">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); }
@@ -103,7 +107,7 @@
         .employee-link {
             appearance: none; background: none; border: none; cursor: pointer;
             color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px;
-            text-decoration: underline; margin: 44px auto 0; display: block;
+            text-decoration: underline; margin: 44px auto 0; display: block; width: fit-content;
         }
         .employee-link:hover, .employee-link:focus-visible { color: var(--gold); }
 
@@ -150,19 +154,7 @@
                     <button class="btn-pill" id="join-existing-btn">Join Consultation</button>
                 </div>
 
-                <button class="employee-link" id="employee-link" type="button">Design Lab team member? Sign in to start a session</button>
-            </div>
-
-            <!-- Employee-only gate: password required before a new room can be created -->
-            <div class="stage" id="stage-employee-gate" hidden>
-                <p class="kicker">Team Access</p>
-                <p class="intro-line">Enter your team password to start a new consultation room.</p>
-                <form class="narrow-form" id="employee-form">
-                    <input type="password" id="employee-password" class="room-input" placeholder="Password" autocomplete="off">
-                    <button class="btn-pill" type="submit">Create Room</button>
-                    <button class="btn-secondary" id="employee-cancel-btn" type="button">Cancel</button>
-                    <p class="note error-note" id="employee-error" hidden>Incorrect password.</p>
-                </form>
+                <a class="employee-link" id="employee-link" href="/dashboard/">Design Lab team member? Sign in to start a session</a>
             </div>
 
             <!-- Step 2: room ready, not yet in-call -->
@@ -187,37 +179,17 @@
             // (recording, outbound calls, etc.), not basic video, per their own sample.
             var JITSI_DOMAIN = '8x8.vc';
             var APP_ID = 'vpaas-magic-cookie-f0a0399c162749f2805d91eef3967b80';
-            var ADJECTIVES = ['Amber', 'Copper', 'Cedar', 'Quiet', 'Golden', 'Northern', 'Quartz', 'Walnut', 'Marble', 'Alpine'];
-            var NOUNS = ['Oak', 'Maple', 'Harbor', 'Ridge', 'Meadow', 'Birch', 'Lantern', 'Cabin', 'Studio', 'Loft'];
 
             var callFrame = document.getElementById('call-frame');
             var stageChoice = document.getElementById('stage-choice');
-            var stageEmployeeGate = document.getElementById('stage-employee-gate');
             var stageReady = document.getElementById('stage-ready');
             var roomCodeDisplay = document.getElementById('room-code-display');
-            var employeeLink = document.getElementById('employee-link');
-            var employeeForm = document.getElementById('employee-form');
-            var employeePassword = document.getElementById('employee-password');
-            var employeeCancelBtn = document.getElementById('employee-cancel-btn');
-            var employeeError = document.getElementById('employee-error');
             var joinInput = document.getElementById('join-input');
             var joinExistingBtn = document.getElementById('join-existing-btn');
             var copyLinkBtn = document.getElementById('copy-link-btn');
             var joinBtn = document.getElementById('join-btn');
 
-            // Client-side only, so it's a UX deterrent, not real security — anyone
-            // who views source can read it. Change the word below to update it;
-            // swap for real server-side auth once there's a backend to check against.
-            var EMPLOYEE_PASSWORD = 'changeme';
-
             var roomName = null;
-
-            function randomRoomCode() {
-                var adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-                var noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
-                var num = Math.floor(100 + Math.random() * 900);
-                return 'dl-' + adj.toLowerCase() + '-' + noun.toLowerCase() + '-' + num;
-            }
 
             function showReadyStage(name) {
                 roomName = name;
@@ -230,31 +202,6 @@
                 stageChoice.hidden = true;
                 stageReady.hidden = false;
             }
-
-            employeeLink.addEventListener('click', function () {
-                stageChoice.hidden = true;
-                stageEmployeeGate.hidden = false;
-                employeeError.hidden = true;
-                employeePassword.value = '';
-                employeePassword.focus();
-            });
-
-            employeeCancelBtn.addEventListener('click', function () {
-                stageEmployeeGate.hidden = true;
-                stageChoice.hidden = false;
-            });
-
-            employeeForm.addEventListener('submit', function (e) {
-                e.preventDefault();
-                if (employeePassword.value === EMPLOYEE_PASSWORD) {
-                    stageEmployeeGate.hidden = true;
-                    showReadyStage(randomRoomCode());
-                } else {
-                    employeeError.hidden = false;
-                    employeePassword.value = '';
-                    employeePassword.focus();
-                }
-            });
 
             joinExistingBtn.addEventListener('click', function () {
                 var code = joinInput.value.trim();
@@ -300,7 +247,7 @@
                     height: '100%',
                     userInfo: { displayName: 'Design Lab Guest' },
                     // Skip Jitsi's own prejoin screen — access here is already gated by
-                    // our own room code + employee password, so there's no separate
+                    // our own private room code, so there's no separate
                     // sign-in step needed. Also suppress the auto-shown "invite others /
                     // dial-in PIN" overlay, which showed as a small floating panel
                     // instead of the actual call filling the frame.
