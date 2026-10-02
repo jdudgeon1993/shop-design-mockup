@@ -124,6 +124,14 @@
         .look-opt b { display: block; font-size: 14px; }
         .look-opt small { color: var(--muted); font-size: 12px; }
 
+        .kitchen-strip { margin: 0 0 18px; display: grid; gap: 12px; }
+        @media (min-width: 900px) { .kitchen-strip.two { grid-template-columns: 1fr 1fr; } }
+        .dl-kitchen-fig { margin: 0; padding: 14px 16px 12px; border: 1px solid var(--border); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015)); }
+        .dl-kitchen-fig figcaption { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+        .dl-kitchen-fig figcaption b { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--gold); }
+        .dl-kitchen-fig figcaption span { color: var(--muted); }
+        .dl-kitchen-fig svg { max-height: 190px; margin: 0 auto; }
+
         /* ---------- space tabs ---------- */
         .space-tabs { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid var(--border); overflow-x: auto; }
         .space-tab {
@@ -333,6 +341,7 @@
 
         <div class="step" id="step-shop" hidden>
         <div class="look-bar" id="look-bar"></div>
+        <div class="kitchen-strip" id="kitchen-strip" hidden aria-live="polite"></div>
         <nav class="space-tabs" id="space-tabs" aria-label="Shop by space"></nav>
 
         <div class="shop">
@@ -946,6 +955,7 @@
             state.space = b.getAttribute('data-space');
             state.types = {}; state.widths = {};
             render();
+            paintKitchen();
         });
         document.getElementById('filters').addEventListener('click', function (e) {
             var b = e.target.closest('button');
@@ -1089,6 +1099,7 @@
                 document.getElementById('style-group').hidden = true;
                 renderLookBar();
                 render();
+                paintKitchen();
                 var fin = finishById(look.styleId, look.finishId);
                 document.getElementById('step-sub').textContent = 'Showing ' + data.styleById[look.styleId].name + ' in ' + fin.name +
                     '. Filter by type and width, then pick your size.';
@@ -1207,6 +1218,12 @@
                 if (pendingFamily) { var f = pendingFamily; pendingFamily = null; openFamily(f.id); }
             }
         });
+        // The kitchen (or bathroom) preview builds up as cabinets go into the cart.
+        function paintKitchen() {
+            if (step !== 'shop') return;
+            DL.kitchen.render(document.getElementById('kitchen-strip'), { space: state.space === 'Bath' ? 'Bath' : 'Kitchen' });
+        }
+        DL.cart.onChange(paintKitchen);
         document.getElementById('step-guide-link').addEventListener('click', openGuide);
         document.getElementById('p-look-change').addEventListener('click', function () {
             closePanel();
