@@ -5,21 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Design Lab — Coming Soon</title>
-    <!-- Temporary pre-launch gate. Enter the 4-digit access code to reach the
-         site; Assets/site-gate.js on every other page sends visitors here
-         until they have. Employees sign in separately via the footer's
-         "Employee Login" link (/dashboard/). -->
-    <script>
-        // Already entered the code on this device? Skip straight to the site.
-        (function () {
-            try {
-                if (localStorage.getItem('dl_access') === 'granted-v1') {
-                    var next = new URLSearchParams(location.search).get('next');
-                    location.replace(next && next.charAt(0) === '/' && next.charAt(1) !== '/' ? next : '/home/');
-                }
-            } catch (e) {}
-        })();
-    </script>
+    <!-- Temporary pre-launch gate. Always shows the coming-soon page. Enter the
+         4-digit access code to reach the site; access lapses after 5 idle
+         minutes (Assets/site-gate.js), which sends visitors back here.
+         Employees sign in separately via the footer's "Employee Login" link
+         (/dashboard/). -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
@@ -76,6 +66,7 @@
             animation: rise 1.2s 1.4s ease-out both;
         }
         .access-toggle {
+            text-decoration: none;
             background: none; border: none; cursor: pointer; padding: 6px 10px;
             font: 400 14px 'Montserrat', sans-serif; letter-spacing: 1px;
             color: rgba(255,255,255,0.6);
@@ -119,6 +110,7 @@
     </main>
 
     <div class="access">
+        <a class="access-toggle" id="continue-link" href="/home/" hidden>Continue to site &rarr;</a>
         <button class="access-toggle" id="access-toggle" type="button" aria-expanded="false" aria-controls="access-form">
             Have an access code?
         </button>
@@ -144,7 +136,11 @@
                 return h >>> 0;
             }
 
+            var ACCESS_KEY = 'dl_access_v2';
+            var IDLE_MS = 5 * 60 * 1000; // keep in sync with Assets/site-gate.js
+
             var toggle = document.getElementById('access-toggle');
+            var continueLink = document.getElementById('continue-link');
             var form = document.getElementById('access-form');
             var input = document.getElementById('code-input');
             var errorEl = document.getElementById('code-error');
@@ -156,6 +152,16 @@
                 errorEl.textContent = '';
                 if (open) input.focus();
             });
+
+            // Still within the idle window? Offer a way back in instead of the code box.
+            try {
+                var last = parseInt(localStorage.getItem(ACCESS_KEY), 10) || 0;
+                if (Date.now() - last <= IDLE_MS) {
+                    continueLink.href = nextPage();
+                    continueLink.hidden = false;
+                    toggle.hidden = true;
+                }
+            } catch (e) {}
 
             function nextPage() {
                 var next = new URLSearchParams(location.search).get('next');
@@ -175,7 +181,7 @@
                     input.focus();
                     return;
                 }
-                try { localStorage.setItem('dl_access', 'granted-v1'); } catch (e) {}
+                try { localStorage.setItem(ACCESS_KEY, String(Date.now())); } catch (e) {}
                 location.replace(nextPage());
             }
 
