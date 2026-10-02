@@ -118,11 +118,132 @@
     cart.onChange(paintCartCount);
     document.addEventListener('DOMContentLoaded', paintCartCount);
 
+    // ---------- door style drawings ----------
+    // Until product photos arrive, door styles are drawn: a drawer front over a door, in the
+    // chosen finish color. door: 'shaker' | 'raised'; drawer: 'slab' | 'shaker'.
+    function shade(hex, pct) {
+        var n = parseInt(String(hex || '#8a8a8a').slice(1), 16);
+        var r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+        var t = pct < 0 ? 0 : 255, p = Math.abs(pct) / 100;
+        function mix(c) { return Math.round((t - c) * p + c); }
+        return 'rgb(' + mix(r) + ',' + mix(g) + ',' + mix(b) + ')';
+    }
+    function panel(x, y, w, h, frame, kind, base, edge) {
+        var out = '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="1.5" fill="' + base + '" stroke="' + edge + '" stroke-width="1.2"/>';
+        if (kind === 'slab') {
+            return out + '<line x1="' + (x + 2) + '" y1="' + (y + 1.6) + '" x2="' + (x + w - 2) + '" y2="' + (y + 1.6) + '" stroke="' + shade(base, 35) + '" stroke-width="0.8" stroke-opacity="0.7"/>';
+        }
+        var ix = x + frame, iy = y + frame, iw = w - frame * 2, ih = h - frame * 2;
+        out += '<rect x="' + ix + '" y="' + iy + '" width="' + iw + '" height="' + ih + '" fill="' + shade(base, -10) + '" stroke="' + edge + '" stroke-width="0.9"/>';
+        // light catching the lower/right edge of the recess gives it depth
+        out += '<path d="M' + (ix + iw) + ' ' + iy + ' V' + (iy + ih) + ' H' + ix + '" fill="none" stroke="' + shade(base, 40) + '" stroke-width="0.9" stroke-opacity="0.8"/>';
+        if (kind === 'raised') {
+            var b2 = Math.min(iw, ih) * 0.16, fx = ix + b2, fy = iy + b2, fw = iw - b2 * 2, fh = ih - b2 * 2;
+            out += '<rect x="' + fx + '" y="' + fy + '" width="' + fw + '" height="' + fh + '" fill="' + shade(base, 8) + '" stroke="' + edge + '" stroke-width="0.7"/>';
+            out += '<path d="M' + ix + ' ' + iy + ' L' + fx + ' ' + fy + ' M' + (ix + iw) + ' ' + iy + ' L' + (fx + fw) + ' ' + fy +
+                ' M' + ix + ' ' + (iy + ih) + ' L' + fx + ' ' + (fy + fh) + ' M' + (ix + iw) + ' ' + (iy + ih) + ' L' + (fx + fw) + ' ' + (fy + fh) +
+                '" stroke="' + edge + '" stroke-width="0.6" stroke-opacity="0.8"/>';
+        }
+        return out;
+    }
+    function doorSvg(door, drawer, hex, opts) {
+        opts = opts || {};
+        var base = hex || '#9a8a76', edge = 'rgba(0,0,0,0.45)', pull = '#a7adb3';
+        var svg = '<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + escapeHtml(opts.label || 'Door style drawing') + '"' +
+            (opts.className ? ' class="' + opts.className + '"' : '') + '>';
+        if (opts.drawerOnly) {
+            svg = '<svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + escapeHtml(opts.label || 'Drawer front drawing') + '"' +
+                (opts.className ? ' class="' + opts.className + '"' : '') + '>';
+            svg += panel(5, 5, 90, 30, 6, drawer, base, edge);
+            svg += '<rect x="40" y="18.5" width="20" height="3" rx="1.5" fill="' + pull + '" stroke="rgba(0,0,0,0.35)" stroke-width="0.5"/>';
+            return svg + '</svg>';
+        }
+        svg += panel(5, 5, 90, 32, 6, drawer, base, edge);
+        svg += '<rect x="40" y="19.5" width="20" height="3" rx="1.5" fill="' + pull + '" stroke="rgba(0,0,0,0.35)" stroke-width="0.5"/>';
+        svg += panel(5, 42, 90, 103, 11, door, base, edge);
+        svg += '<rect x="80" y="50" width="3" height="20" rx="1.5" fill="' + pull + '" stroke="rgba(0,0,0,0.35)" stroke-width="0.5"/>';
+        return svg + '</svg>';
+    }
+
+    // ---------- door style guide (modal) ----------
+    // DL.doorGuide.open({ styles: [...door_styles rows], finishesByStyle: { styleId: [finishes] }, upgrade: row })
+    var GLOSSARY = [
+        ['Shaker', 'A door with a flat center panel set inside a simple square frame. Clean and timeless; works in almost any kitchen.', 'shaker', 'shaker'],
+        ['Raised panel', 'The center panel is raised and beveled at the edges for a more traditional, detailed look.', 'raised', 'shaker'],
+        ['Slab drawer front', 'A smooth, one-piece drawer front with no frame. Simple and easy to clean.', null, 'slab'],
+        ['5-piece drawer front', 'A drawer front built like a small shaker door (frame plus center panel), so drawers match the doors.', null, 'shaker'],
+        ['Overlay', 'How much of the cabinet box the doors cover. Full overlay hides the frame for a seamless look; standard overlay shows a little of the frame around each door.', null, null]
+    ];
+    var guideEl = null;
+    function ensureGuide() {
+        if (guideEl) return guideEl;
+        var css = document.createElement('style');
+        css.textContent =
+            '.dlg-overlay[hidden]{display:none!important}' +
+            '.dlg-overlay{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center}' +
+            '@media(min-width:760px){.dlg-overlay{align-items:center;padding:24px}}' +
+            '.dlg{position:relative;width:100%;max-width:1040px;max-height:92vh;overflow-y:auto;background:#1a1a1a;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:14px 14px 0 0;padding:28px 24px 32px;font-family:Montserrat,sans-serif}' +
+            '@media(min-width:760px){.dlg{border-radius:14px;padding:34px 36px}}' +
+            '.dlg h2{margin:0 0 6px;font-family:"Playfair Display",serif;font-weight:600;font-size:30px}' +
+            '.dlg .dlg-sub{margin:0 0 24px;color:rgba(255,255,255,.6);font-size:14px}' +
+            '.dlg-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:#fff;font-size:20px;cursor:pointer}' +
+            '.dlg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}' +
+            '.dlg-card{border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:18px;background:rgba(255,255,255,.03)}' +
+            '.dlg-card svg{width:92px;height:auto;display:block;margin:0 auto 14px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}' +
+            '.dlg-card h3{margin:0 0 4px;font-size:17px}.dlg-card .dlg-tag{margin:0 0 10px;color:#d4af37;font-size:12.5px;font-weight:700}' +
+            '.dlg-card p{margin:0 0 12px;font-size:13px;line-height:1.55;color:rgba(255,255,255,.75)}' +
+            '.dlg-fins{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:rgba(255,255,255,.65)}' +
+            '.dlg-fins span{display:inline-flex;align-items:center;gap:5px}.dlg-fins i{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.4)}' +
+            '.dlg h4{margin:30px 0 12px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.55)}' +
+            '.dlg-gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}' +
+            '.dlg-term{display:flex;gap:12px;align-items:flex-start;font-size:13px;line-height:1.5;color:rgba(255,255,255,.75)}' +
+            '.dlg-term svg{width:40px;flex-shrink:0}.dlg-term b{display:block;color:#fff;font-size:14px;margin-bottom:2px}' +
+            '.dlg-term .dlg-nosvg{width:40px;flex-shrink:0}';
+        document.head.appendChild(css);
+        guideEl = document.createElement('div');
+        guideEl.className = 'dlg-overlay';
+        guideEl.hidden = true;
+        guideEl.innerHTML = '<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title"><button class="dlg-close" type="button" aria-label="Close">&times;</button>' +
+            '<h2 id="dlg-title">Door Style Guide</h2><p class="dlg-sub">Every style below is shown in one of its finishes. Real product photos are coming soon.</p>' +
+            '<div class="dlg-grid" data-styles></div><h4>Cabinet words, explained</h4><div class="dlg-gloss" data-gloss></div></div>';
+        document.body.appendChild(guideEl);
+        function close() { guideEl.hidden = true; document.body.style.overflow = guideEl._prevOverflow || ''; }
+        guideEl.addEventListener('click', function (e) { if (e.target === guideEl || e.target.closest('.dlg-close')) close(); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !guideEl.hidden) close(); });
+        return guideEl;
+    }
+    var doorGuide = {
+        open: function (o) {
+            var el = ensureGuide();
+            el.querySelector('[data-styles]').innerHTML = (o.styles || []).map(function (s) {
+                var fins = (o.finishesByStyle && o.finishesByStyle[s.id]) || [];
+                var hex = fins.length ? fins[Math.min(1, fins.length - 1)].swatch_hex : null;
+                return '<div class="dlg-card">' + doorSvg(s.door_profile, s.drawer_profile, hex, { label: s.name + ' door style' }) +
+                    '<h3>' + escapeHtml(s.name) + '</h3><p class="dlg-tag">' + escapeHtml(s.tagline || '') + '</p>' +
+                    '<p>' + escapeHtml(s.customer_description || '') + '</p>' +
+                    '<div class="dlg-fins">' + fins.map(function (f) {
+                        return '<span><i style="background:' + escapeHtml(f.swatch_hex || '#777') + '"></i>' + escapeHtml(f.name) + '</span>';
+                    }).join('') + '</div></div>';
+            }).join('');
+            el.querySelector('[data-gloss]').innerHTML = GLOSSARY.map(function (g) {
+                var art = g[2] ? doorSvg(g[2], g[3], '#b9a589', { label: g[0] })
+                    : g[3] ? doorSvg(null, g[3], '#b9a589', { drawerOnly: true, label: g[0] }) : '<span class="dlg-nosvg"></span>';
+                return '<div class="dlg-term">' + art + '<div><b>' + escapeHtml(g[0]) + '</b>' + escapeHtml(g[1]) + '</div></div>';
+            }).join('');
+            el._prevOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            el.hidden = false;
+            el.querySelector('.dlg-close').focus();
+        }
+    };
+
     window.DL = {
         supabase: supabase,
         formatMoney: formatMoney,
         fetchAll: fetchAll,
         escapeHtml: escapeHtml,
-        cart: cart
+        cart: cart,
+        doorSvg: doorSvg,
+        doorGuide: doorGuide
     };
 })();

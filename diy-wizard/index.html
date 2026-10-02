@@ -78,6 +78,37 @@
         .chip[aria-pressed="true"] { background: rgba(212,175,55,0.18); border-color: var(--gold); color: var(--gold); }
         .chip .dots { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: middle; }
         .chip .dots i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.4); }
+        .style-list { display: flex; flex-direction: column; gap: 8px; }
+        .style-opt {
+            appearance: none; display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; cursor: pointer;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; color: var(--white);
+        }
+        .style-opt:hover, .style-opt:focus-visible { border-color: var(--gold); outline: none; }
+        .style-opt[aria-pressed="true"] { background: rgba(212,175,55,0.12); border-color: var(--gold); }
+        .style-opt svg { width: 30px; flex-shrink: 0; }
+        .style-opt b { display: block; font-size: 13px; }
+        .style-opt small { display: block; font-size: 11px; color: var(--muted); line-height: 1.35; margin-top: 1px; }
+        .style-opt .dots { display: inline-flex; gap: 3px; margin-top: 5px; }
+        .style-opt .dots i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.4); }
+        .guide-link { margin-top: 8px; }
+        .style-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .style-card { align-items: flex-start; padding: 10px; }
+        .style-card svg { width: 38px; }
+        .style-card .price { display: block; margin-top: 4px; font-size: 12px; font-weight: 700; color: var(--gold); }
+        .style-desc { margin: 10px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
+        .upgrade-help { display: flex; gap: 12px; align-items: center; margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+        .upgrade-help .ba { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .upgrade-help svg { width: 54px; }
+        .img-wrap { position: relative; }
+        .p-preview {
+            position: absolute; left: 14px; bottom: 14px; display: flex; gap: 10px; align-items: center; max-width: calc(100% - 28px);
+            background: rgba(20,20,20,0.88); border: 1px solid rgba(255,255,255,0.18); border-radius: 12px; padding: 10px 14px 10px 10px; backdrop-filter: blur(4px);
+        }
+        /* Desktop: the photo column is as tall as the scrolling panel, so a bottom badge would sit off-screen. */
+        @media (min-width: 860px) { .p-preview { bottom: auto; top: 14px; } }
+        .p-preview svg { width: 44px; flex-shrink: 0; }
+        .p-preview b { display: block; font-size: 13px; }
+        .p-preview small { display: block; font-size: 11px; color: var(--muted); }
         .search {
             width: 100%; font: inherit; font-size: 14px; padding: 10px 12px; border-radius: 8px;
             border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--white);
@@ -211,7 +242,8 @@
                     <input class="search" id="search" type="search" placeholder="Name or item # (e.g. B24)" autocomplete="off">
                 </div>
                 <div class="filter-group" id="type-group"><h3 id="type-title">Cabinet Type</h3><div class="chips" id="type-chips"></div></div>
-                <div class="filter-group"><h3>Door Style</h3><div class="chips" id="style-chips"></div></div>
+                <div class="filter-group"><h3>Door Style</h3><div class="style-list" id="style-chips"></div>
+                    <button class="link-btn guide-link" id="style-guide-link" type="button">What's the difference? See the door style guide</button></div>
                 <div class="filter-group" id="width-group"><h3>Width</h3><div class="chips" id="width-chips"></div></div>
                 <button class="link-btn" id="clear-filters" type="button" hidden>Clear all filters</button>
             </aside>
@@ -252,17 +284,23 @@
         <div class="panel" role="dialog" aria-modal="true" aria-labelledby="p-title">
             <button class="panel-close" id="p-close" type="button" aria-label="Close">&times;</button>
             <div class="panel-scroll">
-                <img class="panel-img" id="p-img" alt="">
+                <div class="img-wrap">
+                    <img class="panel-img" id="p-img" alt="">
+                    <div class="p-preview" id="p-preview" aria-live="polite"></div>
+                </div>
                 <div class="panel-body">
                     <h2 id="p-title"></h2>
                     <p class="sub" id="p-sub"></p>
 
                     <div class="opt"><h3 id="p-size-title">Width <span id="p-size-label"></span></h3><div class="chips" id="p-sizes"></div></div>
                     <div class="opt" id="p-config-opt"><h3>Configuration <span id="p-config-label"></span></h3><div class="chips" id="p-configs"></div></div>
-                    <div class="opt"><h3>Door Style <span id="p-style-label"></span></h3><div class="chips" id="p-styles"></div></div>
+                    <div class="opt"><h3>Door Style <span id="p-style-label"></span></h3><div class="style-cards" id="p-styles"></div>
+                        <p class="style-desc" id="p-style-desc"></p>
+                        <button class="link-btn" id="p-guide-link" type="button">Compare all door styles</button></div>
                     <div class="opt" id="p-finish-opt"><h3>Finish <span id="p-finish-label"></span></h3><div class="swatches" id="p-finishes"></div></div>
                     <div class="opt" id="p-upgrade-opt"><h3>Upgrade</h3>
                         <label class="check-row"><input type="checkbox" id="p-upgrade"><span class="name" id="p-upgrade-name"></span><span class="add" id="p-upgrade-add"></span></label>
+                        <div class="upgrade-help"><span class="ba" id="p-upgrade-ba"></span><span id="p-upgrade-desc"></span></div>
                     </div>
                     <div class="opt" id="p-hinge-opt"><h3>Hinge Side</h3><div class="chips" id="p-hinges"></div></div>
                     <div class="opt" id="p-mods-opt"><h3>Modifications <span>(optional)</span></h3><div class="mods-list" id="p-mods"></div></div>
@@ -335,10 +373,10 @@
                 sb.from('product_families').select('id,slug,name,room_type,kind,image_url,sort_order').eq('is_active', true),
                 sb.from('products').select('id,sku,mfg_sku,family_id,kind,room_type,space,subtype,description,width,height,depth,doors,drawers,shelves,pullout_shelves,hinge,finish_applies,notes,sort_order').eq('is_active', true).order('sort_order'),
                 DL.fetchAll(function (a, b) { return sb.from('storefront_offers').select('product_id,door_style_id,upgrade_id,retail_price').range(a, b); }),
-                sb.from('door_styles').select('id,code,name,line_id,overlay,door_design,drawer_front,sort_order').eq('is_active', true).order('sort_order'),
+                sb.from('door_styles').select('id,code,name,line_id,overlay,door_design,drawer_front,tagline,customer_description,door_profile,drawer_profile,sort_order').eq('is_active', true).order('sort_order'),
                 sb.from('finishes').select('id,door_style_id,code,name,swatch_hex,sort_order').eq('is_active', true).order('sort_order'),
                 sb.from('product_lines').select('id,code,name'),
-                sb.from('upgrades').select('id,code,name,door_style_id').eq('is_active', true)
+                sb.from('upgrades').select('id,code,name,door_style_id,customer_description').eq('is_active', true)
             ]).then(function (r) {
                 [r[0], r[1], r[3], r[4], r[5], r[6]].forEach(function (x) { if (x.error) throw x.error; });
                 r[0].data.forEach(function (f) { data.families[f.id] = f; });
@@ -413,10 +451,11 @@
                 return chip(esc(t.label), state.types[t.key], ' data-type="' + t.key + '"');
             }).join('');
             document.getElementById('style-chips').innerHTML = data.styles.map(function (s) {
-                var dots = (data.finishesByStyle[s.id] || []).map(function (f) { return '<i style="background:' + esc(f.swatch_hex || '#777') + '"></i>'; }).join('');
-                var line = data.lines[s.line_id];
-                return chip(esc(s.name) + (line && line.name !== s.name ? ' <small style="opacity:.6">' + esc(line.name) + '</small>' : '') +
-                    '<span class="dots">' + dots + '</span>', state.styles[s.id], ' data-style="' + s.id + '"');
+                var fins = data.finishesByStyle[s.id] || [];
+                var dots = fins.map(function (f) { return '<i title="' + esc(f.name) + '" style="background:' + esc(f.swatch_hex || '#777') + '"></i>'; }).join('');
+                return '<button type="button" class="style-opt" data-style="' + s.id + '" aria-pressed="' + !!state.styles[s.id] + '">' +
+                    DL.doorSvg(s.door_profile, s.drawer_profile, styleHex(s.id), { label: s.name }) +
+                    '<span><b>' + esc(s.name) + '</b><small>' + esc(s.tagline || '') + '</small><span class="dots">' + dots + '</span></span></button>';
             }).join('');
             document.getElementById('width-group').hidden = state.space === 'Parts';
             document.getElementById('width-chips').innerHTML = WIDTHS.map(function (w) {
@@ -476,6 +515,27 @@
             if (p.width == null) return p.sku;
             return Number(p.width) + '"';
         }
+        // Color used to draw a style: its middle finish (reads better than pure white).
+        function styleHex(styleId) {
+            var fins = data.finishesByStyle[styleId] || [];
+            return fins.length ? fins[Math.min(1, fins.length - 1)].swatch_hex : null;
+        }
+        function selectedHex() {
+            var f = (data.finishesByStyle[sel.styleId] || []).filter(function (x) { return x.id === sel.finishId; })[0];
+            return f ? f.swatch_hex : styleHex(sel.styleId);
+        }
+        // Live drawing of the current choice over the product photo (until real photos arrive).
+        function paintPreview() {
+            var s = data.styleById[sel.styleId], fin = (data.finishesByStyle[sel.styleId] || []).filter(function (x) { return x.id === sel.finishId; })[0];
+            var drawer = sel.upgrade ? 'shaker' : s.drawer_profile;
+            document.getElementById('p-preview').innerHTML = DL.doorSvg(s.door_profile, drawer, selectedHex(), { label: 'Preview of your selection' }) +
+                '<span><b>' + esc(s.name) + (fin ? ' · ' + esc(fin.name) : '') + '</b><small>' + esc(s.tagline || '') +
+                (sel.upgrade ? ' · 5-piece drawer fronts' : '') + '</small></span>';
+        }
+        function openGuide() {
+            DL.doorGuide.open({ styles: data.styles, finishesByStyle: data.finishesByStyle });
+        }
+
         // Name a variant by what sets it apart from the others of the same width.
         function configLabel(p, siblings) {
             var label = !p.subtype || p.subtype === 'Standard' ? 'Standard' : p.subtype;
@@ -601,10 +661,12 @@
 
             document.getElementById('p-style-label').textContent = style.name;
             document.getElementById('p-styles').innerHTML = stylesFor(p).map(function (s) {
-                var line = data.lines[s.line_id];
-                return chip(esc(s.name) + ' <small style="opacity:.65">' + fm(data.offers[p.id][s.id].base) + '</small>',
-                    s.id === sel.styleId, ' data-style-pick="' + s.id + '" title="' + esc((line ? line.name + ' · ' : '') + (s.door_design || '')) + '"');
+                var hex = s.id === sel.styleId ? selectedHex() : styleHex(s.id);
+                return '<button type="button" class="style-opt style-card" data-style-pick="' + s.id + '" aria-pressed="' + (s.id === sel.styleId) + '">' +
+                    DL.doorSvg(s.door_profile, s.drawer_profile, hex, { label: s.name }) +
+                    '<span><b>' + esc(s.name) + '</b><small>' + esc(s.tagline || '') + '</small><span class="price">' + fm(data.offers[p.id][s.id].base) + '</span></span></button>';
             }).join('');
+            document.getElementById('p-style-desc').textContent = style.customer_description || '';
 
             var finishes = finishesFor();
             document.getElementById('p-finish-opt').hidden = !finishes.length;
@@ -621,7 +683,12 @@
                 document.getElementById('p-upgrade').checked = sel.upgrade;
                 document.getElementById('p-upgrade-name').textContent = up.upgrade.name;
                 document.getElementById('p-upgrade-add').textContent = '+' + fm(up.price - data.offers[p.id][sel.styleId].base);
+                document.getElementById('p-upgrade-desc').textContent = up.upgrade.customer_description || '';
+                document.getElementById('p-upgrade-ba').innerHTML =
+                    DL.doorSvg(null, 'slab', selectedHex(), { drawerOnly: true, label: 'Standard slab drawer front' }) + '<span aria-hidden="true">&rarr;</span>' +
+                    DL.doorSvg(null, 'shaker', selectedHex(), { drawerOnly: true, label: '5-piece drawer front' });
             }
+            paintPreview();
 
             document.getElementById('p-hinge-opt').hidden = p.hinge !== 'L/R required';
             document.getElementById('p-hinges').innerHTML = [['L', 'Left'], ['R', 'Right']].map(function (h) {
@@ -752,6 +819,8 @@
         document.getElementById('p-qty-minus').addEventListener('click', function () { bumpQty(-1); });
         document.getElementById('p-qty-plus').addEventListener('click', function () { bumpQty(1); });
         document.getElementById('p-add').addEventListener('click', addToCart);
+        document.getElementById('style-guide-link').addEventListener('click', openGuide);
+        document.getElementById('p-guide-link').addEventListener('click', openGuide);
 
         // ---------- start ----------
         load().then(function () {

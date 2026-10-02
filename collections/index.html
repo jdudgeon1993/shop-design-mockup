@@ -92,6 +92,20 @@
         .chip:hover, .chip:focus-visible { border-color: var(--gold); outline: none; }
         .chip[aria-pressed="true"] { background: rgba(212,175,55,0.18); border-color: var(--gold); color: var(--gold); }
         .chip small { opacity: 0.7; font-weight: 600; margin-left: 4px; }
+        .style-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+        .style-opt {
+            appearance: none; display: flex; align-items: flex-start; gap: 12px; width: 100%; text-align: left; cursor: pointer;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: var(--white);
+        }
+        .style-opt:hover, .style-opt:focus-visible { border-color: var(--gold); outline: none; }
+        .style-opt[aria-pressed="true"] { background: rgba(212,175,55,0.12); border-color: var(--gold); }
+        .style-opt svg { width: 40px; flex-shrink: 0; }
+        .style-opt b { display: block; font-size: 14px; }
+        .style-opt small { display: block; font-size: 11.5px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
+        .style-opt .price { display: block; margin-top: 5px; font-size: 13px; font-weight: 700; color: var(--gold); }
+        .style-desc { margin: 10px 0 4px; font-size: 13px; line-height: 1.55; color: var(--muted); }
+        .link-btn { appearance: none; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12.5px; text-decoration: underline; padding: 0; }
+        .link-btn:hover { color: var(--gold); }
         .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
         .swatch {
             appearance: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; padding: 0;
@@ -170,7 +184,9 @@
                     <h1 id="d-name"></h1>
                     <p class="tagline" id="d-tagline"></p>
                     <p class="desc" id="d-desc"></p>
-                    <div class="opt"><h3>Door Style <span id="d-style-label"></span></h3><div class="chips" id="d-styles"></div></div>
+                    <div class="opt"><h3>Door Style <span id="d-style-label"></span></h3><div class="style-cards" id="d-styles"></div>
+                        <p class="style-desc" id="d-style-desc"></p>
+                        <button class="link-btn" id="d-guide-link" type="button">Compare door styles</button></div>
                     <div class="opt"><h3>Finish <span id="d-finish-label"></span></h3><div class="swatches" id="d-finishes"></div></div>
                     <div class="price-box">
                         <div class="flat" id="d-flat"></div>
@@ -227,7 +243,7 @@
                 var ids = data.collections.map(function (c) { return c.id; });
                 return Promise.all([
                     sb.from('curated_collection_items').select('collection_id,product_id,quantity,sort_order').in('collection_id', ids).order('sort_order'),
-                    sb.from('door_styles').select('id,name,line_id,door_design,sort_order').order('sort_order'),
+                    sb.from('door_styles').select('id,name,line_id,door_design,tagline,customer_description,door_profile,drawer_profile,sort_order').order('sort_order'),
                     sb.from('finishes').select('id,door_style_id,code,name,swatch_hex,sort_order').eq('is_active', true).order('sort_order')
                 ]);
             }).then(function (r) {
@@ -312,10 +328,16 @@
                 return '<button type="button" data-img="' + esc(u) + '" aria-pressed="' + (u === sel.img) + '"><img src="' + esc(u) + '" alt=""></button>';
             }).join('') : '';
             document.getElementById('d-style-label').textContent = o.door_style;
+            var fins0 = data.finishesByStyle[sel.styleId] || [];
+            var selFin = fins0.filter(function (f) { return f.id === sel.finishId; })[0];
             document.getElementById('d-styles').innerHTML = c.offers.map(function (x) {
-                return '<button type="button" class="chip" data-style="' + x.door_style_id + '" aria-pressed="' + (x.door_style_id === sel.styleId) + '">' +
-                    esc(x.door_style) + '<small>' + fm(x.flat) + '</small></button>';
+                var st = data.styles[x.door_style_id] || {}, fs = data.finishesByStyle[x.door_style_id] || [];
+                var hex = x.door_style_id === sel.styleId && selFin ? selFin.swatch_hex : (fs.length ? fs[Math.min(1, fs.length - 1)].swatch_hex : null);
+                return '<button type="button" class="style-opt" data-style="' + x.door_style_id + '" aria-pressed="' + (x.door_style_id === sel.styleId) + '">' +
+                    DL.doorSvg(st.door_profile, st.drawer_profile, hex, { label: x.door_style }) +
+                    '<span><b>' + esc(x.door_style) + '</b><small>' + esc(st.tagline || '') + '</small><span class="price">' + fm(x.flat) + '</span></span></button>';
             }).join('');
+            document.getElementById('d-style-desc').textContent = (data.styles[sel.styleId] || {}).customer_description || '';
             var fins = data.finishesByStyle[sel.styleId] || [];
             var fin = fins.filter(function (f) { return f.id === sel.finishId; })[0];
             document.getElementById('d-finish-label').textContent = fin ? fin.name : '';
@@ -378,6 +400,13 @@
             else if (b.dataset.img) { sel.img = b.dataset.img; paint(); }
         });
         document.getElementById('d-add').addEventListener('click', addToCart);
+        document.getElementById('d-guide-link').addEventListener('click', function () {
+            var ids = sel ? sel.c.offers.map(function (o) { return o.door_style_id; }) : Object.keys(data.styles).map(Number);
+            DL.doorGuide.open({
+                styles: ids.map(function (id) { return data.styles[id]; }).filter(Boolean),
+                finishesByStyle: data.finishesByStyle
+            });
+        });
 
         function route() {
             var slug = new URLSearchParams(location.search).get('c');
