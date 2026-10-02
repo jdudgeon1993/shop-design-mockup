@@ -53,6 +53,77 @@
         .intro-heading { margin: 0 0 8px; font-family: 'Playfair Display', serif; font-weight: 600; font-size: clamp(28px, 4.5vw, 40px); }
         .intro-sub { margin: 0 0 28px; color: var(--muted); font-size: 15px; max-width: 640px; line-height: 1.5; }
 
+        /* ---------- guided steps ---------- */
+        .stepper { list-style: none; display: flex; gap: 6px; margin: 0 0 28px; padding: 0; overflow-x: auto; }
+        .stepper li { flex: 1 1 0; min-width: 130px; }
+        .stepper button, .stepper a {
+            appearance: none; width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; text-align: left; text-decoration: none;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; color: var(--muted);
+            font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
+        }
+        .stepper button:disabled { cursor: default; opacity: 0.45; }
+        .stepper button:not(:disabled):hover, .stepper a:hover, .stepper button:focus-visible, .stepper a:focus-visible { border-color: var(--gold); color: var(--white); outline: none; }
+        .stepper .num { width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border: 1px solid currentColor; font-size: 12px; }
+        .stepper .is-done { color: rgba(255,255,255,0.8); }
+        .stepper .is-done .num { background: rgba(212,175,55,0.18); border-color: var(--gold); color: var(--gold); }
+        .stepper [aria-current="step"] { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,0.1); }
+        .stepper [aria-current="step"] .num { background: var(--gold); color: var(--black); border-color: var(--gold); }
+        @media (max-width: 640px) { .stepper li { min-width: 0; } .stepper .label { display: none; } .stepper button, .stepper a { justify-content: center; } .stepper [aria-current="step"] .label { display: inline; } .stepper li:has([aria-current="step"]) { flex: 3 1 0; } }
+
+        .pick-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 720px) { .pick-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1100px) { .pick-grid.three { grid-template-columns: repeat(3, 1fr); } }
+        .pick-card {
+            appearance: none; text-align: left; font: inherit; color: var(--white); cursor: pointer; padding: 0; overflow: hidden;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 14px; display: flex; flex-direction: column; transition: 0.2s;
+        }
+        .pick-card:not(:disabled):hover, .pick-card:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
+        .pick-card[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; background: rgba(212,175,55,0.08); }
+        .pick-card:disabled { cursor: default; opacity: 0.55; }
+        .pick-card .pc-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .pick-card h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; }
+        .pick-card p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+        .pick-card .pc-meta { font-size: 12px; font-weight: 700; letter-spacing: 0.4px; color: rgba(255,255,255,0.75); }
+        .pick-card .pc-cta { margin-top: auto; padding-top: 8px; color: var(--gold); font-weight: 700; font-size: 13px; }
+        .pick-card .badge { align-self: flex-start; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 9px; border-radius: 999px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); }
+        .pick-card .dots { display: flex; gap: 5px; }
+        .pick-card .dots i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.45); }
+        .mfr-art { height: 150px; display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #2b2b2b, #1f1f1f); padding: 18px; }
+        .mfr-art .door { height: 100%; aspect-ratio: 3 / 4.2; border-radius: 4px; background: #fff center / contain no-repeat; }
+        .mfr-art .door.dl-photo { background-repeat: no-repeat; background-position: center; background-size: contain; }
+        .mfr-art svg { height: 100%; width: auto; }
+        .mfr-art .wordmark { font-family: 'Playfair Display', serif; font-size: 26px; color: rgba(255,255,255,0.35); letter-spacing: 1px; }
+        .style-art { height: 210px; display: flex; align-items: center; justify-content: center; background: #fff; }
+        .style-art.dl-photo { background-size: contain; background-repeat: no-repeat; background-position: center; background-origin: content-box; padding: 14px; }
+        .style-art svg { height: 150px; width: auto; }
+        .style-art.is-drawing { background: linear-gradient(135deg, #2b2b2b, #1f1f1f); }
+
+        .finish-pick { margin-top: 26px; padding: 22px; border: 1px solid var(--gold); border-radius: 14px; background: rgba(212,175,55,0.05); scroll-margin-top: 90px; }
+        .finish-pick h2 { margin: 0 0 4px; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; }
+        .finish-pick > p { margin: 0 0 16px; color: var(--muted); font-size: 13.5px; }
+        .finish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+        .finish-tile {
+            appearance: none; font: inherit; color: var(--white); cursor: pointer; padding: 0; overflow: hidden; text-align: center;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; transition: 0.2s;
+        }
+        .finish-tile:hover, .finish-tile:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
+        .finish-tile .ft-art { display: block; aspect-ratio: 3 / 4; background: #fff center / contain no-repeat; }
+        .finish-tile .ft-art.dl-photo { background-origin: content-box; padding: 10px; background-size: contain; background-repeat: no-repeat; background-position: center; }
+        .finish-tile b { display: block; padding: 10px 8px 12px; font-size: 13px; }
+
+        .look-bar {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin: 0 0 18px; padding: 12px 16px;
+            border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.03); font-size: 13px;
+        }
+        .look-bar .swatch-dot { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.5); flex-shrink: 0; }
+        .look-bar .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .look-bar .crumbs b { color: var(--white); }
+        .look-bar .crumbs span { color: var(--muted); }
+        .look-bar .actions { margin-left: auto; display: flex; gap: 14px; }
+        .look-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,0.03); }
+        .look-opt b { display: block; font-size: 14px; }
+        .look-opt small { color: var(--muted); font-size: 12px; }
+
         /* ---------- space tabs ---------- */
         .space-tabs { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid var(--border); overflow-x: auto; }
         .space-tab {
@@ -235,10 +306,33 @@
     </header>
 
     <main class="content">
-        <p class="kicker">DIY Shop</p>
-        <h1 class="intro-heading">Every cabinet, your way.</h1>
-        <p class="intro-sub">Browse the full line, pick your size, door style and finish, and add exactly what your space needs. Prices update as you choose.</p>
+        <ol class="stepper" id="stepper" aria-label="DIY steps">
+            <li><button type="button" data-goto="mfr"><span class="num">1</span><span class="label">Manufacturer</span></button></li>
+            <li><button type="button" data-goto="style"><span class="num">2</span><span class="label">Door Style &amp; Finish</span></button></li>
+            <li><button type="button" data-goto="shop"><span class="num">3</span><span class="label">Cabinets</span></button></li>
+            <li><a href="/cart/"><span class="num">4</span><span class="label">Review</span></a></li>
+        </ol>
 
+        <p class="kicker" id="step-kicker">DIY Shop</p>
+        <h1 class="intro-heading" id="step-heading">Every cabinet, your way.</h1>
+        <p class="intro-sub" id="step-sub"></p>
+
+        <section class="step" id="step-mfr" hidden aria-label="Choose your manufacturer">
+            <div class="pick-grid three" id="mfr-grid"></div>
+        </section>
+
+        <section class="step" id="step-style" hidden aria-label="Choose your door style and finish">
+            <div class="pick-grid" id="style-grid"></div>
+            <button class="link-btn guide-link" id="step-guide-link" type="button">Not sure? Compare all door styles side by side</button>
+            <div class="finish-pick" id="finish-pick" hidden>
+                <h2 id="finish-heading"></h2>
+                <p>Pick a finish to see every cabinet in it.</p>
+                <div class="finish-grid" id="finish-grid"></div>
+            </div>
+        </section>
+
+        <div class="step" id="step-shop" hidden>
+        <div class="look-bar" id="look-bar"></div>
         <nav class="space-tabs" id="space-tabs" aria-label="Shop by space"></nav>
 
         <div class="shop">
@@ -248,7 +342,7 @@
                     <input class="search" id="search" type="search" placeholder="Name or item # (e.g. B24)" autocomplete="off">
                 </div>
                 <div class="filter-group" id="type-group"><h3 id="type-title">Cabinet Type</h3><div class="chips" id="type-chips"></div></div>
-                <div class="filter-group"><h3>Door Style</h3><div class="style-list" id="style-chips"></div>
+                <div class="filter-group" id="style-group"><h3>Door Style</h3><div class="style-list" id="style-chips"></div>
                     <button class="link-btn guide-link" id="style-guide-link" type="button">What's the difference? See the door style guide</button></div>
                 <div class="filter-group" id="width-group"><h3>Width</h3><div class="chips" id="width-chips"></div></div>
                 <button class="link-btn" id="clear-filters" type="button" hidden>Clear all filters</button>
@@ -270,6 +364,7 @@
                 <div class="grid" id="grid"></div>
                 <p class="empty-note" id="empty" hidden>Nothing matches those filters. <button class="link-btn" id="empty-clear" type="button">Clear filters</button></p>
             </section>
+        </div>
         </div>
     </main>
 
@@ -301,7 +396,9 @@
 
                     <div class="opt"><h3 id="p-size-title">Width <span id="p-size-label"></span></h3><div class="chips" id="p-sizes"></div></div>
                     <div class="opt" id="p-config-opt"><h3>Configuration <span id="p-config-label"></span></h3><div class="chips" id="p-configs"></div></div>
-                    <div class="opt"><h3>Door Style <span id="p-style-label"></span></h3><div class="style-cards" id="p-styles"></div>
+                    <div class="opt" id="p-look-opt" hidden><h3>Door Style &amp; Finish</h3>
+                        <div class="look-opt"><span><b id="p-look-name"></b><small id="p-look-sub"></small></span><button class="link-btn" id="p-look-change" type="button">Change</button></div></div>
+                    <div class="opt" id="p-style-opt"><h3>Door Style <span id="p-style-label"></span></h3><div class="style-cards" id="p-styles"></div>
                         <p class="style-desc" id="p-style-desc"></p>
                         <button class="link-btn" id="p-guide-link" type="button">Compare all door styles</button></div>
                     <div class="opt" id="p-finish-opt"><h3>Finish <span id="p-finish-label"></span></h3><div class="swatches" id="p-finishes"></div></div>
@@ -382,9 +479,11 @@
                 DL.fetchAll(function (a, b) { return sb.from('storefront_offers').select('product_id,door_style_id,upgrade_id,retail_price').range(a, b); }),
                 sb.from('door_styles').select('id,code,name,line_id,overlay,door_design,drawer_front,tagline,customer_description,door_profile,drawer_profile,sort_order').eq('is_active', true).order('sort_order'),
                 sb.from('finishes').select('id,door_style_id,code,name,swatch_hex,sort_order').eq('is_active', true).order('sort_order'),
-                sb.from('product_lines').select('id,code,name'),
-                sb.from('upgrades').select('id,code,name,door_style_id,customer_description').eq('is_active', true)
+                sb.from('product_lines').select('id,code,name,vendor_id,description'),
+                sb.from('upgrades').select('id,code,name,door_style_id,customer_description').eq('is_active', true),
+                sb.from('vendors').select('id,code,name').order('id')
             ]).then(function (r) {
+                data.vendors = (r[7] && r[7].data) || [];
                 [r[0], r[1], r[3], r[4], r[5], r[6]].forEach(function (x) { if (x.error) throw x.error; });
                 r[0].data.forEach(function (f) { data.families[f.id] = f; });
                 data.products = r[1].data;
@@ -502,7 +601,7 @@
                         ? Math.min.apply(null, widths) + '" wide'
                         : Math.min.apply(null, widths) + '" – ' + Math.max.apply(null, widths) + '" wide')
                     : g.products.length + (g.products.length === 1 ? ' item' : ' items');
-                var styleTags = data.styles.filter(function (s) { return g.styles[s.id]; })
+                var styleTags = look ? '' : data.styles.filter(function (s) { return g.styles[s.id]; })
                     .map(function (s) { return '<span>' + esc(s.name) + '</span>'; }).join('');
                 return '<button type="button" class="card" data-family="' + g.fam.id + '">' +
                     cardImage(g) +
@@ -524,6 +623,7 @@
             return (chosen.length ? chosen : data.styles).map(function (s) { return s.id; });
         }
         function defaultFinish(styleId) {
+            if (look && look.styleId === styleId) return look.finishId;
             var fins = data.finishesByStyle[styleId] || [];
             var white = fins.filter(function (f) { return /^white$/i.test(f.name); })[0];
             return (white || fins[0] || {}).id;
@@ -635,12 +735,14 @@
             document.getElementById('overlay').hidden = false;
             document.body.style.overflow = 'hidden';
             document.getElementById('p-close').focus();
-            history.replaceState(null, '', '?family=' + encodeURIComponent(fam.slug));
+            var q = new URLSearchParams(location.search); q.set('family', fam.slug);
+            history.replaceState(history.state, '', location.pathname + '?' + q.toString());
         }
         function closePanel() {
             document.getElementById('overlay').hidden = true;
             document.body.style.overflow = '';
-            history.replaceState(null, '', location.pathname);
+            var q = new URLSearchParams(location.search); q.delete('family');
+            history.replaceState(history.state, '', location.pathname + (q.toString() ? '?' + q.toString() : ''));
             sel = null;
         }
 
@@ -661,7 +763,10 @@
         function selectStyle(styleId, quiet) {
             sel.styleId = Number(styleId);
             var finishes = finishesFor();
-            if (!finishes.some(function (f) { return f.id === sel.finishId; })) sel.finishId = finishes.length ? finishes[0].id : null;
+            if (!finishes.some(function (f) { return f.id === sel.finishId; })) {
+                var lookFin = look && look.styleId === sel.styleId && finishes.filter(function (f) { return f.id === look.finishId; })[0];
+                sel.finishId = lookFin ? lookFin.id : (finishes.length ? finishes[0].id : null);
+            }
             if (!upgradeFor()) sel.upgrade = false;
             // Mods are priced for one line; drop them when switching to a line they don't belong to.
             Object.keys(sel.mods).forEach(function (id) {
@@ -734,7 +839,16 @@
             document.getElementById('p-style-desc').textContent = style.customer_description || '';
 
             var finishes = finishesFor();
-            document.getElementById('p-finish-opt').hidden = !finishes.length;
+            // Style + finish were chosen in step 2; show them as one line instead of asking again.
+            var locked = !!look && sel.styleId === look.styleId;
+            document.getElementById('p-look-opt').hidden = !locked;
+            document.getElementById('p-style-opt').hidden = locked;
+            if (locked) {
+                var lf = finishes.filter(function (f) { return f.id === sel.finishId; })[0];
+                document.getElementById('p-look-name').textContent = style.name + (lf ? ' · ' + lf.name : '');
+                document.getElementById('p-look-sub').textContent = style.tagline || '';
+            }
+            document.getElementById('p-finish-opt').hidden = !finishes.length || locked;
             var fin = finishes.filter(function (f) { return f.id === sel.finishId; })[0];
             document.getElementById('p-finish-label').textContent = fin ? fin.name : '';
             document.getElementById('p-finishes').innerHTML = finishes.map(function (f) {
@@ -844,7 +958,7 @@
             renderFilters(); renderGrid();
         });
         function clearFilters() {
-            state.types = {}; state.styles = {}; state.widths = {}; state.search = '';
+            state.types = {}; state.styles = lockedStyles(); state.widths = {}; state.search = '';
             document.getElementById('search').value = '';
         }
         document.getElementById('empty-clear').addEventListener('click', function () { clearFilters(); renderFilters(); renderGrid(); });
@@ -888,6 +1002,237 @@
         document.getElementById('style-guide-link').addEventListener('click', openGuide);
         document.getElementById('p-guide-link').addEventListener('click', openGuide);
 
+        // ---------- guided steps: manufacturer -> door style + finish -> cabinets -> review ----------
+        // The chosen look is remembered so returning visitors land on their cabinets; the
+        // URL carries it too (?style=L5P&finish=L10) so links and the Back button work.
+        var LOOK_KEY = 'dl_diy_look_v1';
+        var COMING_SOON = [
+            { name: 'Structure | 3', blurb: 'A second cabinetry partner is joining the Design Lab lineup.' },
+            { name: 'Stow', blurb: 'Storage-focused cabinetry, coming to the DIY Shop soon.' }
+        ];
+        var look = null;          // { vendorId, styleId, finishId }
+        var pendingVendor = null; // chosen in step 1, before a style is picked
+        var pickStyleId = null;   // style highlighted in step 2
+        var pendingFamily = null; // ?family= deep link waiting for a look
+        var step = null;
+
+        function lockedStyles() { var o = {}; if (look) o[look.styleId] = true; return o; }
+        function readLook() {
+            try { return JSON.parse(localStorage.getItem(LOOK_KEY) || 'null'); } catch (e) { return null; }
+        }
+        function saveLook() { try { localStorage.setItem(LOOK_KEY, JSON.stringify(look)); } catch (e) {} }
+        function validLook(l) {
+            return !!(l && data.styleById[l.styleId] && (data.finishesByStyle[l.styleId] || []).some(function (f) { return f.id === l.finishId; }));
+        }
+        function finishById(styleId, finishId) {
+            return (data.finishesByStyle[styleId] || []).filter(function (f) { return f.id === finishId; })[0];
+        }
+        function vendorOfStyle(styleId) {
+            var line = data.lines[data.styleById[styleId].line_id];
+            return line ? line.vendor_id : null;
+        }
+        function stylesOfVendor(vendorId) {
+            return data.styles.filter(function (s) { return vendorOfStyle(s.id) === vendorId; });
+        }
+        function styleMinPrice(styleId) {
+            var best = null;
+            // Cabinets only: fillers and trim would make "from" prices look unrealistically low.
+            data.products.forEach(function (p) {
+                if (p.kind !== 'cabinet') return;
+                var o = data.offers[p.id][styleId];
+                if (o && o.base != null && (best == null || o.base < best)) best = o.base;
+            });
+            return best;
+        }
+        function dots(styleId) {
+            return '<span class="dots">' + (data.finishesByStyle[styleId] || []).map(function (f) {
+                return '<i title="' + esc(f.name) + '" style="background:' + esc(f.swatch_hex || '#777') + '"></i>';
+            }).join('') + '</span>';
+        }
+        function doorSamplePath(styleId, finishId, strict) {
+            return DL.photos.pick(data.photoRows, { doorSample: true, styleId: styleId, finishId: finishId, strictFinish: strict });
+        }
+
+        var STEP_TEXT = {
+            mfr: ['Step 1 of 4', 'Choose your manufacturer', 'Every Design Lab cabinet comes from a manufacturer we trust. Start with theirs; more lines are on the way.'],
+            style: ['Step 2 of 4', 'Choose your door style & finish', 'This sets the look of every cabinet you’ll see next. You can change it anytime.'],
+            shop: ['Step 3 of 4', 'Every cabinet, your way.', '']
+        };
+        function paintStepper() {
+            document.querySelectorAll('#stepper [data-goto]').forEach(function (b) {
+                var g = b.getAttribute('data-goto');
+                var order = { mfr: 0, style: 1, shop: 2 };
+                b.disabled = (g === 'style' && !(pendingVendor || look)) || (g === 'shop' && !look);
+                b.classList.toggle('is-done', order[g] < order[step]);
+                if (g === step) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+            });
+        }
+        function urlFor(name) {
+            var q = new URLSearchParams();
+            if (name === 'shop' && look) {
+                q.set('style', data.styleById[look.styleId].code);
+                q.set('finish', finishById(look.styleId, look.finishId).code);
+            } else q.set('step', name);
+            return location.pathname + '?' + q.toString();
+        }
+        function showStep(name, how) {
+            step = name;
+            ['mfr', 'style', 'shop'].forEach(function (n) { document.getElementById('step-' + n).hidden = n !== name; });
+            var t = STEP_TEXT[name];
+            document.getElementById('step-kicker').textContent = 'DIY Shop · ' + t[0];
+            document.getElementById('step-heading').textContent = t[1];
+            document.getElementById('step-sub').textContent = t[2];
+            if (name === 'mfr') renderMfr();
+            if (name === 'style') renderStylePick();
+            if (name === 'shop') {
+                state.styles = lockedStyles();
+                document.getElementById('style-group').hidden = true;
+                renderLookBar();
+                render();
+                var fin = finishById(look.styleId, look.finishId);
+                document.getElementById('step-sub').textContent = 'Showing ' + data.styleById[look.styleId].name + ' in ' + fin.name +
+                    '. Filter by type and width, then pick your size.';
+            }
+            paintStepper();
+            if (how === 'push') history.pushState({ step: name }, '', urlFor(name));
+            else if (how === 'replace') history.replaceState({ step: name }, '', urlFor(name));
+            if (how) window.scrollTo(0, 0);
+        }
+
+        function renderMfr() {
+            var cards = data.vendors.map(function (v) {
+                var styles = stylesOfVendor(v.id);
+                var finCount = styles.reduce(function (n, s) { return n + (data.finishesByStyle[s.id] || []).length; }, 0);
+                var lines = Object.keys(data.lines).map(function (k) { return data.lines[k]; }).filter(function (l) { return l.vendor_id === v.id; });
+                var art = styles.slice(0, 4).map(function (s) {
+                    var path = doorSamplePath(s.id, defaultFinish(s.id), false);
+                    return path ? '<span class="door" data-photo="' + esc(path) + '"></span>'
+                        : DL.doorSvg(s.door_profile, s.drawer_profile, styleHex(s.id), { label: s.name });
+                }).join('');
+                return '<button type="button" class="pick-card" data-vendor="' + v.id + '" aria-pressed="' + (pendingVendor === v.id) + '">' +
+                    '<div class="mfr-art">' + (art || '<span class="wordmark">' + esc(v.name) + '</span>') + '</div>' +
+                    '<div class="pc-body"><h2>' + esc(v.name) + '</h2>' +
+                    '<p class="pc-meta">' + styles.length + ' door styles · ' + finCount + ' finishes · ' + esc(lines.map(function (l) { return l.name; }).join(' & ')) + ' lines</p>' +
+                    '<p>' + esc(lines.map(function (l) { return l.description; }).filter(Boolean)[0] || 'All-plywood cabinetry built to order.') + '</p>' +
+                    '<span class="pc-cta">Choose ' + esc(v.name) + ' &rarr;</span></div></button>';
+            });
+            COMING_SOON.forEach(function (c) {
+                cards.push('<button type="button" class="pick-card" disabled>' +
+                    '<div class="mfr-art"><span class="wordmark">' + esc(c.name) + '</span></div>' +
+                    '<div class="pc-body"><span class="badge">Coming soon</span><h2>' + esc(c.name) + '</h2><p>' + esc(c.blurb) + '</p></div></button>');
+            });
+            var grid = document.getElementById('mfr-grid');
+            grid.innerHTML = cards.join('');
+            DL.photos.paint(grid);
+        }
+
+        function renderStylePick() {
+            var vendorId = pendingVendor || (look && vendorOfStyle(look.styleId));
+            var styles = stylesOfVendor(vendorId);
+            if (pickStyleId == null && look && styles.some(function (s) { return s.id === look.styleId; })) pickStyleId = look.styleId;
+            var grid = document.getElementById('style-grid');
+            grid.innerHTML = styles.map(function (s) {
+                var path = doorSamplePath(s.id, defaultFinish(s.id), false);
+                var line = data.lines[s.line_id];
+                var min = styleMinPrice(s.id);
+                var art = path
+                    ? '<div class="style-art" data-photo="' + esc(path) + '" role="img" aria-label="' + esc(s.name) + ' door"></div>'
+                    : '<div class="style-art is-drawing">' + DL.doorSvg(s.door_profile, s.drawer_profile, styleHex(s.id), { label: s.name }) + '</div>';
+                return '<button type="button" class="pick-card" data-pick-style="' + s.id + '" aria-pressed="' + (pickStyleId === s.id) + '">' + art +
+                    '<div class="pc-body"><h2>' + esc(s.name) + '</h2>' +
+                    '<p class="pc-meta">' + esc(s.tagline || '') + (line ? ' · ' + esc(line.name) + ' line' : '') + '</p>' +
+                    '<p>' + esc(s.customer_description || '') + '</p>' + dots(s.id) +
+                    '<span class="pc-cta">' + (min != null ? 'Cabinets from ' + fm(min) + ' · ' : '') + 'Choose ' + esc(s.name) + ' &rarr;</span></div></button>';
+            }).join('');
+            DL.photos.paint(grid);
+            renderFinishPick(false);
+        }
+        function renderFinishPick(scroll) {
+            var box = document.getElementById('finish-pick');
+            if (pickStyleId == null) { box.hidden = true; return; }
+            var s = data.styleById[pickStyleId];
+            document.getElementById('finish-heading').textContent = 'Choose your ' + s.name + ' finish';
+            var grid = document.getElementById('finish-grid');
+            grid.innerHTML = (data.finishesByStyle[s.id] || []).map(function (f) {
+                var path = doorSamplePath(s.id, f.id, true);
+                return '<button type="button" class="finish-tile" data-pick-finish="' + f.id + '" aria-pressed="' + (!!look && look.styleId === s.id && look.finishId === f.id) + '">' +
+                    '<span class="ft-art"' + (path ? ' data-photo="' + esc(path) + '"' : '') + ' style="background-color:' + esc(f.swatch_hex || '#777') + '"></span>' +
+                    '<b>' + esc(f.name) + '</b></button>';
+            }).join('');
+            box.hidden = false;
+            DL.photos.paint(grid);
+            if (scroll) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function renderLookBar() {
+            var s = data.styleById[look.styleId], fin = finishById(look.styleId, look.finishId);
+            var vendor = data.vendors.filter(function (v) { return v.id === vendorOfStyle(look.styleId); })[0];
+            document.getElementById('look-bar').innerHTML =
+                '<span class="swatch-dot" style="background:' + esc(fin.swatch_hex || '#777') + '"></span>' +
+                '<span class="crumbs">' + (vendor ? '<span>' + esc(vendor.name) + '</span><span>&rsaquo;</span>' : '') +
+                '<b>' + esc(s.name) + '</b><span>&rsaquo;</span><b>' + esc(fin.name) + '</b></span>' +
+                '<span class="actions"><button class="link-btn" type="button" data-goto="style">Change style or finish</button>' +
+                '<button class="link-btn" type="button" data-goto="mfr">Start over</button></span>';
+        }
+
+        document.addEventListener('click', function (e) {
+            var g = e.target.closest('[data-goto]');
+            if (g && !g.disabled) {
+                var to = g.getAttribute('data-goto');
+                if (to === 'style' && look) { pendingVendor = vendorOfStyle(look.styleId); pickStyleId = look.styleId; }
+                showStep(to, 'push');
+                return;
+            }
+            var v = e.target.closest('[data-vendor]');
+            if (v) {
+                pendingVendor = Number(v.getAttribute('data-vendor'));
+                if (!look || vendorOfStyle(look.styleId) !== pendingVendor) pickStyleId = null;
+                showStep('style', 'push');
+                return;
+            }
+            var ps = e.target.closest('[data-pick-style]');
+            if (ps) {
+                pickStyleId = Number(ps.getAttribute('data-pick-style'));
+                document.querySelectorAll('#style-grid [data-pick-style]').forEach(function (b) {
+                    b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-pick-style')) === pickStyleId));
+                });
+                renderFinishPick(true);
+                return;
+            }
+            var pf = e.target.closest('[data-pick-finish]');
+            if (pf) {
+                look = { vendorId: vendorOfStyle(pickStyleId), styleId: pickStyleId, finishId: Number(pf.getAttribute('data-pick-finish')) };
+                saveLook();
+                state.types = {}; state.widths = {};
+                showStep('shop', 'push');
+                if (pendingFamily) { var f = pendingFamily; pendingFamily = null; openFamily(f.id); }
+            }
+        });
+        document.getElementById('step-guide-link').addEventListener('click', openGuide);
+        document.getElementById('p-look-change').addEventListener('click', function () {
+            closePanel();
+            pendingVendor = vendorOfStyle(look.styleId); pickStyleId = look.styleId;
+            showStep('style', 'push');
+        });
+
+        // Decide the step from the URL (or the remembered look).
+        function route(how) {
+            var params = new URLSearchParams(location.search);
+            var styleCode = params.get('style'), finCode = params.get('finish'), want = params.get('step');
+            if (styleCode && finCode) {
+                var s = data.styles.filter(function (x) { return x.code === styleCode; })[0];
+                var f = s && (data.finishesByStyle[s.id] || []).filter(function (x) { return x.code === finCode; })[0];
+                if (s && f) { look = { vendorId: vendorOfStyle(s.id), styleId: s.id, finishId: f.id }; saveLook(); showStep('shop', how && 'replace'); return; }
+            }
+            if (want === 'mfr') return showStep('mfr', how && 'replace');
+            if (want === 'style' && (pendingVendor || look)) return showStep('style', how && 'replace');
+            if (!want && look) return showStep('shop', 'replace');
+            showStep('mfr', 'replace');
+        }
+        window.addEventListener('popstate', function () {
+            if (sel) closePanel();
+            route(null);
+        });
+
         // ---------- start ----------
         // The photo index loads alongside the catalog but never holds it up.
         var photoIndex = DL.photos.load();
@@ -903,13 +1248,19 @@
             // ?q=... prefills the search; ?focus=search jumps straight to it (homepage search icon).
             var q = params.get('q');
             if (q) { state.search = q; document.getElementById('search').value = q; }
-            render();
-            if (fam) openFamily(fam.id);
-            else if (params.get('focus') === 'search') document.getElementById('search').focus();
+            var saved = readLook();
+            if (validLook(saved)) look = saved;
+            // Deep links (family, search) skip the guide only when a look is already known.
+            if (look && (fam || q || params.get('focus'))) history.replaceState(null, '', urlFor('shop') + (fam ? '&family=' + encodeURIComponent(fam.slug) : ''));
+            route('replace');
+            if (fam) { if (look) openFamily(fam.id); else pendingFamily = fam; }
+            else if (look && params.get('focus') === 'search') document.getElementById('search').focus();
             photoIndex.then(function (rows) {
                 if (!rows.length) return;
                 data.photoRows = rows;
-                renderGrid();
+                if (step === 'mfr') renderMfr();
+                else if (step === 'style') renderStylePick();
+                else renderGrid();
                 if (sel) paintPanelPhoto();
             });
         }).catch(function (err) {

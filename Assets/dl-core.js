@@ -272,7 +272,7 @@
         return photoIndex;
     }
 
-    // Best photo for a product (or family) in a door style + finish. Falls back from the
+    // Best photo for a product (or family, or a door sample with doorSample:true) in a door style + finish. Falls back from the
     // exact finish -> any-finish drawing -> another finish of the same style.
     function pickPhoto(rows, o) {
         function score(r) {
@@ -291,6 +291,7 @@
             return top;
         }
         var hit = null;
+        if (o.doorSample) return best(rows.filter(function (r) { return r.kind === 'door_sample'; }));
         if (o.productId != null) hit = best(rows.filter(function (r) { return r.kind === 'product' && r.product_id === o.productId; }));
         if (!hit && o.familyId != null) hit = best(rows.filter(function (r) { return r.kind === 'family' && r.family_id === o.familyId; }));
         return hit;
