@@ -240,6 +240,13 @@
         }
         .card:hover, .card:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
         .card-img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: linear-gradient(135deg, #2b2b2b, #1f1f1f) center / cover no-repeat; }
+        /* Loading: a soft shimmer instead of a stand-in photo. */
+        .card-img.is-loading, .panel-img:not(.dl-photo) {
+            background: linear-gradient(100deg, #222 30%, #2c2c2c 50%, #222 70%) 0 0 / 300% 100%;
+            animation: dlShimmer 1.4s ease-in-out infinite;
+        }
+        @keyframes dlShimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+        @media (prefers-reduced-motion: reduce) { .card-img.is-loading, .panel-img:not(.dl-photo) { animation: none; } }
         /* Line art: white lines on the dark card, gold when the card is hovered or focused. */
         .card-img.is-line { background: none; position: relative; }
         .card-img.is-line.dl-line { background-color: #e9e4da; padding: 14px; box-sizing: border-box; transition: background-color 0.25s; }
@@ -824,7 +831,7 @@
         }
         function cardImage(g) {
             var path = cardPhoto(g);
-            var fallback = g.fam.image_url ? ' style="background-image:url(\'' + esc(g.fam.image_url) + '\')"' : '';
+            var fallback = '';
             var isLine = path && path.indexOf('lineart/') === 0;
             return '<div class="card-img' + (path ? ' is-loading' : '') + (isLine ? ' is-line' : '') + '" role="img" aria-label="' + esc(g.card.name) + '"' +
                 (path ? ' data-photo="' + esc(path) + '"' + (isLine ? ' data-photo-mode="mask"' : '') : '') + (isLine ? '' : fallback) + '></div>';
@@ -870,7 +877,7 @@
             if (path && path === el.getAttribute('data-photo')) return;
             el.classList.remove('dl-photo');
             wrap.classList.remove('has-photo');
-            el.style.backgroundImage = sel.family.image_url ? "url('" + sel.family.image_url + "')" : '';
+            el.style.backgroundImage = '';
             if (!path) { el.removeAttribute('data-photo'); return; }
             el.setAttribute('data-photo', path);
             var forSel = sel;
@@ -1198,7 +1205,7 @@
                     title: data.families[p.family_id].name + (p.width != null ? ' — ' + Number(p.width) + '"' : ''),
                     detail: detail.join(' · '),
                     sku: p.mfg_sku,
-                    image: data.families[p.family_id].image_url,
+                    image: null, // the cart shows the real photo / drawing for this line
                     unit_price: unitPrice(),
                     link: '/diy-wizard/?family=' + encodeURIComponent(data.families[p.family_id].slug)
                 }

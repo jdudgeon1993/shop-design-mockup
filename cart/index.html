@@ -272,7 +272,7 @@
             var title = d.link && editable ? '<a href="' + esc(d.link) + '">' + esc(d.title) + '</a>' : esc(d.title);
             return '<article class="line' + (l.unavailable && editable ? ' unavailable' : '') + '" data-id="' + esc(l.id) + '">' +
                 '<div class="line-img"' + (l.type === 'product' ? ' data-line-photo="' + l.product_id + '|' + l.finish_id + '|' + (l.upgrade_id ? 1 : 0) + '"' : '') +
-                    (d.image ? ' style="background-image:url(\'' + esc(d.image) + '\')"' : '') + '></div>' +
+                    (d.image && !/unsplash\.com|picsum\.photos/.test(d.image) ? ' style="background-image:url(\'' + esc(d.image) + '\')"' : '') + '></div>' +
                 '<div><div class="line-head"><div>' +
                 '<span class="badge ' + (l.type === 'collection' ? 'coll">Curated Collection' : 'diy">DIY') + '</span>' +
                 '<h3 class="line-title">' + title + '</h3></div>' +
