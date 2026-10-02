@@ -442,16 +442,28 @@
             // Hero slideshow. hero-section-i1 must stay first — add future
             // images by appending to this array, never prepending, so it
             // keeps being the first thing a visitor sees.
+            // pos = which part of the photo stays in frame when the screen
+            // crops it; anchored low so the cabinets show, not the ceiling.
             var heroImages = [
-                '/Assets/Images/hero-section-i1.webp'
+                { src: '/Assets/Images/hero-section-i1.webp', pos: 'center 72%' },
+                { src: '/Assets/Images/curated-section.webp', pos: 'center 65%' },
+                { src: '/Assets/Images/diy-section.webp', pos: 'center 60%' },
+                { src: '/Assets/Images/full-service-section.webp', pos: 'center 55%' },
+                { src: '/Assets/Images/why-choose-us.webp', pos: 'center 60%' }
             ];
+
+            function paint(slide, img) {
+                slide.style.backgroundImage = "url('" + img.src + "')";
+                slide.style.backgroundPosition = img.pos;
+            }
 
             var slides = document.querySelectorAll('.hero-slide');
             if (!slides.length || !heroImages.length) return;
 
-            slides.forEach(function (slide) {
-                slide.style.backgroundImage = "url('" + heroImages[0] + "')";
-            });
+            slides.forEach(function (slide) { paint(slide, heroImages[0]); });
+
+            // Warm the cache so each crossfade lands on a loaded photo.
+            heroImages.slice(1).forEach(function (img) { new Image().src = img.src; });
             slides[0].classList.add('is-active');
 
             // Nothing to rotate to yet, or the visitor has asked for less motion.
@@ -464,7 +476,7 @@
             setInterval(function () {
                 var showing = slides[activeLayer];
                 var hidden = slides[1 - activeLayer];
-                hidden.style.backgroundImage = "url('" + heroImages[nextIndex] + "')";
+                paint(hidden, heroImages[nextIndex]);
                 hidden.classList.add('is-active');
                 showing.classList.remove('is-active');
                 activeLayer = 1 - activeLayer;
