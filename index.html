@@ -5,45 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Coming Soon</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Temporary pre-launch gate. Enter the 4-digit access code to reach the
+         site; Assets/site-gate.js on every other page sends visitors here
+         until they have. Employees sign in separately via the footer's
+         "Employee Login" link (/dashboard/). -->
+    <script>
+        // Already entered the code on this device? Skip straight to the site.
+        (function () {
+            try {
+                if (localStorage.getItem('dl_access') === 'granted-v1') {
+                    var params = new URLSearchParams(location.search);
+                    var next = params.get('next');
+                    location.replace(next && next.charAt(0) === '/' && next.charAt(1) !== '/' ? next : '/home/');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <style>
         html, body {
             height: 100%; margin: 0; background: #1a1a1a; color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             display: flex; align-items: center; justify-content: center; text-align: center;
         }
-        .msg { padding: 24px; }
+        .msg { padding: 24px; width: 100%; max-width: 420px; box-sizing: border-box; }
         h1 {
-            margin: 0; font-size: clamp(22px, 5vw, 34px); font-weight: 600;
+            margin: 0; font-size: clamp(24px, 5vw, 34px); font-weight: 600;
             letter-spacing: 0.5px;
         }
-        p { margin: 14px 0 0; color: rgba(255,255,255,0.5); font-size: 15px; }
+        .sub { margin: 14px 0 0; color: rgba(255,255,255,0.6); font-size: 17px; }
 
-        /* Deliberately unobtrusive — a small dot, not a login button.
-           Nothing about this page should read as "there's a door here." */
-        .access-toggle {
-            position: fixed; bottom: 18px; right: 18px; width: 10px; height: 10px;
-            border-radius: 50%; background: rgba(255,255,255,0.15); border: none;
-            cursor: pointer; padding: 0;
+        .code-form { margin-top: 40px; }
+        .code-form label { display: block; font-size: 18px; margin-bottom: 14px; color: rgba(255,255,255,0.85); }
+        .code-input {
+            width: 220px; max-width: 100%; box-sizing: border-box; padding: 14px 10px;
+            font-size: 40px; letter-spacing: 16px; text-align: center; text-indent: 16px;
+            background: #111; color: #fff; border: 2px solid rgba(255,255,255,0.35); border-radius: 10px;
+            font-variant-numeric: tabular-nums;
         }
-        .access-toggle:hover, .access-toggle:focus-visible { background: rgba(255,255,255,0.35); }
-
-        .access-panel {
-            position: fixed; bottom: 40px; right: 18px; width: 220px;
-            background: #222; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
-            padding: 16px; text-align: left;
+        .code-input:focus { outline: none; border-color: #ffffff; }
+        .code-submit {
+            display: block; margin: 18px auto 0; padding: 14px 40px; border: none; border-radius: 10px;
+            background: #ffffff; color: #1a1a1a; font-size: 18px; font-weight: 700; cursor: pointer;
         }
-        .access-panel input {
-            width: 100%; box-sizing: border-box; margin-bottom: 8px; padding: 8px 10px;
-            background: #1a1a1a; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px;
-            color: #fff; font-size: 13px;
-        }
-        .access-panel input:focus { outline: none; border-color: rgba(255,255,255,0.4); }
-        .access-panel button[type="submit"] {
-            width: 100%; padding: 8px; border: none; border-radius: 4px; background: rgba(255,255,255,0.9);
-            color: #1a1a1a; font-size: 12px; font-weight: 700; cursor: pointer;
-        }
-        .access-error { margin: 8px 0 0; font-size: 11px; color: #ff9a9a; }
+        .code-submit:disabled { opacity: 0.5; cursor: default; }
+        .code-error { margin: 16px 0 0; font-size: 17px; color: #ffb4b4; min-height: 1.4em; }
 
         [hidden] { display: none !important; }
     </style>
@@ -51,54 +56,66 @@
 <body>
     <div class="msg">
         <h1>Something big is coming soon.</h1>
-        <p>Check back shortly.</p>
-    </div>
+        <p class="sub">Check back shortly.</p>
 
-    <button class="access-toggle" id="access-toggle" type="button" aria-label="Access"></button>
-    <form class="access-panel" id="access-form" hidden>
-        <input type="email" id="access-email" placeholder="Email" autocomplete="username" required>
-        <input type="password" id="access-password" placeholder="Password" autocomplete="current-password" required>
-        <button type="submit">Sign In</button>
-        <p class="access-error" id="access-error" hidden></p>
-    </form>
+        <form class="code-form" id="code-form" autocomplete="off">
+            <label for="code-input">Have an access code?</label>
+            <input class="code-input" id="code-input" type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="4" placeholder="····" aria-describedby="code-error" required>
+            <button class="code-submit" type="submit">Enter</button>
+            <p class="code-error" id="code-error" role="alert"></p>
+        </form>
+    </div>
 
     <script>
         (function () {
-            var SUPABASE_URL = 'https://nutgbxgnkvvruaoloqch.supabase.co';
-            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51dGdieGdua3Z2cnVhb2xvcWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NDEzNDgsImV4cCI6MjEwMDIxNzM0OH0.v9hXYtxOslhyXOu-mZVjm_EFaUIdTqTWKn9P3B7BY64';
-            var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            // FNV-1a hash of the code, so it isn't sitting in plain text in
+            // the page source. Not real security (see Assets/site-gate.js).
+            var CODE_HASH = 0x36e7da04;
+            function hash(s) {
+                var h = 0x811c9dc5;
+                for (var i = 0; i < s.length; i++) {
+                    h ^= s.charCodeAt(i);
+                    h = Math.imul(h, 0x01000193) >>> 0;
+                }
+                return h >>> 0;
+            }
 
-            var toggle = document.getElementById('access-toggle');
-            var form = document.getElementById('access-form');
-            var errorEl = document.getElementById('access-error');
+            var form = document.getElementById('code-form');
+            var input = document.getElementById('code-input');
+            var errorEl = document.getElementById('code-error');
+            input.focus();
 
-            toggle.addEventListener('click', function () {
-                form.hidden = !form.hidden;
-                if (!form.hidden) document.getElementById('access-email').focus();
+            function nextPage() {
+                var next = new URLSearchParams(location.search).get('next');
+                // Only same-site paths, never "//other-site.com".
+                return next && next.charAt(0) === '/' && next.charAt(1) !== '/' ? next : '/home/';
+            }
+
+            function tryCode() {
+                var code = input.value.replace(/\D/g, '');
+                if (code.length !== 4) {
+                    errorEl.textContent = 'Please enter all 4 numbers.';
+                    return;
+                }
+                if (hash('design-lab:' + code) !== CODE_HASH) {
+                    errorEl.textContent = "That code didn't work. Please try again.";
+                    input.value = '';
+                    input.focus();
+                    return;
+                }
+                try { localStorage.setItem('dl_access', 'granted-v1'); } catch (e) {}
+                location.replace(nextPage());
+            }
+
+            input.addEventListener('input', function () {
+                input.value = input.value.replace(/\D/g, '').slice(0, 4);
+                errorEl.textContent = '';
+                if (input.value.length === 4) tryCode();
             });
-
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
-                errorEl.hidden = true;
-                var email = document.getElementById('access-email').value.trim();
-                var password = document.getElementById('access-password').value;
-                var submitBtn = form.querySelector('button[type="submit"]');
-                submitBtn.disabled = true;
-
-                supabase.auth.signInWithPassword({ email: email, password: password }).then(function (result) {
-                    if (result.error || !result.data.session) {
-                        submitBtn.disabled = false;
-                        errorEl.textContent = 'Incorrect email or password.';
-                        errorEl.hidden = false;
-                        return;
-                    }
-                    // Correct credentials are enough to move on here — this page
-                    // is deliberately not linked from anywhere and isn't search-
-                    // indexed (see robots.txt), so this is a "keep it off the
-                    // public's radar before launch" gate, not a defense against
-                    // someone deliberately hunting for the real URL.
-                    window.location.href = '/home/';
-                });
+                tryCode();
             });
         })();
     </script>
