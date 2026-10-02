@@ -9,6 +9,10 @@
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curated Collections - Design Lab</title>
+    <meta name="description" content="Designer-planned kitchens and baths at one flat price. Choose your door style and finish; every piece arrives matched.">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
@@ -126,6 +130,11 @@
         .toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
         .toast a { color: var(--gold); font-weight: 700; text-decoration: none; }
 
+        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.5); }
+        .shop-footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+        .shop-footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
+        .shop-footer a:hover { color: var(--gold); }
+
         [hidden] { display: none !important; }
     </style>
 </head>
@@ -181,6 +190,18 @@
             </div>
         </section>
     </main>
+
+    <footer class="shop-footer">
+        <nav aria-label="Site">
+            <a href="/home/">Home</a>
+            <a href="/diy-wizard/">DIY Shop</a>
+            <a href="/collections/">Curated Collections</a>
+            <a href="/about/">About Us</a>
+            <a href="/consultation/">Video Consultation</a>
+            <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
+        </nav>
+        <span>&copy; 2026 Design Lab</span>
+    </footer>
 
     <div class="toast" id="toast" role="status"><span id="toast-text">Added to cart</span><a href="/cart/">View cart &rarr;</a></div>
 

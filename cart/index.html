@@ -8,6 +8,10 @@
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Cart - Design Lab</title>
+    <meta name="description" content="Review and submit your Design Lab order.">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
@@ -74,6 +78,9 @@
         .line-price .each { display: block; font-size: 12px; color: var(--muted); }
         .line-price strong { color: var(--gold); font-size: 17px; font-variant-numeric: tabular-nums; }
 
+        .notice { margin: 0 0 14px; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(212,175,55,0.5); background: rgba(212,175,55,0.08); color: rgba(255,255,255,0.85); font-size: 13.5px; line-height: 1.5; }
+        .line.unavailable { border-color: rgba(220,80,80,0.6); }
+        .unavailable-note { margin-top: 8px; font-size: 13px; color: #ffaaaa; font-weight: 600; }
         .empty { border: 1px dashed var(--border); border-radius: 12px; padding: 40px 24px; text-align: center; color: var(--muted); }
         .empty h2 { color: var(--white); margin: 0 0 8px; }
         .empty .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
@@ -119,6 +126,11 @@
         .confirm-card p { margin: 0; color: rgba(255,255,255,0.8); line-height: 1.6; }
         .next { margin: 18px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; line-height: 1.7; }
 
+        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.5); }
+        .shop-footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+        .shop-footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
+        .shop-footer a:hover { color: var(--gold); }
+
         [hidden] { display: none !important; }
     </style>
 </head>
@@ -140,7 +152,10 @@
             </div>
 
             <div class="layout" id="layout" hidden>
-                <div class="lines" id="lines"></div>
+                <div>
+                    <p class="notice" id="price-notice" hidden></p>
+                    <div class="lines" id="lines"></div>
+                </div>
 
                 <aside class="summary">
                     <h2>Order summary</h2>
@@ -191,6 +206,18 @@
         </section>
     </main>
 
+    <footer class="shop-footer">
+        <nav aria-label="Site">
+            <a href="/home/">Home</a>
+            <a href="/diy-wizard/">DIY Shop</a>
+            <a href="/collections/">Curated Collections</a>
+            <a href="/about/">About Us</a>
+            <a href="/consultation/">Video Consultation</a>
+            <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
+        </nav>
+        <span>&copy; 2026 Design Lab</span>
+    </footer>
+
     <script>
     (function () {
         var fm = DL.formatMoney, esc = DL.escapeHtml;
@@ -209,13 +236,14 @@
                     }).join('') + '</ul></details>';
             }
             var title = d.link && editable ? '<a href="' + esc(d.link) + '">' + esc(d.title) + '</a>' : esc(d.title);
-            return '<article class="line" data-id="' + esc(l.id) + '">' +
+            return '<article class="line' + (l.unavailable && editable ? ' unavailable' : '') + '" data-id="' + esc(l.id) + '">' +
                 '<img src="' + esc(d.image || '') + '" alt="" loading="lazy" onerror="this.removeAttribute(\'src\')">' +
                 '<div><div class="line-head"><div>' +
                 '<span class="badge ' + (l.type === 'collection' ? 'coll">Curated Collection' : 'diy">DIY') + '</span>' +
                 '<h3 class="line-title">' + title + '</h3></div>' +
                 (editable ? '<button class="remove" type="button" data-remove>Remove</button>' : '') + '</div>' +
                 '<ul class="specs">' + specs.join('') + '</ul>' + includes +
+                (l.unavailable && editable ? '<p class="unavailable-note">No longer available in this option. Please remove it or choose another finish.</p>' : '') +
                 '<div class="line-foot">' +
                 (editable
                     ? '<div class="qty"><button type="button" data-qty="-1" aria-label="Decrease">&minus;</button><span>' + l.quantity +
@@ -231,8 +259,12 @@
             document.getElementById('layout').hidden = lines.length === 0;
             if (!lines.length) return;
             document.getElementById('lines').innerHTML = lines.map(function (l) { return lineHtml(l, true); }).join('');
-            var count = DL.cart.count(), sub = DL.cart.subtotal();
-            document.getElementById('sum-count').textContent = count + (count === 1 ? ' item' : ' items');
+            // Unavailable lines can't be ordered, so they don't count toward the estimate.
+            var orderable = lines.filter(function (l) { return !l.unavailable; });
+            var count = orderable.reduce(function (n, l) { return n + l.quantity; }, 0);
+            var sub = orderable.reduce(function (n, l) { return n + (l.display.unit_price || 0) * l.quantity; }, 0);
+            document.getElementById('sum-count').textContent = count + (count === 1 ? ' item' : ' items') +
+                (orderable.length < lines.length ? ' (excludes unavailable)' : '');
             document.getElementById('sum-sub').textContent = fm(sub);
             document.getElementById('sum-total').textContent = fm(sub);
         }
@@ -280,6 +312,11 @@
             }
             var lines = DL.cart.lines();
             if (!lines.length) return;
+            if (lines.some(function (l) { return l.unavailable; })) {
+                err.textContent = 'Please remove the items marked unavailable before submitting.';
+                err.hidden = false;
+                return;
+            }
             var items = lines.map(function (l) {
                 return l.type === 'collection'
                     ? { type: 'collection', collection_id: l.collection_id, finish_id: l.finish_id, quantity: l.quantity }
@@ -316,7 +353,62 @@
             window.scrollTo(0, 0);
         }
 
+        // Re-price every line against today's catalog when the cart opens, so a cart saved
+        // days ago never shows stale prices (the server re-prices on submit regardless).
+        function refreshPrices() {
+            var lines = DL.cart.lines();
+            if (!lines.length) return;
+            var sb = DL.supabase;
+            var productIds = lines.filter(function (l) { return l.type === 'product'; }).map(function (l) { return l.product_id; });
+            var collectionIds = lines.filter(function (l) { return l.type === 'collection'; }).map(function (l) { return l.collection_id; });
+            var none = Promise.resolve({ data: [] });
+            Promise.all([
+                sb.from('finishes').select('id,door_style_id'),
+                productIds.length ? sb.from('storefront_offers').select('product_id,door_style_id,upgrade_id,retail_price').in('product_id', productIds) : none,
+                productIds.length ? sb.from('storefront_product_modifications').select('product_id,modification_id,retail_price').in('product_id', productIds) : none,
+                collectionIds.length ? sb.from('storefront_collections').select('collection_id,door_style_id,flat_price').in('collection_id', collectionIds) : none
+            ]).then(function (r) {
+                if (r.some(function (x) { return x.error; })) return;
+                var styleOf = {};
+                r[0].data.forEach(function (f) { styleOf[f.id] = f.door_style_id; });
+                var changed = 0, gone = 0;
+                DL.cart.lines().forEach(function (l) {
+                    var style = styleOf[l.finish_id], price = null;
+                    if (l.type === 'product') {
+                        var offer = r[1].data.filter(function (o) {
+                            return o.product_id === l.product_id && o.door_style_id === style && (o.upgrade_id || null) === (l.upgrade_id || null);
+                        })[0];
+                        var mods = (l.modification_ids || []).map(function (id) {
+                            return r[2].data.filter(function (m) { return m.product_id === l.product_id && m.modification_id === id; })[0];
+                        });
+                        if (offer && mods.every(Boolean)) {
+                            price = Number(offer.retail_price) + mods.reduce(function (n, m) { return n + Number(m.retail_price); }, 0);
+                        }
+                    } else {
+                        var c = r[3].data.filter(function (x) { return x.collection_id === l.collection_id && x.door_style_id === style; })[0];
+                        if (c) price = Number(c.flat_price);
+                    }
+                    if (price == null) {
+                        if (!l.unavailable) { gone++; DL.cart.update(l.id, function (x) { x.unavailable = true; }); }
+                        return;
+                    }
+                    price = Math.round(price * 100) / 100;
+                    if (Math.abs(price - (l.display.unit_price || 0)) > 0.004 || l.unavailable) {
+                        changed++;
+                        DL.cart.update(l.id, function (x) { x.display.unit_price = price; delete x.unavailable; });
+                    }
+                });
+                var msgs = [];
+                if (changed) msgs.push('Prices in your cart were updated to today\'s pricing.');
+                if (gone) msgs.push(gone === 1 ? 'One item is no longer available as configured.' : gone + ' items are no longer available as configured.');
+                var notice = document.getElementById('price-notice');
+                notice.textContent = msgs.join(' ');
+                notice.hidden = !msgs.length;
+            });
+        }
+
         render();
+        refreshPrices();
     })();
     </script>
 </body>

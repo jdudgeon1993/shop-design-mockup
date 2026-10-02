@@ -89,6 +89,12 @@
             lines.forEach(function (l) { if (l.id === id) l.quantity = Math.max(1, Math.min(999, qty | 0)); });
             writeCart(lines);
         },
+        // fn(line) mutates a line in place (e.g. refreshed price); listeners fire once.
+        update: function (id, fn) {
+            var lines = readCart();
+            lines.forEach(function (l) { if (l.id === id) fn(l); });
+            writeCart(lines);
+        },
         remove: function (id) {
             writeCart(readCart().filter(function (l) { return l.id !== id; }));
         },

@@ -1,32 +1,21 @@
-# Design Lab catalog database
+# Design Lab database (Supabase)
 
-`catalog_schema.sql` — the 10 tables (tiers, brands, room types, cabinet
-categories, cabinets, cabinet dimensions, option categories, options,
-brand options, cabinet option exclusions), with RLS enabled and public
-read policies. Already applied to the real Supabase project.
+The site reads everything live from Supabase. `migrations/` is the full schema history, applied
+in order to the production project (`nutgbxgnkvvruaoloqch`). Each file has a header comment
+explaining what it does.
 
-`add_room_types.sql` is the incremental migration that added `room_types`
-and `cabinet_categories.room_type_id` after the original schema was
-already live — run it once in the Supabase SQL Editor if you haven't yet.
-`catalog_schema.sql` is kept up to date with the full current shape (room
-types included) for anyone spinning up a fresh project from scratch.
+| Area | Tables / views |
+|---|---|
+| Catalog | `vendors`, `product_lines`, `price_codes`, `door_styles`, `finishes`, `upgrades`, `product_families`, `products`, `product_prices` (employees only), `modifications`, `product_modifications`, `price_books` |
+| Storefront (public) | `storefront_offers` (retail price per product x door style), `storefront_variants`, `storefront_product_modifications`, `storefront_collections`, `storefront_modifications` |
+| Collections | `curated_collections`, `curated_collection_items`, `curated_collection_styles` (flat price per door style) |
+| Orders | `orders`, `order_items` (snapshots of what was bought), created only by `place_order()` |
+| People | `profiles` (role: customer / designer / employee / admin), `addresses`, `consultation_rooms` |
 
-`cabinets` is a cabinet *style* (e.g. "2-Door Base Cabinet") — it has no
-width or price of its own. `cabinet_dimensions` is the real, orderable
-width/SKU/price for that style (a 24" and a 36" of the same style are
-different rows). `brand_options` is the restrictions layer for
-Finish/Door Style/Hardware: a brand only offers what's listed here, not
-the full universal set across all brands. `room_types` (Kitchen/Bath/
-Garage/Closet) is the first filter in the DIY flow — each
-`cabinet_categories` row belongs to one room type, and a brand's
-available room types are just whichever rooms its cabinets' categories
-belong to (nothing stored on `brands` itself).
+**Pricing:** list prices are visible to employees only. Retail = list x dealer multiplier x retail
+multiplier, set per product line in `private.line_pricing` (currently demo values).
 
-Data entry happens directly in Supabase's Table Editor — see
-`proto/diy-catalog/` for the original Level → Brand → Cabinet → Customize
-live page, and `proto/diy-flow/` for the newer Room Type → Brand →
-Finish → Door Style → Cabinets → Account flow. Both read whatever's
-actually in these tables, for testing as you fill them in.
+**Not in this repo:** the catalog data itself (`seed/0001_cnc_v01_08.sql`, the CNC Luxor + Bedford
+spec book with dealer list prices) is kept privately, because this repository is public.
 
-Orders, cart, and checkout are a separate schema to design once this
-catalog structure is stable and real vendor data is in place.
+`0006_backfill_employee_profiles_MANUAL.sql` was run by hand in the Supabase SQL Editor.

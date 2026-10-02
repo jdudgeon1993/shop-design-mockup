@@ -13,6 +13,10 @@
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DIY Shop - Design Lab</title>
+    <meta name="description" content="Shop every cabinet in the line. Filter by room, type, width and door style, and configure size, finish and upgrades with live pricing.">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
@@ -175,6 +179,11 @@
         .toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
         .toast a { color: var(--gold); font-weight: 700; text-decoration: none; }
 
+        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.5); }
+        .shop-footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+        .shop-footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
+        .shop-footer a:hover { color: var(--gold); }
+
         [hidden] { display: none !important; }
     </style>
 </head>
@@ -225,6 +234,18 @@
             </section>
         </div>
     </main>
+
+    <footer class="shop-footer">
+        <nav aria-label="Site">
+            <a href="/home/">Home</a>
+            <a href="/diy-wizard/">DIY Shop</a>
+            <a href="/collections/">Curated Collections</a>
+            <a href="/about/">About Us</a>
+            <a href="/consultation/">Video Consultation</a>
+            <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
+        </nav>
+        <span>&copy; 2026 Design Lab</span>
+    </footer>
 
     <!-- Product panel -->
     <div class="overlay" id="overlay" hidden>
@@ -742,8 +763,12 @@
                 var first = (data.byFamily[fam.id] || [])[0];
                 if (first) state.space = first.kind !== 'cabinet' ? 'Parts' : first.space;
             }
+            // ?q=... prefills the search; ?focus=search jumps straight to it (homepage search icon).
+            var q = params.get('q');
+            if (q) { state.search = q; document.getElementById('search').value = q; }
             render();
             if (fam) openFamily(fam.id);
+            else if (params.get('focus') === 'search') document.getElementById('search').focus();
         }).catch(function (err) {
             document.getElementById('loading').textContent = 'Sorry, the catalog could not be loaded. Please refresh the page.';
             console.error(err);
