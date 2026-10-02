@@ -38,6 +38,23 @@
         h1, h2 { font-family: 'Playfair Display', serif; font-weight: 600; }
         .intro-heading { margin: 0 0 24px; font-size: clamp(30px, 4.5vw, 42px); }
 
+        /* Same 4-step bar as the DIY Shop; the cart is step 4 (Review). */
+        .stepper { list-style: none; display: flex; gap: 6px; margin: 0 0 28px; padding: 0; overflow-x: auto; }
+        .stepper li { flex: 1 1 0; min-width: 130px; }
+        .stepper a {
+            appearance: none; width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; text-align: left; text-decoration: none;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; color: var(--muted);
+            font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
+        }
+                .stepper a:hover, .stepper a:focus-visible { border-color: var(--gold); color: var(--white); outline: none; }
+        .stepper .num { width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; border: 1px solid currentColor; font-size: 12px; }
+        .stepper .is-done { color: rgba(255,255,255,0.8); }
+        .stepper .is-done .num { background: rgba(212,175,55,0.18); border-color: var(--gold); color: var(--gold); }
+        .stepper [aria-current="step"] { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,0.1); }
+        .stepper [aria-current="step"] .num { background: var(--gold); color: var(--black); border-color: var(--gold); }
+        @media (max-width: 640px) { .stepper li { min-width: 0; } .stepper .label { display: none; } .stepper a { justify-content: center; } .stepper [aria-current="step"] .label { display: inline; } .stepper li:has([aria-current="step"]) { flex: 3 1 0; } }
+
+
         .layout { display: grid; grid-template-columns: 1fr; gap: 28px; }
         @media (min-width: 980px) { .layout { grid-template-columns: 1fr 380px; align-items: start; } }
 
@@ -141,6 +158,12 @@
     </header>
 
     <main class="content">
+        <ol class="stepper" aria-label="DIY steps">
+            <li><a class="is-done" href="/diy-wizard/?step=mfr"><span class="num">1</span><span class="label">Manufacturer</span></a></li>
+            <li><a class="is-done" href="/diy-wizard/?step=style"><span class="num">2</span><span class="label">Door Style &amp; Finish</span></a></li>
+            <li><a class="is-done" href="/diy-wizard/"><span class="num">3</span><span class="label">Cabinets</span></a></li>
+            <li><a href="/cart/" aria-current="step"><span class="num">4</span><span class="label">Review</span></a></li>
+        </ol>
         <section id="cart-view">
             <p class="kicker">Your Cart</p>
             <h1 class="intro-heading">Review your order</h1>
