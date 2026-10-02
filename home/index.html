@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="image" href="/Assets/Images/hero-section-i1.webp">
+    <link rel="preload" as="image" href="/Assets/Images/cnc-luxor-espresso.webp">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -144,6 +144,15 @@
             opacity: 0; transition: opacity 1.2s ease;
         }
         .hero-slide.is-active { opacity: 1; }
+        /* Light photos (real CNC kitchens) need a little help behind the logo and heading.
+           Only the text side is shaded; the rest of the kitchen stays bright. */
+        .hero-photo::after {
+            content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+            background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.3) 32%, rgba(0,0,0,0) 58%);
+        }
+        @media (max-width: 760px) {
+            .hero-photo::after { background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0.45) 100%); }
+        }
 
         /* The logo's tagline text is baked into this PNG, not real HTML text,
            so it can't take a text-shadow directly — a drop-shadow filter on
@@ -439,17 +448,15 @@
 
     <script>
         (function () {
-            // Hero slideshow. hero-section-i1 must stay first — add future
-            // images by appending to this array, never prepending, so it
-            // keeps being the first thing a visitor sees.
-            // pos = which part of the photo stays in frame when the screen
-            // crops it; anchored low so the cabinets show, not the ceiling.
+            // Hero slideshow: real CNC kitchens first (5 max, 5 s each). pos = which part of
+            // the photo stays in frame when the screen crops it; anchored low so the
+            // cabinets show, not the ceiling.
             var heroImages = [
-                { src: '/Assets/Images/hero-section-i1.webp', pos: 'center 72%' },
-                { src: '/Assets/Images/curated-section.webp', pos: 'center 65%' },
-                { src: '/Assets/Images/diy-section.webp', pos: 'center 60%' },
-                { src: '/Assets/Images/full-service-section.webp', pos: 'center 55%' },
-                { src: '/Assets/Images/why-choose-us.webp', pos: 'center 60%' }
+                { src: '/Assets/Images/cnc-luxor-espresso.webp', pos: 'center 62%' },
+                { src: '/Assets/Images/cnc-luxor-white.webp', pos: 'center 60%' },
+                { src: '/Assets/Images/cnc-luxor-smoky-grey.webp', pos: 'center 55%' },
+                { src: '/Assets/Images/cnc-luxor-harvest.webp', pos: 'center 58%' },
+                { src: '/Assets/Images/hero-section-i1.webp', pos: 'center 72%' }
             ];
 
             function paint(slide, img) {
