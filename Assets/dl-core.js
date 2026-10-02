@@ -253,11 +253,13 @@
     photoCss.textContent =
         '.dl-photo{position:relative;background:#fff center/contain no-repeat;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}' +
         '.dl-photo::after{content:"";position:absolute;inset:0}' +
-        '.dl-photo.is-loading{background-color:#f4f4f4}';
+        '.dl-photo.is-loading{background-color:#f4f4f4}' +
+        '.dl-line{-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;' +
+        '-webkit-mask-size:contain;mask-size:contain;-webkit-mask-origin:content-box;mask-origin:content-box;user-select:none;-webkit-touch-callout:none}';
     document.head.appendChild(photoCss);
     ['contextmenu', 'dragstart'].forEach(function (type) {
         document.addEventListener(type, function (e) {
-            if (e.target.closest && e.target.closest('.dl-photo')) e.preventDefault();
+            if (e.target.closest && e.target.closest('.dl-photo, .dl-line')) e.preventDefault();
         });
     });
 
@@ -330,6 +332,13 @@
                 var url = urls[el.getAttribute('data-photo')];
                 el.classList.remove('is-loading');
                 if (!url) return;
+                // data-photo-mode="mask": transparent line art used as a mask, so CSS sets the line color.
+                if (el.getAttribute('data-photo-mode') === 'mask') {
+                    el.classList.add('dl-line');
+                    el.style.webkitMaskImage = el.style.maskImage = 'url("' + url + '")';
+                    el.dispatchEvent(new CustomEvent('dl-photo-painted', { bubbles: true }));
+                    return;
+                }
                 el.classList.add('dl-photo');
                 el.style.backgroundImage = 'url("' + url + '")';
                 el.dispatchEvent(new CustomEvent('dl-photo-painted', { bubbles: true }));
