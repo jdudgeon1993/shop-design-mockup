@@ -250,13 +250,16 @@
                 return Promise.all([
                     sb.from('curated_collection_items').select('collection_id,product_id,quantity,sort_order').in('collection_id', ids).order('sort_order'),
                     sb.from('door_styles').select('id,name,line_id,door_design,tagline,customer_description,door_profile,drawer_profile,sort_order').order('sort_order'),
-                    sb.from('finishes').select('id,door_style_id,code,name,swatch_hex,sort_order').eq('is_active', true).order('sort_order')
+                    sb.from('finishes').select('id,door_style_id,code,name,swatch_hex,sort_order').eq('is_active', true).order('sort_order'),
+                    sb.from('product_lines').select('id,vendor_id')
                 ]);
             }).then(function (r) {
                 r.forEach(function (x) { if (x.error) throw x.error; });
                 r[0].data.forEach(function (i) { (data.items[i.collection_id] = data.items[i.collection_id] || []).push(i); });
                 r[1].data.forEach(function (s) { data.styles[s.id] = s; });
                 r[2].data.forEach(function (f) { (data.finishesByStyle[f.door_style_id] = data.finishesByStyle[f.door_style_id] || []).push(f); });
+                data.vendorOfLine = {};
+                r[3].data.forEach(function (l) { data.vendorOfLine[l.id] = l.vendor_id; });
                 var productIds = r[0].data.map(function (i) { return i.product_id; });
                 return sb.from('products').select('id,sku,mfg_sku,family_id,description,width,height,depth,doors,drawers,kind,space,room_type,subtype').in('id', productIds);
             }).then(function (res) {
@@ -386,10 +389,13 @@
             var c = sel.c, o = c.offers.filter(function (x) { return x.door_style_id === sel.styleId; })[0];
             var fin = (data.finishesByStyle[sel.styleId] || []).filter(function (f) { return f.id === sel.finishId; })[0];
             var items = (data.items[c.id] || []).slice().sort(function (a, b) { return a.sort_order - b.sort_order; });
-            DL.cart.add({
+            var style = data.styles[sel.styleId];
+            var line = {
                 type: 'collection',
                 collection_id: c.id,
                 finish_id: fin.id,
+                vendor_id: style ? (data.vendorOfLine || {})[style.line_id] : null,
+                look_label: o.door_style + ' · ' + fin.name,
                 quantity: 1,
                 display: {
                     title: c.name,
@@ -403,7 +409,19 @@
                         return { qty: i.quantity, name: f.name, description: p.description, sku: p.mfg_sku };
                     })
                 }
-            });
+            };
+            if (!DL.cart.add(line)) {
+                // The cart is in another finish: switch it, start over, or keep it.
+                DL.lookGuard({
+                    to: line.look_label, toVendorId: line.vendor_id,
+                    onSwitch: function () { DL.cart.switchFinish(line.finish_id, line.look_label); DL.cart.add(line); addedToast(c, o, fin); },
+                    onFresh: function () { DL.cart.add(line); addedToast(c, o, fin); }
+                });
+                return;
+            }
+            addedToast(c, o, fin);
+        }
+        function addedToast(c, o, fin) {
             var toast = document.getElementById('toast');
             document.getElementById('toast-text').textContent = 'Added ' + c.name + ' (' + o.door_style + ', ' + fin.name + ')';
             toast.classList.add('show');

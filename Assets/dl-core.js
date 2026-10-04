@@ -68,10 +68,21 @@
         subtotal: function () {
             return readCart().reduce(function (n, l) { return n + (l.display.unit_price || 0) * (l.quantity || 0); }, 0);
         },
-        // line: { type:'product', product_id, finish_id, upgrade_id?, hinge_side?, modification_ids?, quantity,
+        // One look per cart (Design Lab rule): every line shares one finish, which
+        // also means one door style and one maker. look() is that finish's id and
+        // label ("Luxor · Smoky Grey"), or null for an empty cart.
+        look: function () {
+            var first = readCart()[0];
+            return first ? { finish_id: first.finish_id, vendor_id: first.vendor_id || null, label: first.look_label || '' } : null;
+        },
+        // line: { type:'product', product_id, finish_id, vendor_id, look_label, upgrade_id?, hinge_side?, modification_ids?, quantity,
         //         display:{ title, detail, image, unit_price } }
-        //    or { type:'collection', collection_id, finish_id, quantity, display:{...} }
+        //    or { type:'collection', collection_id, finish_id, vendor_id, look_label, quantity, display:{...} }
+        // Returns false (and adds nothing) when the line's finish differs from the cart's;
+        // callers then offer DL.lookGuard.
         add: function (line) {
+            var current = cart.look();
+            if (current && current.finish_id !== line.finish_id) return false;
             var lines = readCart();
             var existing = lines.filter(function (l) { return sameItem(l, line); })[0];
             if (existing) {
@@ -82,6 +93,20 @@
                 line.quantity = line.quantity || 1;
                 lines.push(line);
             }
+            writeCart(lines);
+            return true;
+        },
+        // Move the whole cart to another finish of the same maker. Prices are
+        // re-checked when the cart opens, and lines not offered in the new finish
+        // are flagged there.
+        switchFinish: function (finishId, lookLabel) {
+            var lines = readCart();
+            lines.forEach(function (l) {
+                var old = l.look_label;
+                l.finish_id = finishId;
+                l.look_label = lookLabel;
+                if (old && l.display && l.display.detail) l.display.detail = l.display.detail.split(old).join(lookLabel);
+            });
             writeCart(lines);
         },
         setQuantity: function (id, qty) {
@@ -101,6 +126,63 @@
         clear: function () { writeCart([]); },
         onChange: function (fn) { listeners.push(fn); }
     };
+
+    // ---------- "change my look" guard ----------
+    // DL.lookGuard({ to: 'Luxor · Cocoa', toVendorId, onSwitch, onFresh, onKeep })
+    // Shown when something in a different finish is about to go into a cart that
+    // already has a look. Same maker: switch the whole cart, or start over. Other
+    // maker: start over only (their cabinets aren't the same products).
+    var guardEl = null;
+    function lookGuard(o) {
+        var current = cart.look();
+        if (!guardEl) {
+            var css = document.createElement('style');
+            css.textContent =
+                '.dl-guard{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.6)}' +
+                '.dl-guard[hidden]{display:none}' +
+                '.dl-guard-card{width:min(460px,100%);background:#141414;color:#f5f1ea;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:24px;font-family:inherit;box-shadow:0 24px 60px rgba(0,0,0,.5)}' +
+                '.dl-guard-card h2{margin:0 0 8px;font-size:20px;color:#f5f1ea}' +
+                '.dl-guard-card p{margin:0 0 18px;font-size:15px;line-height:1.5;color:rgba(245,241,234,.82)}' +
+                '.dl-guard-card strong{color:#d4b07a}' +
+                '.dl-guard-actions{display:flex;flex-direction:column;gap:10px}' +
+                '.dl-guard-actions button{min-height:44px;border-radius:999px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;padding:10px 16px}' +
+                '.dl-guard-primary{background:#d4b07a;color:#141414;border:0}' +
+                '.dl-guard-secondary{background:transparent;color:#f5f1ea;border:1px solid rgba(255,255,255,.3)}' +
+                '.dl-guard-actions button:focus-visible{outline:3px solid #d4b07a;outline-offset:2px}';
+            document.head.appendChild(css);
+            guardEl = document.createElement('div');
+            guardEl.className = 'dl-guard';
+            guardEl.hidden = true;
+            guardEl.innerHTML = '<div class="dl-guard-card" role="alertdialog" aria-modal="true" aria-labelledby="dl-guard-title" aria-describedby="dl-guard-text">' +
+                '<h2 id="dl-guard-title">One look per order</h2><p id="dl-guard-text"></p><div class="dl-guard-actions"></div></div>';
+            document.body.appendChild(guardEl);
+            guardEl.addEventListener('keydown', function (e) { if (e.key === 'Escape') guardEl._keep(); });
+        }
+        var sameMaker = current && current.vendor_id != null && current.vendor_id === o.toVendorId;
+        var from = current && current.label ? current.label : 'another finish';
+        guardEl.querySelector('#dl-guard-text').innerHTML = 'Your cart is in <strong>' + escapeHtml(from) + '</strong>. An order is built in one finish from one line, so everything in it matches. ' +
+            (sameMaker ? 'Switch the whole cart to <strong>' + escapeHtml(o.to) + '</strong>, or start a new cart?' :
+                '<strong>' + escapeHtml(o.to) + '</strong> is a different line, so it needs its own cart.');
+        var actions = guardEl.querySelector('.dl-guard-actions');
+        actions.innerHTML = (sameMaker ? '<button type="button" class="dl-guard-primary" data-act="switch">Switch my cart to ' + escapeHtml(o.to) + '</button>' : '') +
+            '<button type="button" class="' + (sameMaker ? 'dl-guard-secondary' : 'dl-guard-primary') + '" data-act="fresh">Empty my cart and start in ' + escapeHtml(o.to) + '</button>' +
+            '<button type="button" class="dl-guard-secondary" data-act="keep">Keep my cart as it is</button>';
+        var opener = document.activeElement;
+        function done() { guardEl.hidden = true; document.body.style.overflow = ''; if (opener && opener.focus) opener.focus(); }
+        guardEl._keep = function () { done(); if (o.onKeep) o.onKeep(); };
+        actions.onclick = function (e) {
+            var act = e.target.closest('[data-act]');
+            if (!act) return;
+            var a = act.getAttribute('data-act');
+            if (a === 'keep') return guardEl._keep();
+            done();
+            if (a === 'switch') { if (o.onSwitch) o.onSwitch(); }
+            else { cart.clear(); if (o.onFresh) o.onFresh(); }
+        };
+        guardEl.hidden = false;
+        document.body.style.overflow = 'hidden';
+        actions.querySelector('button').focus();
+    }
 
     // Keep other tabs in sync.
     window.addEventListener('storage', function (e) {
@@ -518,6 +600,7 @@
         fetchAll: fetchAll,
         escapeHtml: escapeHtml,
         cart: cart,
+        lookGuard: lookGuard,
         doorSvg: doorSvg,
         doorGuide: doorGuide,
         photos: photos,

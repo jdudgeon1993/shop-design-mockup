@@ -375,14 +375,16 @@
             function loadOrders() {
                 var list = document.getElementById('orders-list');
                 supabase.from('orders')
-                    .select('order_number,status,contact_name,contact_email,contact_phone,shipping_address,customer_notes,subtotal,created_at,order_items(item_type,name_snapshot,sku_snapshot,finish_snapshot,hinge_side,mods_snapshot,unit_price,quantity,line_total)')
+                    .select('order_number,status,contact_name,contact_email,contact_phone,shipping_address,customer_notes,subtotal,created_at,order_items(item_type,name_snapshot,sku_snapshot,mfg_sku_snapshot,vendor_snapshot,finish_snapshot,hinge_side,mods_snapshot,unit_price,quantity,line_total)')
                     .order('created_at', { ascending: false }).limit(15)
                     .then(function (res) {
                         var rows = res.data || [];
                         document.getElementById('orders-empty').hidden = rows.length > 0;
                         list.innerHTML = rows.map(function (o) {
                             var items = (o.order_items || []).map(function (i) {
-                                var extra = [i.finish_snapshot, i.sku_snapshot ? 'Item # ' + i.sku_snapshot : '', i.hinge_side ? 'Hinge ' + i.hinge_side : '']
+                                // Employees see the real maker and its part number (customers only see our brand).
+                                var maker = i.vendor_snapshot ? 'Order from ' + i.vendor_snapshot + (i.mfg_sku_snapshot ? ' # ' + i.mfg_sku_snapshot : '') : '';
+                                var extra = [maker, i.finish_snapshot, i.sku_snapshot && i.sku_snapshot !== i.mfg_sku_snapshot ? 'Our # ' + i.sku_snapshot : '', i.hinge_side ? 'Hinge ' + i.hinge_side : '']
                                     .filter(Boolean).join(' · ');
                                 var mods = (i.mods_snapshot || []).map(function (m) {
                                     return i.item_type === 'collection' ? m.quantity + ' × ' + m.mfg_sku : m.name;
