@@ -118,11 +118,9 @@
         .s3-facts li { font-size: 12.5px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 999px; color: rgba(255,255,255,0.8); }
         .s3-facts b { color: var(--gold); }
         .s3-next { margin: 2px 0 0; font-size: 13px; color: rgba(255,255,255,0.75); }
-        .s3-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-        .s3-form input { flex: 1 1 220px; min-width: 0; padding: 12px 14px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.06); color: var(--white); font: inherit; font-size: 14px; }
-        .s3-form input:focus { outline: none; border-color: var(--gold); }
-        .s3-msg { margin: 0; font-size: 13px; color: var(--gold); }
-        .s3-msg.is-error { color: #ff9a8a; }
+        .line-head { grid-column: 1 / -1; margin: 10px 0 -4px; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+        .s3-shop { align-self: flex-start; margin-top: 6px; }
+        .s3[aria-current="true"] { border-color: var(--gold); }
         .s3-link { font-size: 13px; color: rgba(255,255,255,0.75); }
         .s3-link:hover { color: var(--gold); }
         .partner-label { margin: 0 0 12px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
@@ -249,6 +247,7 @@
         @media (prefers-reduced-motion: reduce) { .card-img.is-loading, .panel-img:not(.dl-photo) { animation: none; } }
         /* Line art: white lines on the dark card, gold when the card is hovered or focused. */
         .card-img.is-line { background: none; position: relative; }
+        .card-img.is-drawn { background: #e9e4da; padding: 8% 14%; box-sizing: border-box; }
         .card-img.is-line.dl-line { background-color: #e9e4da; padding: 14px; box-sizing: border-box; transition: background-color 0.25s; }
         .card:hover .card-img.dl-line, .card:focus-visible .card-img.dl-line { background-color: var(--gold); }
         .card-img.dl-photo { background-size: contain; background-origin: content-box; padding: 10px; box-sizing: border-box; }
@@ -383,22 +382,17 @@
                     <span class="s3-slide" style="background-image:url('/Assets/Images/structure3/reach-in-slate.webp')"></span>
                 </div>
                 <div class="s3-body">
-                    <p class="s3-badge">Exclusively by Design Lab &middot; Coming soon</p>
+                    <p class="s3-badge">Exclusively by Design Lab</p>
                     <h2 class="s3-name" id="s3-name">STRUCTURE<span class="s3-bar" aria-hidden="true"></span>3</h2>
                     <p class="s3-tag">Organization. Framework. Purpose.</p>
                     <p class="s3-copy">Our own line, built by the three people behind Design Lab. Luxury at mid-level pricing: engineered materials that stay true and won&rsquo;t warp or twist, a lifetime build, and matching TAG hardware to finish it off.</p>
                     <ul class="s3-facts">
                         <li><b>Quick Ship</b> colors delivered in 10 days</li>
-                        <li><b>Walk-in</b> &amp; reach-in closets</li>
+                        <li><b>Kitchen, bath</b> &amp; closets</li>
                         <li><b>Lifetime</b> product</li>
                     </ul>
-                    <p class="s3-next">Closets first. Kitchen, bath and garage to follow.</p>
-                    <form class="s3-form" id="s3-form" novalidate>
-                        <label class="sr-only" for="s3-email">Email</label>
-                        <input type="email" id="s3-email" placeholder="you@email.com" autocomplete="email" required>
-                        <button class="btn-primary" type="submit" id="s3-submit">Be first to know</button>
-                    </form>
-                    <p class="s3-msg" id="s3-msg" role="status" hidden></p>
+                    <p class="s3-next" id="s3-next">European frameless cabinets in slab, shaker and lacquer, plus a modular closet system.</p>
+                    <button class="btn-primary s3-shop" type="button" id="s3-shop" disabled>Shop Structure | 3 &rarr;</button>
                     <a class="s3-link" href="https://heyzine.com/flip-book/60855d8229.html" target="_blank" rel="noopener">Flip through the closet lookbook &rarr;</a>
                 </div>
             </article>
@@ -529,6 +523,7 @@
         var SPACES = [
             { key: 'Kitchen', label: 'Kitchen' },
             { key: 'Bath', label: 'Bath' },
+            { key: 'Closet', label: 'Closet' },
             { key: 'Parts', label: 'Fillers, Trim & Accessories' }
         ];
         var WIDTHS = [
@@ -553,8 +548,10 @@
                 { key: 'Drawers', label: 'Drawer Base', test: function (p) { return p.subtype === 'Drawer Base'; } },
                 { key: 'Other', label: 'Vanity Base', test: function (p) { return p.subtype === 'Standard'; } },
                 { key: 'Medicine', label: 'Medicine Cabinet', test: function (p) { return p.subtype === 'Medicine Cabinet'; } },
+                { key: 'Floating', label: 'Floating Vanity', test: function (p) { return p.subtype === 'Floating'; } },
                 { key: 'ADA', label: 'ADA', test: function (p) { return /^ADA/.test(p.subtype || ''); } }
             ],
+            Closet: null, // built from family names at load time
             Parts: null // built from family names at load time
         };
 
@@ -610,7 +607,34 @@
               members: [['1-door-vanity-base-cabinet', 'Doors'], ['3-door-vanity-base-cabinet', 'Doors'], ['4-door-vanity-base-cabinet', 'Doors'],
                         ['2-door-6-drawer-vanity-base-cabinet', 'Doors + drawers'], ['vanity-drawer-base-cabinet', 'Drawers only']] },
             { key: 'medicine', name: 'Medicine Cabinets', image: 'single-door-medicine-cabinet',
-              members: [['single-door-medicine-cabinet', '1 door'], ['double-door-medicine-cabinet', '2 doors']] }
+              members: [['single-door-medicine-cabinet', '1 door'], ['double-door-medicine-cabinet', '2 doors']] },
+            // Structure | 3 (frameless kitchen & bath)
+            { key: 's3-wall', name: 'Wall Cabinets', image: 's3-wall-2-door',
+              hint: { height: '8′ ceilings? Most kitchens use 30″. 9′ ceilings: 36″ or 39″.' },
+              members: [['s3-wall-1-door', '1 door'], ['s3-wall-2-door', '2 doors']] },
+            { key: 's3-wall-short', name: 'Short Wall Cabinets', image: 's3-wall-short',
+              hint: { height: 'For above the fridge, range hood or microwave.', depth: '24″ deep lines up with the front of a fridge.' },
+              members: ['s3-wall-short', 's3-wall-24-deep'] },
+            { key: 's3-wall-lift', name: 'Lift-Up Wall Cabinets', image: 's3-wall-lift',
+              members: [['s3-wall-lift', 'Single lift'], ['s3-wall-double-lift', 'Double lift']] },
+            { key: 's3-base', name: 'Base Cabinets', image: 's3-base-2-door',
+              members: [['s3-base-1-door', '1 door'], ['s3-base-2-door', '2 doors']] },
+            { key: 's3-drawer-base', name: 'Drawer Base Cabinets', image: 's3-drawer-base',
+              members: [['s3-drawer-base', 'Steel drawers'], ['s3-drawer-base-ply', 'Plywood drawers']] },
+            { key: 's3-sink', name: 'Sink Base Cabinets', image: 's3-sink-base',
+              members: [['s3-sink-base', 'Doors'], ['s3-sink-drawer-base', 'Drawers']] },
+            { key: 's3-base-corner', name: 'Corner Cabinets', image: 's3-lazy-susan',
+              members: [['s3-lazy-susan', 'Lazy Susan'], ['s3-base-blind-corner', 'Blind corner base'], ['s3-wall-blind-corner', 'Blind corner wall']] },
+            { key: 's3-base-special', name: 'Specialty Base Cabinets', image: 's3-trash-pullout',
+              members: [['s3-trash-pullout', 'Trash pull-out'], ['s3-base-pantry-pullout', 'Pantry pull-out']] },
+            { key: 's3-tall', name: 'Pantry & Oven Cabinets', image: 's3-pantry',
+              members: [['s3-pantry', 'Pantry'], ['s3-oven-cabinet', 'Oven']] },
+            { key: 's3-vanity-sink', name: 'Vanity Sink Bases', image: 's3-vanity-2-door',
+              members: [['s3-vanity-1-door', 'Doors'], ['s3-vanity-2-door', 'Doors'], ['s3-sink-vanity-drawers', 'Drawers']] },
+            { key: 's3-vanity-drawers', name: 'Vanity Drawer Bases', image: 's3-vanity-drawers',
+              members: [['s3-vanity-drawers', 'Steel drawers'], ['s3-vanity-drawers-ply', 'Plywood drawers']] },
+            { key: 's3-floating', name: 'Floating Vanities', image: 's3-floating-vanity-drawers',
+              members: [['s3-floating-sink-vanity', 'Sink, doors'], ['s3-floating-sink-vanity-drawers', 'Sink, drawers'], ['s3-floating-vanity-drawers', 'Drawers']] }
         ];
         var groupByFamily = {}, labelByFamily = {}, groupByKey = {};
         function initGroups() {
@@ -670,18 +694,42 @@
                 data.upgrades = r[6].data;
                 initGroups();
 
-                // Parts tab: one chip per parts family.
-                TYPES.Parts = Object.keys(data.families).map(function (id) { return data.families[id]; })
-                    .filter(function (f) { return f.kind !== 'cabinet'; })
-                    .sort(function (a, b) { return a.sort_order - b.sort_order; })
-                    .map(function (f) { return { key: 'f' + f.id, label: f.name, test: function (p) { return p.family_id === f.id; } }; });
+                // Closet and Parts tabs: one chip per family.
+                function familyChips(keep) {
+                    return Object.keys(data.families).map(function (id) { return data.families[id]; })
+                        .filter(function (f) { return keep(f.kind); })
+                        .sort(function (a, b) { return a.sort_order - b.sort_order; })
+                        .map(function (f) { return { key: 'f' + f.id, label: f.name, test: function (p) { return p.family_id === f.id; } }; });
+                }
+                TYPES.Closet = familyChips(function (k) { return k === 'closet'; });
+                TYPES.Parts = familyChips(function (k) { return k !== 'cabinet' && k !== 'closet'; });
             });
         }
 
         // ---------- filtering ----------
-        function inSpace(p) {
-            if (state.space === 'Parts') return p.kind !== 'cabinet';
-            return p.kind === 'cabinet' && p.space === state.space;
+        function inSpace(p, space) {
+            space = space || state.space;
+            if (space === 'Closet') return p.kind === 'closet';
+            if (space === 'Parts') return p.kind !== 'cabinet' && p.kind !== 'closet';
+            return p.kind === 'cabinet' && p.space === space;
+        }
+        // In the shop step only what exists in the chosen look counts: spaces and type
+        // chips with nothing to show are hidden (a closet finish has no kitchen, etc.).
+        function inLook(p) {
+            if (!look) return true;
+            var o = data.offers[p.id][look.styleId];
+            return !!(o && o.base != null);
+        }
+        function spaceHas(space) {
+            return data.products.some(function (p) { return inSpace(p, space) && inLook(p); });
+        }
+        function visibleSpaces() {
+            var list = SPACES.filter(function (s) { return spaceHas(s.key); });
+            return list.length ? list : SPACES.slice(0, 1);
+        }
+        function ensureSpace() {
+            var list = visibleSpaces();
+            if (!list.some(function (s) { return s.key === state.space; })) { state.space = list[0].key; state.types = {}; state.widths = {}; }
         }
         function anyOn(obj) { return Object.keys(obj).some(function (k) { return obj[k]; }); }
         function productMatches(p) {
@@ -713,13 +761,17 @@
             return '<button type="button" class="chip" aria-pressed="' + (pressed ? 'true' : 'false') + '"' + (extra || '') + '>' + label + '</button>';
         }
         function renderTabs() {
-            document.getElementById('space-tabs').innerHTML = SPACES.map(function (s) {
+            var list = visibleSpaces();
+            document.getElementById('space-tabs').hidden = list.length < 2;
+            document.getElementById('space-tabs').innerHTML = list.map(function (s) {
                 return '<button type="button" class="space-tab' + (s.key === state.space ? ' is-active' : '') + '" data-space="' + s.key + '">' + esc(s.label) + '</button>';
             }).join('');
         }
         function renderFilters() {
-            var types = TYPES[state.space] || [];
-            document.getElementById('type-title').textContent = state.space === 'Parts' ? 'Category' : 'Cabinet Type';
+            var here = data.products.filter(function (p) { return inSpace(p) && inLook(p); });
+            var types = (TYPES[state.space] || []).filter(function (t) { return state.types[t.key] || here.some(t.test); });
+            document.getElementById('type-title').textContent = state.space === 'Closet' || state.space === 'Parts' ? 'Category' : 'Cabinet Type';
+            document.getElementById('type-group').hidden = !types.length;
             document.getElementById('type-chips').innerHTML = types.map(function (t) {
                 return chip(esc(t.label), state.types[t.key], ' data-type="' + t.key + '"');
             }).join('');
@@ -832,6 +884,16 @@
         function cardImage(g) {
             var path = cardPhoto(g);
             var fallback = '';
+            // No photo yet (new lines like Structure | 3): draw the cabinet in the chosen finish.
+            var p0 = !path && g.products.filter(function (p) { return p.kind === 'cabinet' && Number(p.width) > 0; })
+                .sort(function (a, b) { return Math.abs(Number(a.width) - 30) - Math.abs(Number(b.width) - 30); })[0];
+            if (p0) {
+                var hex = look ? ((finishById(look.styleId, look.finishId) || {}).swatch_hex || '#cfc8bd') : '#cfc8bd';
+                return '<div class="card-img is-drawn" role="img" aria-label="' + esc(g.card.name) + '">' + DL.kitchen.cabinet({
+                    room: p0.room_type, medicine: /Medicine/.test(p0.subtype || ''), w: Number(p0.width),
+                    h: Number(p0.height) || (p0.room_type === 'Wall' ? 30 : 34.5), doors: p0.doors || 0, drawers: p0.drawers || 0, hex: hex
+                }) + '</div>';
+            }
             var isLine = path && path.indexOf('lineart/') === 0;
             return '<div class="card-img' + (path ? ' is-loading' : '') + (isLine ? ' is-line' : '') + '" role="img" aria-label="' + esc(g.card.name) + '"' +
                 (path ? ' data-photo="' + esc(path) + '"' + (isLine ? ' data-photo-mode="mask"' : '') : '') + (isLine ? '' : fallback) + '></div>';
@@ -861,7 +923,7 @@
             var doorPath = fin && DL.photos.pick(rows, { doorSample: true, styleId: sel.styleId, finishId: fin.id, strictFinish: true });
             inset.hidden = !(fin && (doorPath || fin.swatch_hex));
             if (fin) {
-                document.getElementById('p-finish-name').textContent = data.styleById[sel.styleId].name + ' · ' + fin.name;
+                document.getElementById('p-finish-name').textContent = lookName(data.styleById[sel.styleId].name, fin.name);
                 door.style.backgroundColor = fin.swatch_hex || '#ddd';
                 if (doorPath && door.getAttribute('data-photo') !== doorPath) { door.setAttribute('data-photo', doorPath); DL.photos.paint(inset); }
                 if (!doorPath) { door.removeAttribute('data-photo'); door.style.backgroundImage = ''; door.classList.remove('dl-photo'); }
@@ -907,7 +969,7 @@
             var s = data.styleById[sel.styleId], fin = (data.finishesByStyle[sel.styleId] || []).filter(function (x) { return x.id === sel.finishId; })[0];
             var drawer = sel.upgrade ? 'shaker' : s.drawer_profile;
             document.getElementById('p-preview').innerHTML = DL.doorSvg(s.door_profile, drawer, selectedHex(), { label: 'Preview of your selection' }) +
-                '<span><b>' + esc(s.name) + (fin ? ' · ' + esc(fin.name) : '') + '</b><small>' + esc(s.tagline || '') +
+                '<span><b>' + esc(lookName(s.name, fin && fin.name)) + '</b><small>' + esc(s.tagline || '') +
                 (sel.upgrade ? ' · 5-piece drawer fronts' : '') + '</small></span>';
         }
         function openGuide() {
@@ -916,6 +978,7 @@
 
         // Name a variant by what sets it apart from the others of the same width.
         function configLabel(p, siblings) {
+            if (p.kind !== 'cabinet') return p.description;
             var label = !p.subtype || p.subtype === 'Standard' ? 'Standard' : p.subtype;
             if (label === 'ADA') label = 'ADA (' + Number(p.height) + '" high)';
             var twins = siblings.filter(function (x) { return x !== p && (x.subtype || '') === (p.subtype || ''); });
@@ -967,6 +1030,9 @@
             products = products.filter(function (p) {
                 return Object.keys(data.offers[p.id]).some(function (id) { return data.offers[p.id][id].base != null; });
             });
+            // With a look chosen, only offer sizes that come in it (one look per cart).
+            var inThisLook = products.filter(inLook);
+            if (inThisLook.length) products = inThisLook;
             if (!fam || !products.length) return;
             var typeOrder = g ? g.members.map(function (m) { return Array.isArray(m) ? m[1] : ''; }) : [];
             function isAda(p) { return /^ADA/.test(p.subtype || ''); }
@@ -1124,7 +1190,7 @@
             document.getElementById('p-style-opt').hidden = locked;
             if (locked) {
                 var lf = finishes.filter(function (f) { return f.id === sel.finishId; })[0];
-                document.getElementById('p-look-name').textContent = style.name + (lf ? ' · ' + lf.name : '');
+                document.getElementById('p-look-name').textContent = lookName(style.name, lf && lf.name);
                 document.getElementById('p-look-sub').textContent = style.tagline || '';
             }
             document.getElementById('p-finish-opt').hidden = !finishes.length || locked;
@@ -1189,7 +1255,7 @@
             var fin = finishesFor().filter(function (f) { return f.id === sel.finishId; })[0];
             var up = sel.upgrade ? upgradeFor() : null;
             var mods = sel.modList.filter(function (m) { return sel.mods[m.modification_id]; });
-            var detail = [style.name + (fin ? ' · ' + fin.name : ''), p.description];
+            var detail = [lookName(style.name, fin && fin.name), p.description];
             if (up) detail.push(up.upgrade.name);
             if (sel.hinge) detail.push('Hinge ' + (sel.hinge === 'L' ? 'left' : 'right'));
             mods.forEach(function (m) { detail.push(m.name); });
@@ -1200,7 +1266,7 @@
                 product_id: p.id,
                 finish_id: finishId,
                 vendor_id: vendorOfStyle(sel.styleId),
-                look_label: style.name + ' · ' + lookFin.name,
+                look_label: lookName(style.name, lookFin.name),
                 upgrade_id: up ? up.upgrade.id : null,
                 hinge_side: sel.hinge,
                 modification_ids: mods.map(function (m) { return m.modification_id; }),
@@ -1217,13 +1283,21 @@
             if (!DL.cart.add(line)) {
                 // A different finish than the cart's: switch the cart, start over, or keep it.
                 DL.lookGuard({
-                    to: line.look_label, toVendorId: line.vendor_id,
+                    to: line.look_label, toVendorId: line.vendor_id, canSwitch: cartFitsStyle(sel.styleId),
                     onSwitch: function () { DL.cart.switchFinish(line.finish_id, line.look_label); DL.cart.add(line); adoptLook(sel.styleId, line.finish_id); addedToast(); },
                     onFresh: function () { DL.cart.add(line); adoptLook(sel.styleId, line.finish_id); addedToast(); }
                 });
                 return;
             }
             addedToast();
+        }
+        // True when every cabinet already in the cart also comes in this door style.
+        function cartFitsStyle(styleId) {
+            return DL.cart.lines().every(function (l) {
+                if (l.type !== 'product') return true;
+                var o = data.offers[l.product_id] && data.offers[l.product_id][styleId];
+                return !!(o && o.base != null);
+            });
         }
         // The wizard's chosen look follows the cart when the cart changes look.
         function adoptLook(styleId, finishId) {
@@ -1331,6 +1405,10 @@
         function finishById(styleId, finishId) {
             return (data.finishesByStyle[styleId] || []).filter(function (f) { return f.id === finishId; })[0];
         }
+        // "Mira · Palo Santo", but just "White Closet" when the style is named for its only finish.
+        function lookName(styleName, finName) {
+            return !finName || styleName.indexOf(finName) === 0 ? styleName : styleName + ' · ' + finName;
+        }
         function vendorOfStyle(styleId) {
             var line = data.lines[data.styleById[styleId].line_id];
             return line ? line.vendor_id : null;
@@ -1358,7 +1436,7 @@
         }
 
         var STEP_TEXT = {
-            mfr: ['Step 1 of 4', 'Choose your manufacturer', 'Our own Structure | 3 line is on its way. Until then, shop the partner lines we trust.'],
+            mfr: ['Step 1 of 4', 'Choose your manufacturer', 'Start with our own Structure | 3 line, or shop the partner lines we trust.'],
             style: ['Step 2 of 4', 'Choose your door style & finish', 'This sets the look of every cabinet you’ll see next. You can change it anytime.'],
             shop: ['Step 3 of 4', 'Every cabinet, your way.', '']
         };
@@ -1390,12 +1468,13 @@
             if (name === 'style') renderStylePick();
             if (name === 'shop') {
                 state.styles = lockedStyles();
+                ensureSpace();
                 document.getElementById('style-group').hidden = true;
                 renderLookBar();
                 render();
                 paintKitchen();
                 var fin = finishById(look.styleId, look.finishId);
-                document.getElementById('step-sub').textContent = 'Showing ' + data.styleById[look.styleId].name + ' in ' + fin.name +
+                document.getElementById('step-sub').textContent = 'Showing ' + lookName(data.styleById[look.styleId].name, fin.name) +
                     '. Filter by type and width, then pick your size.';
             }
             paintStepper();
@@ -1404,8 +1483,14 @@
             if (how) window.scrollTo(0, 0);
         }
 
+        // Structure | 3 is Design Lab's own brand: it gets the featured card, never a partner tile.
+        function s3Vendor() { return data.vendors.filter(function (v) { return v.code === 'S3'; })[0] || null; }
         function renderMfr() {
-            var cards = data.vendors.map(function (v) {
+            var s3 = s3Vendor(), s3Btn = document.getElementById('s3-shop');
+            s3Btn.disabled = !(s3 && stylesOfVendor(s3.id).length);
+            if (s3) s3Btn.setAttribute('data-vendor', s3.id);
+            document.querySelector('#step-mfr .s3').setAttribute('aria-current', String(!!s3 && pendingVendor === s3.id));
+            var cards = data.vendors.filter(function (v) { return v !== s3; }).map(function (v) {
                 var styles = stylesOfVendor(v.id);
                 var finCount = styles.reduce(function (n, s) { return n + (data.finishesByStyle[s.id] || []).length; }, 0);
                 var lines = Object.keys(data.lines).map(function (k) { return data.lines[k]; }).filter(function (l) { return l.vendor_id === v.id; });
@@ -1436,16 +1521,20 @@
             var styles = stylesOfVendor(vendorId);
             if (pickStyleId == null && look && styles.some(function (s) { return s.id === look.styleId; })) pickStyleId = look.styleId;
             var grid = document.getElementById('style-grid');
+            var vendor = data.vendors.filter(function (v) { return v.id === vendorId; })[0];
+            var headed = !!vendor && vendor.code === 'S3', lastLine = null;
             grid.innerHTML = styles.map(function (s) {
+                var head = '';
+                if (headed && s.line_id !== lastLine) { lastLine = s.line_id; head = '<h2 class="line-head">' + esc(data.lines[s.line_id].name) + '</h2>'; }
                 var path = doorSamplePath(s.id, defaultFinish(s.id), false);
                 var line = data.lines[s.line_id];
                 var min = styleMinPrice(s.id);
                 var art = path
                     ? '<div class="style-art" data-photo="' + esc(path) + '" role="img" aria-label="' + esc(s.name) + ' door"></div>'
                     : '<div class="style-art is-drawing">' + DL.doorSvg(s.door_profile, s.drawer_profile, styleHex(s.id), { label: s.name }) + '</div>';
-                return '<button type="button" class="pick-card" data-pick-style="' + s.id + '" aria-pressed="' + (pickStyleId === s.id) + '">' + art +
+                return head + '<button type="button" class="pick-card" data-pick-style="' + s.id + '" aria-pressed="' + (pickStyleId === s.id) + '">' + art +
                     '<div class="pc-body"><h2>' + esc(s.name) + '</h2>' +
-                    '<p class="pc-meta">' + esc(s.tagline || '') + (line ? ' · ' + esc(line.name) + ' line' : '') + '</p>' +
+                    '<p class="pc-meta">' + esc(s.tagline || '') + (line && !headed ? ' · ' + esc(line.name) + ' line' : '') + '</p>' +
                     '<p>' + esc(s.customer_description || '') + '</p>' + dots(s.id) +
                     '<span class="pc-cta">' + (min != null ? 'Cabinets from ' + fm(min) + ' · ' : '') + 'Choose ' + esc(s.name) + ' &rarr;</span></div></button>';
             }).join('');
@@ -1474,7 +1563,7 @@
             document.getElementById('look-bar').innerHTML =
                 '<span class="swatch-dot" style="background:' + esc(fin.swatch_hex || '#777') + '"></span>' +
                 '<span class="crumbs">' + (vendor ? '<span>' + esc(vendor.name) + '</span><span>&rsaquo;</span>' : '') +
-                '<b>' + esc(s.name) + '</b><span>&rsaquo;</span><b>' + esc(fin.name) + '</b></span>' +
+                '<b>' + esc(s.name) + '</b>' + (lookName(s.name, fin.name) === s.name ? '' : '<span>&rsaquo;</span><b>' + esc(fin.name) + '</b>') + '</span>' +
                 '<span class="actions"><button class="link-btn" type="button" data-goto="style">Change style or finish</button>' +
                 '<button class="link-btn" type="button" data-goto="mfr">Start over</button></span>';
         }
@@ -1515,9 +1604,9 @@
                 };
                 var current = DL.cart.look();
                 if (current && current.finish_id !== newFinish) {
-                    var label = data.styleById[newStyle].name + ' · ' + finishById(newStyle, newFinish).name;
+                    var label = lookName(data.styleById[newStyle].name, finishById(newStyle, newFinish).name);
                     DL.lookGuard({
-                        to: label, toVendorId: vendorOfStyle(newStyle),
+                        to: label, toVendorId: vendorOfStyle(newStyle), canSwitch: cartFitsStyle(newStyle),
                         onSwitch: function () { DL.cart.switchFinish(newFinish, label); go(); },
                         onFresh: go
                     });
@@ -1529,10 +1618,11 @@
         // The kitchen (or bathroom) preview builds up as cabinets go into the cart.
         function paintKitchen() {
             if (step !== 'shop') return;
+            if (state.space === 'Closet') { document.getElementById('kitchen-strip').hidden = true; return; }
             DL.kitchen.render(document.getElementById('kitchen-strip'), { space: state.space === 'Bath' ? 'Bath' : 'Kitchen' });
         }
         DL.cart.onChange(paintKitchen);
-        // Structure | 3: rotate the closet photos and collect "be first to know" emails.
+        // Structure | 3: rotate the closet photos.
         (function () {
             var slides = document.querySelectorAll('.s3-slide'), i = 0;
             if (slides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -1541,22 +1631,6 @@
                     slides[i].classList.remove('is-active'); i = (i + 1) % slides.length; slides[i].classList.add('is-active');
                 }, 5000);
             }
-            var form = document.getElementById('s3-form'), input = document.getElementById('s3-email'),
-                btn = document.getElementById('s3-submit'), msg = document.getElementById('s3-msg');
-            function say(text, isError) { msg.textContent = text; msg.hidden = false; msg.classList.toggle('is-error', !!isError); }
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                var email = input.value.trim();
-                if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say('Please enter a valid email address.', true); input.focus(); return; }
-                btn.disabled = true; btn.textContent = 'Saving…';
-                sb.from('launch_signups').insert({ email: email, line: 'structure-3', source: 'diy-step-1' }).then(function (res) {
-                    btn.disabled = false; btn.textContent = 'Be first to know';
-                    // 23505 = already signed up, which is still a yes.
-                    if (res.error && res.error.code !== '23505') { say('Sorry, that didn’t go through. Please try again.', true); return; }
-                    form.hidden = true;
-                    say('You’re on the list. We’ll email you the moment Structure | 3 opens.');
-                });
-            });
         })();
         document.getElementById('step-guide-link').addEventListener('click', openGuide);
         document.getElementById('p-look-change').addEventListener('click', function () {
@@ -1594,7 +1668,7 @@
             var fam = slug && Object.keys(data.families).map(function (k) { return data.families[k]; }).filter(function (f) { return f.slug === slug; })[0];
             if (fam) {
                 var first = (data.byFamily[fam.id] || [])[0];
-                if (first) state.space = first.kind !== 'cabinet' ? 'Parts' : first.space;
+                if (first) state.space = first.kind === 'closet' ? 'Closet' : first.kind !== 'cabinet' ? 'Parts' : first.space;
             }
             // ?q=... prefills the search; ?focus=search jumps straight to it (homepage search icon).
             var q = params.get('q');
