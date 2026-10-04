@@ -117,6 +117,17 @@ app.post('/api/jitsi-token', async (req, res) => {
     return res.status(401).json({ error: 'Invalid or expired session' });
   }
 
+  // Only employees get moderator rights (mute, remove people, end the call).
+  // Anyone else who is signed in gets an ordinary participant token; new
+  // clients with no login at all join the room as guests without one.
+  let employee = false;
+  try {
+    employee = await isEmployee(accessToken, user.id);
+  } catch (err) {
+    console.error('Role lookup failed:', err);
+    return res.status(502).json({ error: 'Could not verify role' });
+  }
+
   const now = Math.floor(Date.now() / 1000);
   const payload = {
     aud: 'jitsi',
@@ -128,8 +139,10 @@ app.post('/api/jitsi-token', async (req, res) => {
     exp: now + TOKEN_TTL_SECONDS,
     context: {
       user: {
+        id: user.id,
         name: user.email,
-        moderator: true
+        email: user.email,
+        moderator: employee
       }
     }
   };
@@ -145,7 +158,7 @@ app.post('/api/jitsi-token', async (req, res) => {
     return res.status(500).json({ error: 'Could not sign token' });
   }
 
-  res.json({ jwt: token, expiresIn: TOKEN_TTL_SECONDS });
+  res.json({ jwt: token, expiresIn: TOKEN_TTL_SECONDS, moderator: employee });
 });
 
 app.get('/healthz', (req, res) => res.send('ok'));

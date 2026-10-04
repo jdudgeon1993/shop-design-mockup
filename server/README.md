@@ -12,7 +12,10 @@ only thing that ever touches the key.
 ## Endpoints
 
 - `POST /api/jitsi-token` — requires `Authorization: Bearer <supabase access token>`.
-  Verifies the token against Supabase, then returns `{ jwt, expiresIn }`.
+  Verifies the token against Supabase, then returns `{ jwt, expiresIn, moderator }`.
+  `moderator` is true only when the user's `profiles.role` is `employee`; any
+  other signed-in user gets a plain participant token. Clients without a
+  login don't call this at all and join as guests.
 - `GET /healthz` — plain liveness check.
 
 ## Deploying on Railway
