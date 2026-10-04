@@ -1193,10 +1193,14 @@
             if (up) detail.push(up.upgrade.name);
             if (sel.hinge) detail.push('Hinge ' + (sel.hinge === 'L' ? 'left' : 'right'));
             mods.forEach(function (m) { detail.push(m.name); });
-            DL.cart.add({
+            var finishId = fin ? fin.id : (data.finishesByStyle[sel.styleId] || [])[0].id;
+            var lookFin = fin || (data.finishesByStyle[sel.styleId] || [])[0];
+            var line = {
                 type: 'product',
                 product_id: p.id,
-                finish_id: fin ? fin.id : (data.finishesByStyle[sel.styleId] || [])[0].id,
+                finish_id: finishId,
+                vendor_id: vendorOfStyle(sel.styleId),
+                look_label: style.name + ' · ' + lookFin.name,
                 upgrade_id: up ? up.upgrade.id : null,
                 hinge_side: sel.hinge,
                 modification_ids: mods.map(function (m) { return m.modification_id; }),
@@ -1209,7 +1213,25 @@
                     unit_price: unitPrice(),
                     link: '/diy-wizard/?family=' + encodeURIComponent(data.families[p.family_id].slug)
                 }
-            });
+            };
+            if (!DL.cart.add(line)) {
+                // A different finish than the cart's: switch the cart, start over, or keep it.
+                DL.lookGuard({
+                    to: line.look_label, toVendorId: line.vendor_id,
+                    onSwitch: function () { DL.cart.switchFinish(line.finish_id, line.look_label); DL.cart.add(line); adoptLook(sel.styleId, line.finish_id); addedToast(); },
+                    onFresh: function () { DL.cart.add(line); adoptLook(sel.styleId, line.finish_id); addedToast(); }
+                });
+                return;
+            }
+            addedToast();
+        }
+        // The wizard's chosen look follows the cart when the cart changes look.
+        function adoptLook(styleId, finishId) {
+            look = { vendorId: vendorOfStyle(styleId), styleId: styleId, finishId: finishId };
+            saveLook();
+        }
+        function addedToast() {
+            var p = sel.product;
             var toast = document.getElementById('toast');
             document.getElementById('toast-text').textContent = 'Added ' + sel.qty + ' × ' + data.families[p.family_id].name;
             toast.classList.add('show');
@@ -1483,11 +1505,25 @@
             }
             var pf = e.target.closest('[data-pick-finish]');
             if (pf) {
-                look = { vendorId: vendorOfStyle(pickStyleId), styleId: pickStyleId, finishId: Number(pf.getAttribute('data-pick-finish')) };
-                saveLook();
-                state.types = {}; state.widths = {};
-                showStep('shop', 'push');
-                if (pendingFamily) { var f = pendingFamily; pendingFamily = null; openFamily(f.id); }
+                var newFinish = Number(pf.getAttribute('data-pick-finish')), newStyle = pickStyleId;
+                var go = function () {
+                    look = { vendorId: vendorOfStyle(newStyle), styleId: newStyle, finishId: newFinish };
+                    saveLook();
+                    state.types = {}; state.widths = {};
+                    showStep('shop', 'push');
+                    if (pendingFamily) { var f = pendingFamily; pendingFamily = null; openFamily(f.id); }
+                };
+                var current = DL.cart.look();
+                if (current && current.finish_id !== newFinish) {
+                    var label = data.styleById[newStyle].name + ' · ' + finishById(newStyle, newFinish).name;
+                    DL.lookGuard({
+                        to: label, toVendorId: vendorOfStyle(newStyle),
+                        onSwitch: function () { DL.cart.switchFinish(newFinish, label); go(); },
+                        onFresh: go
+                    });
+                    return;
+                }
+                go();
             }
         });
         // The kitchen (or bathroom) preview builds up as cabinets go into the cart.

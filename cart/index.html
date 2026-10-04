@@ -159,6 +159,9 @@
         .shop-footer a:hover { color: var(--gold); }
 
         [hidden] { display: none !important; }
+            .look-line { margin: 0 0 14px; font-size: 15px; color: rgba(245,241,234,.85); }
+        .look-line strong { color: var(--gold, #d4b07a); }
+        .look-line a { margin-left: 8px; color: var(--gold, #d4b07a); }
     </style>
 </head>
 <body>
@@ -187,6 +190,8 @@
 
             <div class="layout" id="layout" hidden>
                 <div>
+                    <p class="look-line" id="look-line" hidden>Your look: <strong id="look-name"></strong> <a href="/diy-wizard/?step=mfr">Change look</a></p>
+                    <p class="notice" id="mixed-notice" hidden>An order is built in one finish from one line. Your cart has items in more than one, so remove the ones that don't match before submitting.</p>
                     <p class="notice" id="price-notice" hidden></p>
                     <div class="lines" id="lines"></div>
                 </div>
@@ -329,6 +334,13 @@
             if (!lines.length) return;
             document.getElementById('lines').innerHTML = lines.map(function (l) { return lineHtml(l, true); }).join('');
             paintLinePhotos(document.getElementById('lines'));
+            // One look per order: name it, and flag an older cart that mixes finishes.
+            var finishes = {}; lines.forEach(function (l) { finishes[l.finish_id] = l.look_label || true; });
+            var mixed = Object.keys(finishes).length > 1;
+            var label = !mixed && lines[0].look_label;
+            document.getElementById('look-line').hidden = !label;
+            if (label) document.getElementById('look-name').textContent = label;
+            document.getElementById('mixed-notice').hidden = !mixed;
             // Unavailable lines can't be ordered, so they don't count toward the estimate.
             var orderable = lines.filter(function (l) { return !l.unavailable; });
             var count = orderable.reduce(function (n, l) { return n + l.quantity; }, 0);
@@ -382,6 +394,11 @@
             }
             var lines = DL.cart.lines();
             if (!lines.length) return;
+            if (lines.some(function (l) { return l.finish_id !== lines[0].finish_id; })) {
+                err.textContent = 'An order can only be in one finish. Remove the items that don’t match, then submit.';
+                err.hidden = false;
+                return;
+            }
             if (lines.some(function (l) { return l.unavailable; })) {
                 err.textContent = 'Please remove the items marked unavailable before submitting.';
                 err.hidden = false;
