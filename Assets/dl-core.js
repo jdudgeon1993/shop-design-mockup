@@ -159,13 +159,17 @@
             guardEl.addEventListener('keydown', function (e) { if (e.key === 'Escape') guardEl._keep(); });
         }
         var sameMaker = current && current.vendor_id != null && current.vendor_id === o.toVendorId;
+        // Switching only works when every item in the cart also comes in the new look
+        // (a kitchen cabinet has no closet finish, for one). Callers say so with canSwitch.
+        var canSwitch = sameMaker && o.canSwitch !== false;
         var from = current && current.label ? current.label : 'another finish';
         guardEl.querySelector('#dl-guard-text').innerHTML = 'Your cart is in <strong>' + escapeHtml(from) + '</strong>. An order is built in one finish from one line, so everything in it matches. ' +
-            (sameMaker ? 'Switch the whole cart to <strong>' + escapeHtml(o.to) + '</strong>, or start a new cart?' :
+            (canSwitch ? 'Switch the whole cart to <strong>' + escapeHtml(o.to) + '</strong>, or start a new cart?' :
+                sameMaker ? 'Not everything in your cart comes in <strong>' + escapeHtml(o.to) + '</strong>, so it needs its own cart.' :
                 '<strong>' + escapeHtml(o.to) + '</strong> is a different line, so it needs its own cart.');
         var actions = guardEl.querySelector('.dl-guard-actions');
-        actions.innerHTML = (sameMaker ? '<button type="button" class="dl-guard-primary" data-act="switch">Switch my cart to ' + escapeHtml(o.to) + '</button>' : '') +
-            '<button type="button" class="' + (sameMaker ? 'dl-guard-secondary' : 'dl-guard-primary') + '" data-act="fresh">Empty my cart and start in ' + escapeHtml(o.to) + '</button>' +
+        actions.innerHTML = (canSwitch ? '<button type="button" class="dl-guard-primary" data-act="switch">Switch my cart to ' + escapeHtml(o.to) + '</button>' : '') +
+            '<button type="button" class="' + (canSwitch ? 'dl-guard-secondary' : 'dl-guard-primary') + '" data-act="fresh">Empty my cart and start in ' + escapeHtml(o.to) + '</button>' +
             '<button type="button" class="dl-guard-secondary" data-act="keep">Keep my cart as it is</button>';
         var opener = document.activeElement;
         function done() { guardEl.hidden = true; document.body.style.overflow = ''; if (opener && opener.focus) opener.focus(); }
