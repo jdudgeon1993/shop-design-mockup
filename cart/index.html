@@ -289,8 +289,10 @@
                     ? '<div class="qty"><button type="button" data-qty="-1" aria-label="Decrease">&minus;</button><span>' + l.quantity +
                       '</span><button type="button" data-qty="1" aria-label="Increase">+</button></div>'
                     : '<span class="each">Qty ' + l.quantity + '</span>') +
-                '<div class="line-price">' + (l.quantity > 1 ? '<span class="each">' + fm(d.unit_price) + ' each</span>' : '') +
-                '<strong>' + fm((d.unit_price || 0) * l.quantity) + '</strong></div></div></div></article>';
+                (d.unit_price != null
+                    ? '<div class="line-price">' + (l.quantity > 1 ? '<span class="each">' + fm(d.unit_price) + ' each</span>' : '') +
+                      '<strong>' + fm(d.unit_price * l.quantity) + '</strong></div>'
+                    : '') + '</div></div></article>';
         }
 
         var finishStyles = null; // finish id -> door style id
@@ -344,11 +346,13 @@
             // Unavailable lines can't be ordered, so they don't count toward the estimate.
             var orderable = lines.filter(function (l) { return !l.unavailable; });
             var count = orderable.reduce(function (n, l) { return n + l.quantity; }, 0);
+            // Prices hidden (public) -> no total, just "Pricing coming soon".
+            var priced = orderable.every(function (l) { return l.display.unit_price != null; });
             var sub = orderable.reduce(function (n, l) { return n + (l.display.unit_price || 0) * l.quantity; }, 0);
             document.getElementById('sum-count').textContent = count + (count === 1 ? ' item' : ' items') +
                 (orderable.length < lines.length ? ' (excludes unavailable)' : '');
-            document.getElementById('sum-sub').textContent = fm(sub);
-            document.getElementById('sum-total').textContent = fm(sub);
+            document.getElementById('sum-sub').textContent = priced ? fm(sub) : '';
+            document.getElementById('sum-total').textContent = priced ? fm(sub) : DL.prices.COMING_SOON;
         }
 
         document.getElementById('lines').addEventListener('click', function (e) {
@@ -437,7 +441,8 @@
             document.getElementById('c-lines').innerHTML = lines.map(function (l) { return lineHtml(l, false); }).join('');
             paintLinePhotos(document.getElementById('c-lines'));
             // The server's total is the one that counts.
-            document.getElementById('c-total').textContent = fm(result.subtotal);
+            var total = DL.prices.read(result.subtotal);
+            document.getElementById('c-total').textContent = total != null ? fm(total) : 'We\u2019ll send pricing with your invoice';
             window.scrollTo(0, 0);
         }
 
@@ -461,7 +466,7 @@
                 r[0].data.forEach(function (f) { styleOf[f.id] = f.door_style_id; });
                 var changed = 0, gone = 0;
                 DL.cart.lines().forEach(function (l) {
-                    var style = styleOf[l.finish_id], price = null;
+                    var style = styleOf[l.finish_id], price = null, offered = false;
                     if (l.type === 'product') {
                         var offer = r[1].data.filter(function (o) {
                             return o.product_id === l.product_id && o.door_style_id === style && (o.upgrade_id || null) === (l.upgrade_id || null);
@@ -470,19 +475,24 @@
                             return r[2].data.filter(function (m) { return m.product_id === l.product_id && m.modification_id === id; })[0];
                         });
                         if (offer && mods.every(Boolean)) {
-                            price = Number(offer.retail_price) + mods.reduce(function (n, m) { return n + Number(m.retail_price); }, 0);
+                            offered = true;
+                            var parts = [offer].concat(mods).map(function (x) { return DL.prices.read(x.retail_price); });
+                            price = parts.some(function (x) { return x == null; }) ? null : parts.reduce(function (n, x) { return n + x; }, 0);
                         }
                     } else {
                         var c = r[3].data.filter(function (x) { return x.collection_id === l.collection_id && x.door_style_id === style; })[0];
-                        if (c) price = Number(c.flat_price);
+                        if (c) { offered = true; price = DL.prices.read(c.flat_price); }
                     }
-                    if (price == null) {
+                    if (!offered) {
                         if (!l.unavailable) { gone++; DL.cart.update(l.id, function (x) { x.unavailable = true; }); }
                         return;
                     }
-                    price = Math.round(price * 100) / 100;
-                    if (Math.abs(price - (l.display.unit_price || 0)) > 0.004 || l.unavailable) {
-                        changed++;
+                    if (price != null) price = Math.round(price * 100) / 100;
+                    var old = l.display.unit_price == null ? null : l.display.unit_price;
+                    var differs = price == null || old == null ? price !== old : Math.abs(price - old) > 0.004;
+                    if (differs || l.unavailable) {
+                        // Only a real price moving is worth a notice (not prices being hidden or shown).
+                        if (price != null && old != null && differs) changed++;
                         DL.cart.update(l.id, function (x) { x.display.unit_price = price; delete x.unavailable; });
                     }
                 });

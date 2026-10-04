@@ -30,6 +30,20 @@
         return page(0);
     }
 
+    // ---------- prices ----------
+    // No prices for the public yet ("Pricing coming soon"). The database only returns
+    // them to signed-in employees, and even then they stay hidden until the employee
+    // turns on "Show pricing" in the dashboard (a per-browser switch).
+    var PRICES_KEY = 'dl_show_prices_v1';
+    var prices = {
+        COMING_SOON: 'Pricing coming soon',
+        shown: function () { try { return localStorage.getItem(PRICES_KEY) === '1'; } catch (e) { return false; } },
+        set: function (on) { try { if (on) localStorage.setItem(PRICES_KEY, '1'); else localStorage.removeItem(PRICES_KEY); } catch (e) {} },
+        // A price from the database, or null when prices are hidden or missing.
+        read: function (v) { return prices.shown() && v != null && v !== '' && !isNaN(Number(v)) ? Number(v) : null; },
+        text: function (n) { return n != null && !isNaN(n) ? formatMoney(n) : prices.COMING_SOON; }
+    };
+
     function escapeHtml(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -65,8 +79,11 @@
         count: function () {
             return readCart().reduce(function (n, l) { return n + (l.quantity || 0); }, 0);
         },
+        // null when any line has no price (prices hidden).
         subtotal: function () {
-            return readCart().reduce(function (n, l) { return n + (l.display.unit_price || 0) * (l.quantity || 0); }, 0);
+            var lines = readCart();
+            if (lines.some(function (l) { return l.display.unit_price == null; })) return null;
+            return lines.reduce(function (n, l) { return n + l.display.unit_price * (l.quantity || 0); }, 0);
         },
         // One look per cart (Design Lab rule): every line shares one finish, which
         // also means one door style and one maker. look() is that finish's id and
@@ -600,6 +617,7 @@
 
     window.DL = {
         supabase: supabase,
+        prices: prices,
         formatMoney: formatMoney,
         fetchAll: fetchAll,
         escapeHtml: escapeHtml,
