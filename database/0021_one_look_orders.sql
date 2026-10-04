@@ -1,6 +1,6 @@
 -- 0021: one look per order, and employees see the real maker.
 --
--- 1. order_items.vendor_snapshot: who actually makes the item (CNC, Nextar...).
+-- 1. order_items.vendor_snapshot: who actually makes the item (the real maker behind the brand).
 --    Customers only ever see our brand names (Luxor, Bedford, Structure | 3);
 --    the team needs the maker to place the order with them.
 -- 2. place_order() refuses a cart that mixes finishes. A finish belongs to one
