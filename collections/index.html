@@ -9,7 +9,7 @@
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curated Collections - Design Lab</title>
-    <meta name="description" content="Designer-planned kitchens and baths at one flat price. Choose your door style and finish; every piece arrives matched.">
+    <meta name="description" content="Designer-planned kitchens and baths, ordered as one set. Choose your door style and finish; every piece arrives matched.">
     <meta name="theme-color" content="#1a1a1a">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
@@ -173,7 +173,7 @@
         <section id="list-view" hidden>
             <p class="kicker">Curated Collections</p>
             <h1 class="intro-heading">Designed together. Priced together.</h1>
-            <p class="intro-sub">Complete, pre-planned sets at one flat price, built from the same cabinets as our DIY Shop. Choose your door style and finish, and every piece arrives matched.</p>
+            <p class="intro-sub">Complete, pre-planned sets built from the same cabinets as our DIY Shop. Choose your door style and finish, and every piece arrives matched.</p>
             <div class="list" id="list"></div>
         </section>
 
@@ -244,7 +244,7 @@
                             description: row.description, space: row.space, hero: row.hero_image_url, gallery: row.gallery_urls || [], offers: [] };
                         data.collections.push(c);
                     }
-                    c.offers.push({ door_style_id: row.door_style_id, door_style: row.door_style, flat: Number(row.flat_price), individual: Number(row.individual_price) });
+                    c.offers.push({ door_style_id: row.door_style_id, door_style: row.door_style, flat: DL.prices.read(row.flat_price), individual: DL.prices.read(row.individual_price) });
                 });
                 var ids = data.collections.map(function (c) { return c.id; });
                 return Promise.all([
@@ -274,7 +274,7 @@
         }
 
         function cheapest(c) {
-            return c.offers.reduce(function (best, o) { return !best || o.flat < best.flat ? o : best; }, null);
+            return c.offers.reduce(function (best, o) { return !best || (o.flat != null && (best.flat == null || o.flat < best.flat)) ? o : best; }, null);
         }
         function itemCount(c) {
             return (data.items[c.id] || []).reduce(function (n, i) { return n + i.quantity; }, 0);
@@ -306,12 +306,13 @@
             document.getElementById('list-view').hidden = false;
             document.getElementById('list').innerHTML = data.collections.map(function (c) {
                 var o = cheapest(c);
-                var pct = Math.round((1 - o.flat / o.individual) * 100);
+                var pct = o.flat != null && o.individual ? Math.round((1 - o.flat / o.individual) * 100) : null;
                 return '<a class="coll-card" href="?c=' + encodeURIComponent(c.slug) + '" data-slug="' + esc(c.slug) + '">' +
                     (c.hero ? '<img src="' + esc(c.hero) + '" alt="" loading="lazy">' : '<div class="coll-scene">' + sceneSvg(c, defaultHex(c)) + '</div>') + '<div class="shade"></div>' +
                     '<div class="info"><span class="space">' + esc(c.space) + ' · ' + itemCount(c) + ' pieces</span>' +
                     '<h2>' + esc(c.name) + '</h2><p>' + esc(c.tagline || '') + '</p>' +
-                    '<div class="price-row">From <strong>' + fm(o.flat) + '</strong><span class="save-pill">Save ' + pct + '% vs. separately</span></div>' +
+                    (o.flat != null ? '<div class="price-row">From <strong>' + fm(o.flat) + '</strong>' + (pct > 0 ? '<span class="save-pill">Save ' + pct + '% vs. separately</span>' : '') + '</div>'
+                        : '<div class="price-row">' + DL.prices.COMING_SOON + '</div>') +
                     '</div></a>';
             }).join('');
             document.title = 'Curated Collections - Design Lab';
@@ -370,7 +371,7 @@
                 var hex = x.door_style_id === sel.styleId && selFin ? selFin.swatch_hex : (fs.length ? fs[Math.min(1, fs.length - 1)].swatch_hex : null);
                 return '<button type="button" class="style-opt" data-style="' + x.door_style_id + '" aria-pressed="' + (x.door_style_id === sel.styleId) + '">' +
                     DL.doorSvg(st.door_profile, st.drawer_profile, hex, { label: x.door_style }) +
-                    '<span><b>' + esc(x.door_style) + '</b><small>' + esc(st.tagline || '') + '</small><span class="price">' + fm(x.flat) + '</span></span></button>';
+                    '<span><b>' + esc(x.door_style) + '</b><small>' + esc(st.tagline || '') + '</small>' + (x.flat != null ? '<span class="price">' + fm(x.flat) + '</span>' : '') + '</span></button>';
             }).join('');
             document.getElementById('d-style-desc').textContent = (data.styles[sel.styleId] || {}).customer_description || '';
             var fins = data.finishesByStyle[sel.styleId] || [];
@@ -380,9 +381,10 @@
                 return '<button type="button" class="swatch" data-finish="' + f.id + '" aria-pressed="' + (f.id === sel.finishId) + '" title="' + esc(f.name) +
                     '" aria-label="' + esc(f.name) + '" style="background:' + esc(f.swatch_hex || '#777') + '"></button>';
             }).join('');
-            document.getElementById('d-flat').textContent = fm(o.flat);
-            document.getElementById('d-compare').innerHTML = 'Bought separately <s>' + fm(o.individual) + '</s> &middot; you save <strong style="color:var(--gold)">' +
-                fm(o.individual - o.flat) + '</strong>';
+            document.getElementById('d-flat').textContent = DL.prices.text(o.flat);
+            document.getElementById('d-flat').classList.toggle('is-soon', o.flat == null);
+            document.getElementById('d-compare').innerHTML = o.flat != null && o.individual != null
+                ? 'Bought separately <s>' + fm(o.individual) + '</s> &middot; you save <strong style="color:var(--gold)">' + fm(o.individual - o.flat) + '</strong>' : '';
         }
 
         function addToCart() {

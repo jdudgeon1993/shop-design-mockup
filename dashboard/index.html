@@ -155,6 +155,9 @@
         .proto-list a:hover, .proto-list a:focus-visible { color: var(--gold); text-decoration: underline; }
         .proto-list span { display: block; margin-top: 4px; font-size: 12px; color: rgba(255,255,255,0.45); }
 
+        .price-toggle { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+        .price-toggle .catalog-desc { margin: 0; flex: 1 1 260px; }
+        .price-toggle button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
         .sign-out-link {
             appearance: none; background: none; border: none; cursor: pointer;
             color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px;
@@ -225,6 +228,10 @@
                         <a class="btn-secondary btn-small" href="/diy-wizard/" target="_blank" rel="noopener">DIY Shop</a>
                         <a class="btn-secondary btn-small" href="/collections/" target="_blank" rel="noopener">Collections</a>
                         <a class="btn-secondary btn-small" href="https://supabase.com/dashboard/project/nutgbxgnkvvruaoloqch/editor" target="_blank" rel="noopener">Supabase Tables</a>
+                    </div>
+                    <div class="price-toggle">
+                        <button class="btn-secondary btn-small" id="price-toggle" type="button" aria-pressed="false">Show pricing</button>
+                        <p class="catalog-desc" id="price-toggle-note">Customers see &ldquo;Pricing coming soon&rdquo;. Turn pricing on to see prices in the DIY Shop, Collections and cart on this browser while you&rsquo;re signed in.</p>
                     </div>
                 </div>
 
@@ -469,8 +476,29 @@
             });
 
             logoutBtn.addEventListener('click', function () {
+                setPrices(false);
                 supabase.auth.signOut().then(showLogin);
             });
+
+            // "Show pricing": a per-browser switch read by DL.prices in dl-core.js. The
+            // database only returns prices to employees, so it does nothing for anyone else.
+            var PRICES_KEY = 'dl_show_prices_v1';
+            var priceToggle = document.getElementById('price-toggle');
+            function pricesOn() { try { return localStorage.getItem(PRICES_KEY) === '1'; } catch (e) { return false; } }
+            function setPrices(on) {
+                try { if (on) localStorage.setItem(PRICES_KEY, '1'); else localStorage.removeItem(PRICES_KEY); } catch (e) {}
+                paintPriceToggle();
+            }
+            function paintPriceToggle() {
+                var on = pricesOn();
+                priceToggle.setAttribute('aria-pressed', String(on));
+                priceToggle.textContent = on ? 'Hide pricing' : 'Show pricing';
+                document.getElementById('price-toggle-note').innerHTML = on
+                    ? 'Pricing is <b>on</b> for you on this browser. Customers still see &ldquo;Pricing coming soon&rdquo;.'
+                    : 'Customers see &ldquo;Pricing coming soon&rdquo;. Turn pricing on to see prices in the DIY Shop, Collections and cart on this browser while you&rsquo;re signed in.';
+            }
+            priceToggle.addEventListener('click', function () { setPrices(!pricesOn()); });
+            paintPriceToggle();
 
             createRoomForm.addEventListener('submit', function (e) {
                 e.preventDefault();

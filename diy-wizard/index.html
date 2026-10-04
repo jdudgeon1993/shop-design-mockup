@@ -331,6 +331,7 @@
         }
         .total-label { font-size: 12px; color: var(--muted); }
         .total { color: var(--gold); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .total.is-soon { font-size: 17px; }
         .foot-actions { display: flex; align-items: center; gap: 12px; }
 
         .toast {
@@ -684,8 +685,10 @@
                 r[2].forEach(function (o) {
                     var byStyle = data.offers[o.product_id];
                     if (!byStyle) return;
-                    var s = byStyle[o.door_style_id] = byStyle[o.door_style_id] || { base: null, upgrades: {} };
-                    if (o.upgrade_id == null) s.base = Number(o.retail_price); else s.upgrades[o.upgrade_id] = Number(o.retail_price);
+                    // ok = offered in this style; base / upgrade prices are null while prices are hidden.
+                    var s = byStyle[o.door_style_id] = byStyle[o.door_style_id] || { ok: false, base: null, upgrades: {} };
+                    if (o.upgrade_id == null) { s.ok = true; s.base = DL.prices.read(o.retail_price); }
+                    else s.upgrades[o.upgrade_id] = DL.prices.read(o.retail_price);
                 });
                 data.styles = r[3].data;
                 data.styles.forEach(function (s) { data.styleById[s.id] = s; });
@@ -693,6 +696,7 @@
                 r[5].data.forEach(function (l) { data.lines[l.id] = l; });
                 data.upgrades = r[6].data;
                 initGroups();
+                paintSortOptions();
 
                 // Closet and Parts tabs: one chip per family.
                 function familyChips(keep) {
@@ -718,7 +722,7 @@
         function inLook(p) {
             if (!look) return true;
             var o = data.offers[p.id][look.styleId];
-            return !!(o && o.base != null);
+            return !!(o && o.ok);
         }
         function spaceHas(space) {
             return data.products.some(function (p) { return inSpace(p, space) && inLook(p); });
@@ -737,7 +741,7 @@
             var types = TYPES[state.space] || [];
             if (anyOn(state.types) && !types.some(function (t) { return state.types[t.key] && t.test(p); })) return false;
             if (anyOn(state.widths) && !(p.width != null && WIDTHS.some(function (w) { return state.widths[w.key] && w.test(Number(p.width)); }))) return false;
-            if (anyOn(state.styles) && !Object.keys(state.styles).some(function (id) { return state.styles[id] && data.offers[p.id][id] && data.offers[p.id][id].base != null; })) return false;
+            if (anyOn(state.styles) && !Object.keys(state.styles).some(function (id) { return state.styles[id] && data.offers[p.id][id] && data.offers[p.id][id].ok; })) return false;
             if (state.search) {
                 var q = state.search.toLowerCase();
                 var fam = data.families[p.family_id];
@@ -790,23 +794,30 @@
             document.getElementById('clear-filters').hidden = !active;
         }
 
+        // Price sorting means nothing while prices are hidden.
+        function paintSortOptions() {
+            var shown = DL.prices.shown();
+            document.querySelectorAll('#sort option[value^="price"]').forEach(function (o) { o.hidden = !shown; o.disabled = !shown; });
+            if (!shown && /^price/.test(state.sort)) { state.sort = 'featured'; document.getElementById('sort').value = 'featured'; }
+        }
+
         // ---------- render: grid ----------
         function renderGrid() {
             var groups = {};
             data.products.forEach(function (p) {
                 if (!productMatches(p)) return;
+                if (!Object.keys(data.offers[p.id]).some(function (id) { return data.offers[p.id][id].ok; })) return;
                 var price = minPrice(p);
-                if (price == null) return;
                 var card = cardFor(p);
                 var g = groups[card.key] = groups[card.key] || { card: card, fam: card.imageFamily, products: [], min: null, styles: {} };
                 g.products.push(p);
-                if (g.min == null || price < g.min) g.min = price;
-                Object.keys(data.offers[p.id]).forEach(function (id) { if (data.offers[p.id][id].base != null) g.styles[id] = true; });
+                if (price != null && (g.min == null || price < g.min)) g.min = price;
+                Object.keys(data.offers[p.id]).forEach(function (id) { if (data.offers[p.id][id].ok) g.styles[id] = true; });
             });
             var list = Object.keys(groups).map(function (k) { return groups[k]; });
             list.sort(function (a, b) {
-                if (state.sort === 'price-asc') return a.min - b.min;
-                if (state.sort === 'price-desc') return b.min - a.min;
+                if (state.sort === 'price-asc' && a.min != null && b.min != null) return a.min - b.min;
+                if (state.sort === 'price-desc' && a.min != null && b.min != null) return b.min - a.min;
                 if (state.sort === 'name') return a.card.name.localeCompare(b.card.name);
                 return a.card.sort_order - b.card.sort_order;
             });
@@ -828,7 +839,7 @@
                     '<div class="card-body"><h3>' + esc(g.card.name) + '</h3>' +
                     '<div class="meta">' + esc(sizeText) + cardExtra(g) + '</div>' +
                     '<div class="styles">' + styleTags + '</div>' +
-                    '<div class="price">From ' + fm(g.min) + '</div></div></button>';
+                    '<div class="price">' + (g.min != null ? 'From ' + fm(g.min) : DL.prices.COMING_SOON) + '</div></div></button>';
             }).join('');
             DL.photos.paint(document.getElementById('grid'));
         }
@@ -1028,7 +1039,7 @@
             var products = [];
             famIds.forEach(function (id) { products = products.concat(data.byFamily[id] || []); });
             products = products.filter(function (p) {
-                return Object.keys(data.offers[p.id]).some(function (id) { return data.offers[p.id][id].base != null; });
+                return Object.keys(data.offers[p.id]).some(function (id) { return data.offers[p.id][id].ok; });
             });
             // With a look chosen, only offer sizes that come in it (one look per cart).
             var inThisLook = products.filter(inLook);
@@ -1064,7 +1075,7 @@
         }
 
         function stylesFor(p) {
-            return data.styles.filter(function (s) { var o = data.offers[p.id][s.id]; return o && o.base != null; });
+            return data.styles.filter(function (s) { var o = data.offers[p.id][s.id]; return o && o.ok; });
         }
         function selectProduct(p) {
             sel.product = p;
@@ -1098,7 +1109,7 @@
         function upgradeFor() {
             var o = data.offers[sel.product.id][sel.styleId];
             if (!o) return null;
-            var u = (data.upgrades || []).filter(function (u) { return u.door_style_id === sel.styleId && o.upgrades[u.id] != null; })[0];
+            var u = (data.upgrades || []).filter(function (u) { return u.door_style_id === sel.styleId && u.id in o.upgrades; })[0];
             return u ? { upgrade: u, price: o.upgrades[u.id] } : null;
         }
         function loadMods(p) {
@@ -1115,7 +1126,15 @@
             var o = data.offers[sel.product.id][sel.styleId];
             var up = upgradeFor();
             var base = sel.upgrade && up ? up.price : o.base;
-            var mods = sel.modList.reduce(function (n, m) { return n + (sel.mods[m.modification_id] ? Number(m.retail_price) : 0); }, 0);
+            if (base == null) return null; // prices hidden
+            var mods = 0;
+            for (var i = 0; i < sel.modList.length; i++) {
+                var m = sel.modList[i];
+                if (!sel.mods[m.modification_id]) continue;
+                var mp = DL.prices.read(m.retail_price);
+                if (mp == null) return null;
+                mods += mp;
+            }
             return Math.round((base + mods) * 100) / 100;
         }
 
@@ -1179,7 +1198,7 @@
                 var hex = s.id === sel.styleId ? selectedHex() : styleHex(s.id);
                 return '<button type="button" class="style-opt style-card" data-style-pick="' + s.id + '" aria-pressed="' + (s.id === sel.styleId) + '">' +
                     DL.doorSvg(s.door_profile, s.drawer_profile, hex, { label: s.name }) +
-                    '<span><b>' + esc(s.name) + '</b><small>' + esc(s.tagline || '') + '</small><span class="price">' + fm(data.offers[p.id][s.id].base) + '</span></span></button>';
+                    '<span><b>' + esc(s.name) + '</b><small>' + esc(s.tagline || '') + '</small>' + (data.offers[p.id][s.id].base != null ? '<span class="price">' + fm(data.offers[p.id][s.id].base) + '</span>' : '') + '</span></button>';
             }).join('');
             document.getElementById('p-style-desc').textContent = style.customer_description || '';
 
@@ -1206,7 +1225,8 @@
             if (up) {
                 document.getElementById('p-upgrade').checked = sel.upgrade;
                 document.getElementById('p-upgrade-name').textContent = up.upgrade.name;
-                document.getElementById('p-upgrade-add').textContent = '+' + fm(up.price - data.offers[p.id][sel.styleId].base);
+                var upBase = data.offers[p.id][sel.styleId].base;
+                document.getElementById('p-upgrade-add').textContent = up.price != null && upBase != null ? '+' + fm(up.price - upBase) : '';
                 document.getElementById('p-upgrade-desc').textContent = up.upgrade.customer_description || '';
                 document.getElementById('p-upgrade-ba').innerHTML =
                     DL.doorSvg(null, 'slab', selectedHex(), { drawerOnly: true, label: 'Standard slab drawer front' }) + '<span aria-hidden="true">&rarr;</span>' +
@@ -1224,7 +1244,7 @@
             document.getElementById('p-mods-opt').hidden = !mods.length;
             document.getElementById('p-mods').innerHTML = mods.map(function (m) {
                 return '<label class="check-row" title="' + esc(m.notes || '') + '"><input type="checkbox" data-mod="' + m.modification_id + '"' +
-                    (sel.mods[m.modification_id] ? ' checked' : '') + '><span class="name">' + esc(m.name) + '</span><span class="add">+' + fm(m.retail_price) + '</span></label>';
+                    (sel.mods[m.modification_id] ? ' checked' : '') + '><span class="name">' + esc(m.name) + '</span><span class="add">' + (DL.prices.read(m.retail_price) != null ? '+' + fm(m.retail_price) : '') + '</span></label>';
             }).join('');
 
             var specs = [];
@@ -1242,8 +1262,9 @@
         }
         function paintTotal() {
             var qty = sel.qty, unit = unitPrice();
-            document.getElementById('p-each').textContent = qty > 1 ? fm(unit) + ' each' : 'Price';
-            document.getElementById('p-total').textContent = fm(unit * qty);
+            document.getElementById('p-each').textContent = unit != null && qty > 1 ? fm(unit) + ' each' : 'Price';
+            document.getElementById('p-total').textContent = unit != null ? fm(unit * qty) : DL.prices.COMING_SOON;
+            document.getElementById('p-total').classList.toggle('is-soon', unit == null);
             var needsHinge = sel.product.hinge === 'L/R required' && !sel.hinge;
             var add = document.getElementById('p-add');
             add.disabled = needsHinge || (sel.product.finish_applies && !sel.finishId);
@@ -1296,7 +1317,7 @@
             return DL.cart.lines().every(function (l) {
                 if (l.type !== 'product') return true;
                 var o = data.offers[l.product_id] && data.offers[l.product_id][styleId];
-                return !!(o && o.base != null);
+                return !!(o && o.ok);
             });
         }
         // The wizard's chosen look follows the cart when the cart changes look.
@@ -1422,7 +1443,7 @@
             data.products.forEach(function (p) {
                 if (p.kind !== 'cabinet') return;
                 var o = data.offers[p.id][styleId];
-                if (o && o.base != null && (best == null || o.base < best)) best = o.base;
+                if (o && o.ok && o.base != null && (best == null || o.base < best)) best = o.base;
             });
             return best;
         }
