@@ -12,6 +12,27 @@
 
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Agent mode: the DIY Shop opened inside the Help Desk (/help-desk/) to shop for a
+    // customer. The cart shown is the customer's (sent in by the Help Desk), and adding
+    // an item hands it to the Help Desk, which sends it to the customer's cart.
+    var AGENT = false;
+    try {
+        AGENT = window !== window.top && /[?&]agent=1\b/.test(location.search) &&
+            window.parent.location.pathname.indexOf('/help-desk/') === 0;
+    } catch (e) { AGENT = false; }
+    var agentLines = [];
+    if (AGENT) {
+        document.documentElement.classList.add('dl-agent');
+        var agentCss = document.createElement('style');
+        agentCss.textContent = '.dl-agent .top-bar,.dl-agent .shop-footer,.dl-agent .stepper,.dl-agent #toast a{display:none!important}';
+        document.head.appendChild(agentCss);
+        window.addEventListener('message', function (e) {
+            if (e.origin !== location.origin || !e.data || e.data.dl !== 'agent-cart') return;
+            agentLines = Array.isArray(e.data.lines) ? e.data.lines : [];
+            listeners.forEach(function (fn) { fn(agentLines); });
+        });
+    }
+
     var money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
     function formatMoney(n) { return money.format(Number(n) || 0); }
 
@@ -54,12 +75,14 @@
     var listeners = [];
 
     function readCart() {
+        if (AGENT) return JSON.parse(JSON.stringify(agentLines));
         try {
             var lines = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
             return Array.isArray(lines) ? lines : [];
         } catch (e) { return []; }
     }
     function writeCart(lines) {
+        if (AGENT) return; // the customer's cart only changes through the Help Desk
         try { localStorage.setItem(CART_KEY, JSON.stringify(lines)); } catch (e) {}
         listeners.forEach(function (fn) { fn(lines); });
     }
@@ -100,6 +123,10 @@
         add: function (line) {
             var current = cart.look();
             if (current && current.finish_id !== line.finish_id) return false;
+            if (AGENT) {
+                window.parent.postMessage({ dl: 'agent-add', line: line }, location.origin);
+                return true;
+            }
             var lines = readCart();
             var existing = lines.filter(function (l) { return sameItem(l, line); })[0];
             if (existing) {
@@ -152,6 +179,13 @@
     var guardEl = null;
     function lookGuard(o) {
         var current = cart.look();
+        if (AGENT) {
+            // An agent can't change the customer's look from here.
+            window.parent.postMessage({ dl: 'agent-blocked', reason: 'The customer\'s cart is in ' + (current && current.label || 'another look') +
+                '. ' + o.to + ' is a different look, so it can\'t go in the same order.' }, location.origin);
+            if (o.onKeep) o.onKeep();
+            return;
+        }
         if (!guardEl) {
             var css = document.createElement('style');
             css.textContent =
@@ -622,6 +656,7 @@
         fetchAll: fetchAll,
         escapeHtml: escapeHtml,
         cart: cart,
+        agentMode: AGENT,
         lookGuard: lookGuard,
         doorSvg: doorSvg,
         doorGuide: doorGuide,

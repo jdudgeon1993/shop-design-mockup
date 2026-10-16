@@ -10,21 +10,22 @@
 // DL.help.mount(el)  renders the "Get live help" box into el (cart page).
 // Any page that loads this file keeps an active session going (and shows its bar).
 (function () {
-    if (!window.DL || !DL.supabase) return;
+    if (!window.DL || !DL.supabase || DL.agentMode) return; // not inside the Help Desk catalog
     var sb = DL.supabase, esc = DL.escapeHtml;
     var LOBBY = 'dl-help-lobby';
     var KEY = 'dl_help_session_v1';
     var JITSI_DOMAIN = '8x8.vc';
     var APP_ID = 'vpaas-magic-cookie-f0a0399c162749f2805d91eef3967b80';
 
-    var state = { sid: null, name: '', status: 'idle', agent: null, agentId: null, video: null };
+    var state = { sid: null, name: '', topic: '', status: 'idle', agent: null, agentId: null, video: null, msgs: [] };
+    var chatOpen = false, unread = 0;
     var lobby = null, session = null, agentsOnline = 0, boxes = [], bar = null, videoApi = null;
     var agentHere = false; // set by the agent's messages and presence join/leave
 
     function saved() { try { return JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (e) { return null; } }
     function save() {
         try {
-            if (state.sid) sessionStorage.setItem(KEY, JSON.stringify({ sid: state.sid, name: state.name, agent: state.agent, agentId: state.agentId, video: state.video }));
+            if (state.sid) sessionStorage.setItem(KEY, JSON.stringify({ sid: state.sid, name: state.name, topic: state.topic, agent: state.agent, agentId: state.agentId, video: state.video, msgs: state.msgs.slice(-60) }));
             else sessionStorage.removeItem(KEY);
         } catch (e) {}
     }
@@ -52,7 +53,21 @@
         '.dlh-video>iframe{position:absolute;inset:0;width:100%!important;height:100%!important;border:0}' +
         '.dlh-video .dlh-x{position:absolute;top:6px;right:6px;z-index:2;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:999px;width:30px;height:30px;cursor:pointer;font-size:16px}' +
         '.dlh-bar>span{white-space:nowrap}' +
-        '@media (max-width:600px){.dlh-bar{border-radius:14px;bottom:10px}.dlh-toast{bottom:auto;top:12px}.dlh-video{left:8px;right:8px;width:auto;bottom:auto;top:8px;height:38vh}}';
+        '.dlh-form textarea{flex:1 1 100%;min-height:58px;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.25);color:inherit;font:inherit;resize:vertical}' +
+        '.dlh-badge{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:999px;background:#e5534b;color:#fff;font-size:11px;line-height:18px;text-align:center}' +
+        '.dlh-chat{position:fixed;right:16px;bottom:84px;z-index:902;width:min(360px,calc(100% - 32px));height:min(440px,60vh);display:flex;flex-direction:column;border-radius:14px;overflow:hidden;' +
+        'background:#151515;border:1px solid var(--gold,#d4af37);box-shadow:0 10px 40px rgba(0,0,0,.6);color:#f5f1ea;font-size:14px}' +
+        '.dlh-chat header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.12);font-weight:700}' +
+        '.dlh-chat header button{background:none;border:0;color:inherit;font-size:18px;cursor:pointer}' +
+        '.dlh-msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}' +
+        '.dlh-msg{max-width:85%;padding:8px 11px;border-radius:12px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}' +
+        '.dlh-msg.me{align-self:flex-end;background:var(--gold,#d4af37);color:#111;border-bottom-right-radius:4px}' +
+        '.dlh-msg.them{align-self:flex-start;background:#2a2a2a;border-bottom-left-radius:4px}' +
+        '.dlh-msg small{display:block;font-size:11px;opacity:.65;margin-top:2px}' +
+        '.dlh-chat form{display:flex;gap:6px;padding:10px;border-top:1px solid rgba(255,255,255,.12)}' +
+        '.dlh-chat input{flex:1;min-width:0;padding:9px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);color:inherit;font:inherit}' +
+        '.dlh-video.with-chat{right:392px}@media (max-width:900px){.dlh-video.with-chat{right:16px;bottom:540px}}' +
+        '@media (max-width:600px){.dlh-bar{border-radius:14px;bottom:10px}.dlh-toast{bottom:auto;top:12px}.dlh-chat{left:8px;right:8px;width:auto;bottom:76px;height:52vh}.dlh-video{left:8px;right:8px;width:auto;bottom:auto;top:8px;height:38vh}}';
     document.head.appendChild(css);
 
     function toast(msg) {
@@ -78,7 +93,7 @@
     function trackWaiting() {
         if (!lobby || state.status !== 'waiting') return;
         var sum = cartSummary();
-        lobby.track({ role: 'customer', sid: state.sid, name: state.name || 'Customer', items: sum.items, look: sum.look, since: state.since || Date.now() });
+        lobby.track({ role: 'customer', sid: state.sid, name: state.name || 'Customer', topic: state.topic || '', items: sum.items, look: sum.look, since: state.since || Date.now() });
     }
 
     // ---------- session ----------
@@ -92,13 +107,21 @@
             state.agentId = p.agentId; state.agent = p.agentName || 'Design Lab';
             state.status = 'connected'; agentHere = true; save();
             if (lobby) lobby.untrack();
-            send('accepted', { agentId: p.agentId, name: state.name });
+            send('accepted', { agentId: p.agentId, name: state.name, msgs: state.msgs });
             sendCart();
             if (first) toast(state.agent + ' from Design Lab is here. They can see your cart now.');
             paint();
         });
         session.on('broadcast', { event: 'hello' }, function () { if (state.agentId) sendCart(); });
         session.on('broadcast', { event: 'op' }, function (m) { agentHere = true; applyOp(m.payload || {}); });
+        session.on('broadcast', { event: 'msg' }, function (m) {
+            var text = String((m.payload || {}).text || '').slice(0, 1000);
+            if (!text) return;
+            agentHere = true;
+            state.msgs.push({ from: 'them', text: text, at: Date.now() }); save();
+            if (!chatOpen) { unread++; toast(state.agent + ': ' + (text.length > 90 ? text.slice(0, 90) + '…' : text)); }
+            paint(); paintChat();
+        });
         session.on('broadcast', { event: 'video' }, function (m) {
             state.video = (m.payload || {}).room || null; save();
             if (state.video) toast(state.agent + ' invited you to a video call.');
@@ -140,9 +163,11 @@
         }
     }
 
-    function request(name) {
+    function request(name, topic) {
         state.sid = newSid(); state.name = (name || '').trim().slice(0, 40); state.status = 'waiting'; state.since = Date.now();
-        state.agent = state.agentId = state.video = null;
+        state.topic = (topic || '').trim().slice(0, 300);
+        state.msgs = state.topic ? [{ from: 'me', text: state.topic, at: Date.now() }] : [];
+        state.agent = state.agentId = state.video = null; unread = 0;
         save();
         joinLobby(); trackWaiting(); joinSession(); paint();
     }
@@ -158,8 +183,8 @@
             if (state.status === 'waiting') lobby.send({ type: 'broadcast', event: 'gone', payload: { sid: state.sid } });
             lobby.untrack();
         }
-        closeVideo();
-        state = { sid: null, name: state.name, status: 'idle', agent: null, agentId: null, video: null };
+        closeVideo(); closeChat();
+        state = { sid: null, name: state.name, topic: '', status: 'idle', agent: null, agentId: null, video: null, msgs: [] };
         save(); paint();
         if (msg) toast(msg);
     }
@@ -170,6 +195,7 @@
         var box = document.createElement('div');
         box.className = 'dlh-video';
         box.innerHTML = '<button class="dlh-x" type="button" aria-label="Leave video call">✕</button>';
+        if (chatOpen) box.classList.add('with-chat');
         document.body.appendChild(box);
         box.querySelector('.dlh-x').addEventListener('click', closeVideo);
         function start() {
@@ -196,6 +222,61 @@
         if (box) box.remove();
     }
 
+    // ---------- chat ----------
+    function openChat() {
+        chatOpen = true; unread = 0;
+        var box = document.querySelector('.dlh-chat');
+        if (!box) {
+            box = document.createElement('section');
+            box.className = 'dlh-chat'; box.setAttribute('aria-label', 'Chat with Design Lab');
+            box.innerHTML = '<header><span></span><button type="button" aria-label="Close chat">✕</button></header>' +
+                '<div class="dlh-msgs" aria-live="polite"></div>' +
+                '<form><label class="sr-only" for="dlh-chat-in">Message</label><input id="dlh-chat-in" autocomplete="off" maxlength="1000" placeholder="Type a message…">' +
+                '<button class="dlh-btn" type="submit">Send</button></form>';
+            document.body.appendChild(box);
+            box.querySelector('header button').addEventListener('click', closeChat);
+            box.querySelector('form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                var inp = box.querySelector('input'), text = inp.value.trim();
+                if (!text) return;
+                state.msgs.push({ from: 'me', text: text, at: Date.now() }); save();
+                send('msg', { text: text });
+                inp.value = '';
+                paintChat();
+            });
+        }
+        var v = document.querySelector('.dlh-video'); if (v) v.classList.add('with-chat');
+        paintChat(); paint();
+        box.querySelector('input').focus();
+    }
+    function closeChat() {
+        chatOpen = false;
+        var box = document.querySelector('.dlh-chat'); if (box) box.remove();
+        var v = document.querySelector('.dlh-video'); if (v) v.classList.remove('with-chat');
+        if (bar) paint();
+    }
+    // Keep the chat just above the bar, however tall the bar wraps on a phone.
+    function placeChat() {
+        var box = document.querySelector('.dlh-chat');
+        if (!box || !bar) return;
+        var h = bar.getBoundingClientRect().height;
+        box.style.bottom = Math.round(h + 26) + 'px';
+        box.style.maxHeight = 'calc(100vh - ' + Math.round(h + 26 + 16) + 'px)';
+    }
+    window.addEventListener('resize', placeChat);
+    function paintChat() {
+        var box = document.querySelector('.dlh-chat');
+        if (!box) return;
+        placeChat();
+        box.querySelector('header span').textContent = state.agent ? 'Chat with ' + state.agent : 'Chat with Design Lab';
+        var list = box.querySelector('.dlh-msgs');
+        list.innerHTML = state.msgs.length ? state.msgs.map(function (m) {
+            return '<div class="dlh-msg ' + (m.from === 'me' ? 'me' : 'them') + '">' + esc(m.text) +
+                '<small>' + new Date(m.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '</small></div>';
+        }).join('') : '<p style="margin:auto;opacity:.6;text-align:center">Ask anything. Your agent sees it right away.</p>';
+        list.scrollTop = list.scrollHeight;
+    }
+
     // ---------- UI ----------
     function boxHtml() {
         if (state.status === 'waiting') {
@@ -211,13 +292,15 @@
             (on ? 'An agent is available now' : 'No agents online right now. You can still ask; someone will pick it up when they\'re back.') + '</div>' +
             '<form class="dlh-form" data-dlh-request><label class="sr-only" for="dlh-name">Your first name</label>' +
             '<input id="dlh-name" name="name" placeholder="Your first name" autocomplete="given-name" value="' + esc(state.name || '') + '">' +
+            '<label class="sr-only" for="dlh-topic">What do you need help with?</label>' +
+            '<textarea id="dlh-topic" name="topic" maxlength="300" placeholder="What do you need help with? (optional) e.g. I can\'t find the trim piece"></textarea>' +
             '<button class="dlh-btn" type="submit">Get live help</button></form>';
     }
     function paint() {
         boxes.forEach(function (el) {
             el.innerHTML = boxHtml();
             var f = el.querySelector('[data-dlh-request]');
-            if (f) f.addEventListener('submit', function (e) { e.preventDefault(); request(f.elements.name.value); });
+            if (f) f.addEventListener('submit', function (e) { e.preventDefault(); request(f.elements.name.value, f.elements.topic.value); });
         });
         if (state.status === 'idle') { if (bar) { bar.remove(); bar = null; } return; }
         if (!bar) { bar = document.createElement('div'); bar.className = 'dlh-bar'; bar.setAttribute('role', 'status'); document.body.appendChild(bar); }
@@ -228,14 +311,18 @@
         } else {
             var here = agentOnline();
             html = '<span><span class="dlh-dot' + (here ? ' on' : '') + '"></span>' + (here ? esc(state.agent) + ' can see your cart' : esc(state.agent) + ' stepped away…') + '</span>' +
+                '<button class="dlh-btn ghost" type="button" data-dlh-chat>' + (chatOpen ? 'Hide chat' : 'Chat') + (unread ? '<span class="dlh-badge">' + unread + '</span>' : '') + '</button>' +
                 (state.video && !document.querySelector('.dlh-video') ? '<button class="dlh-btn" type="button" data-dlh-video>Join video call</button>' : '') +
                 '<button class="dlh-btn ghost" type="button" data-dlh-end>End</button>';
         }
         bar.innerHTML = html;
         var end = bar.querySelector('[data-dlh-end]');
         if (end) end.addEventListener('click', function () { finish(state.status === 'waiting' ? 'Help request cancelled.' : 'Session ended. Your cart is just as you left it.'); });
+        var c = bar.querySelector('[data-dlh-chat]');
+        if (c) c.addEventListener('click', function () { if (chatOpen) closeChat(); else openChat(); });
         var v = bar.querySelector('[data-dlh-video]');
         if (v) v.addEventListener('click', function () { openVideo(); paint(); });
+        placeChat();
     }
 
     DL.cart.onChange(function () {
@@ -250,7 +337,8 @@
     // Pick an open session back up after a reload or a page change.
     var s = saved();
     if (s && s.sid) {
-        state.sid = s.sid; state.name = s.name || ''; state.agent = s.agent; state.agentId = s.agentId; state.video = s.video;
+        state.sid = s.sid; state.name = s.name || ''; state.topic = s.topic || ''; state.agent = s.agent; state.agentId = s.agentId; state.video = s.video;
+        state.msgs = Array.isArray(s.msgs) ? s.msgs : [];
         state.status = s.agentId ? 'connected' : 'waiting'; state.since = Date.now(); agentHere = !!s.agentId;
         joinLobby(); joinSession(); paint();
     }

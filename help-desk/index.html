@@ -69,6 +69,24 @@
         .video { position: relative; height: 340px; margin-bottom: 16px; border-radius: 10px; overflow: hidden; border: 1px solid var(--gold); background: #000; }
         .video > iframe { position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0; }
         .log { margin-top: 16px; font-size: 12px; color: var(--muted); display: grid; gap: 3px; max-height: 140px; overflow: auto; }
+        .sess-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: start; }
+        @media (max-width: 1100px) { .sess-grid { grid-template-columns: 1fr; } }
+        .chat { border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; height: 460px; position: sticky; top: 12px; }
+        .chat h3 { margin: 0; padding: 10px 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
+        .msgs { flex: 1; overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .msg { max-width: 88%; padding: 8px 11px; border-radius: 12px; font-size: 14px; line-height: 1.4; white-space: pre-wrap; word-wrap: break-word; }
+        .msg.me { align-self: flex-end; background: var(--gold); color: #111; border-bottom-right-radius: 4px; }
+        .msg.them { align-self: flex-start; background: #2c2c2c; border-bottom-left-radius: 4px; }
+        .msg small { display: block; font-size: 11px; opacity: .65; margin-top: 2px; }
+        .quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px 0; }
+        .quick button { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 999px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+        .quick button:hover { color: var(--gold); border-color: var(--gold); }
+        .chat form { display: flex; gap: 6px; padding: 10px; }
+        .chat input { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 999px; border: 1px solid var(--border); background: rgba(0,0,0,.3); color: var(--white); }
+        .queue q { font-size: 13px; color: var(--white); font-style: italic; }
+        .add-head { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+        .browse { margin-top: 12px; border: 1px solid var(--gold); border-radius: 10px; overflow: hidden; background: #111; }
+        .browse iframe { display: block; width: 100%; height: 760px; border: 0; }
         .alert { padding: 10px 12px; border-radius: 8px; background: rgba(255,143,143,.12); color: #ffb3b3; font-size: 13px; margin-bottom: 12px; }
     </style>
 </head>
@@ -109,10 +127,17 @@
                     </div>
                     <div class="alert" id="alert" hidden></div>
                     <div class="video" id="video" hidden></div>
+                    <div class="sess-grid">
+                    <div>
                     <p class="note" style="margin-bottom:10px">Look: <span class="look" id="c-look">—</span> · <span id="c-count"></span></p>
                     <div class="lines" id="lines"></div>
                     <div class="add">
-                        <form id="search-form">
+                        <div class="add-head">
+                            <button class="btn small" id="browse-btn" type="button">Browse catalog</button>
+                            <span class="note">Shop the DIY catalog for them, or search below if you know the item.</span>
+                        </div>
+                        <div class="browse" id="browse" hidden><iframe id="browse-frame" title="DIY Shop, adding to the customer's cart"></iframe></div>
+                        <form id="search-form" style="margin-top:12px">
                             <label class="sr-only" for="search">Find an item</label>
                             <input type="search" id="search" placeholder="Add an item: number or name (e.g. B30, panel, filler)" autocomplete="off">
                             <button class="btn small" type="submit">Find</button>
@@ -121,6 +146,19 @@
                         <ul class="results" id="results"></ul>
                     </div>
                     <div class="log" id="log"></div>
+                    </div>
+                    <section class="chat" aria-label="Chat">
+                        <h3 id="chat-title">Chat</h3>
+                        <div class="msgs" id="msgs" aria-live="polite"></div>
+                        <div class="quick" id="quick">
+                            <button type="button" data-say="hi">Hi! How can I help?</button>
+                            <button type="button" data-say="Give me one moment while I look that up.">One moment…</button>
+                            <button type="button" data-say="I've added that to your cart. Take a look!">Added it</button>
+                            <button type="button" data-say="Is there anything else I can help with?">Anything else?</button>
+                        </div>
+                        <form id="chat-form"><label class="sr-only" for="chat-in">Message</label><input id="chat-in" autocomplete="off" maxlength="1000" placeholder="Message the customer…"><button class="btn small" type="submit">Send</button></form>
+                    </section>
+                    </div>
                 </div>
             </section>
         </div>
@@ -162,7 +200,7 @@
                 $('who').textContent = 'Signed in as ' + user.email;
                 $('desk').hidden = false;
                 joinLobby();
-                if (saved && saved.sid) accept(saved.sid, saved.name);
+                if (saved && saved.sid) { accept(saved.sid, saved.name); paintChat(); }
                 setInterval(paintQueue, 30000);
             });
         });
@@ -199,7 +237,7 @@
             $('q-count').textContent = waiting.length ? '(' + waiting.length + ')' : '';
             $('queue').innerHTML = waiting.map(function (w) {
                 return '<li><b>' + esc(w.name || 'Customer') + '</b><span>Waiting ' + mins(w.since) + ' · ' + (w.items || 0) + ' item' + (w.items === 1 ? '' : 's') +
-                    (w.look ? ' · ' + esc(w.look) : '') + '</span>' +
+                    (w.look ? ' · ' + esc(w.look) : '') + '</span>' + (w.topic ? '<q>' + esc(w.topic) + '</q>' : '') +
                     '<button class="btn small" type="button" data-accept="' + esc(w.sid) + '" data-name="' + esc(w.name || 'Customer') + '"' + (current ? ' disabled title="End your current session first"' : '') + '>Accept</button></li>';
             }).join('');
         }
@@ -210,16 +248,22 @@
 
         // ---------- a session ----------
         function accept(sid, name) {
-            current = { sid: sid, name: name || 'Customer', status: 'connecting' };
-            sessionStorage.setItem(KEY, JSON.stringify({ sid: sid, name: current.name, agentId: agentId }));
+            var prev = null; try { prev = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (e) {}
+            current = { sid: sid, name: name || 'Customer', status: 'connecting', msgs: prev && prev.sid === sid && prev.msgs || [] };
+            saveAgent();
+            closeBrowse();
             cart = { lines: [], look: null };
             $('idle').hidden = true; $('sess').hidden = false; $('log').innerHTML = '';
-            paintSession(); paintQueue();
+            paintSession(); paintQueue(); paintChat();
             session = sb.channel('dl-help-s-' + sid, { config: { broadcast: { self: false }, presence: { key: 'agent' } } });
             session.on('broadcast', { event: 'accepted' }, function (m) {
                 var p = m.payload || {};
                 if (!current || p.agentId !== agentId) return;
                 if (p.name) current.name = p.name;
+                if (!current.msgs.length && Array.isArray(p.msgs)) {
+                    current.msgs = p.msgs.map(function (x) { return { from: x.from === 'me' ? 'them' : 'me', text: x.text, at: x.at }; });
+                    paintChat(); saveAgent();
+                }
                 if (current.status !== 'connected') {
                     log('Connected with ' + current.name + '.');
                     lobby.send({ type: 'broadcast', event: 'gone', payload: { sid: current.sid } });
@@ -241,6 +285,12 @@
                 paintSession();
             });
             session.on('broadcast', { event: 'back' }, function () { if (current) log(current.name + ' is back.'); });
+            session.on('broadcast', { event: 'msg' }, function (m) {
+                var text = String((m.payload || {}).text || '').slice(0, 1000);
+                if (!current || !text) return;
+                current.msgs.push({ from: 'them', text: text, at: Date.now() }); saveAgent(); paintChat();
+                if (document.hidden) document.title = '💬 ' + current.name + ' - Help Desk';
+            });
             session.on('broadcast', { event: 'op-result' }, function (m) { if (!(m.payload || {}).ok) alertMsg((m.payload || {}).reason || 'That change didn\'t go through.'); });
             session.on('broadcast', { event: 'end' }, function () {
                 if (!current) return; // we ended it; this is the customer's goodbye
@@ -266,6 +316,7 @@
             if (ch) setTimeout(function () { sb.removeChannel(ch); }, 400);
             session = null; current = null;
             sessionStorage.removeItem(KEY);
+            closeBrowse();
             $('sess').hidden = true; $('idle').hidden = false; $('results').innerHTML = '';
             paintQueue();
         }
@@ -278,6 +329,8 @@
             $('c-where').textContent = current.status !== 'connected' ? 'Connecting…' :
                 (current.here ? 'Online' + (cart.page ? ' · on ' + (cart.page.indexOf('/cart') === 0 ? 'their cart' : cart.page.indexOf('/diy') === 0 ? 'the DIY Shop' : 'Collections') : '') : 'Away');
             $('c-look').textContent = cart.look ? cart.look.label : 'not picked yet';
+            $('chat-title').textContent = 'Chat with ' + current.name;
+            syncBrowse();
             var n = cart.lines.reduce(function (s, l) { return s + (l.quantity || 0); }, 0);
             $('c-count').textContent = n + (n === 1 ? ' item' : ' items');
             $('lines').innerHTML = cart.lines.length ? cart.lines.map(function (l) {
@@ -302,6 +355,79 @@
             } else if (e.target.closest('[data-rm]')) {
                 send('op', { op: 'remove', id: line.id });
                 log('Removed ' + (line.display.title || 'item') + '.');
+            }
+        });
+
+        function saveAgent() {
+            if (!current) return;
+            sessionStorage.setItem(KEY, JSON.stringify({ sid: current.sid, name: current.name, agentId: agentId, msgs: current.msgs.slice(-60) }));
+        }
+
+        // ---------- chat ----------
+        function paintChat() {
+            if (!current) return;
+            var list = $('msgs');
+            list.innerHTML = current.msgs.length ? current.msgs.map(function (m) {
+                return '<div class="msg ' + m.from + '">' + esc(m.text) + '<small>' +
+                    new Date(m.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '</small></div>';
+            }).join('') : '<p class="note" style="margin:auto;text-align:center">No messages yet. Say hello!</p>';
+            list.scrollTop = list.scrollHeight;
+        }
+        function say(text) {
+            text = text.trim();
+            if (!current || !text) return;
+            current.msgs.push({ from: 'me', text: text, at: Date.now() }); saveAgent();
+            send('msg', { text: text });
+            paintChat();
+        }
+        $('chat-form').addEventListener('submit', function (e) { e.preventDefault(); say($('chat-in').value); $('chat-in').value = ''; $('chat-in').focus(); });
+        $('quick').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-say]'); if (!b) return;
+            say(b.dataset.say === 'hi' ? 'Hi ' + (current ? current.name : '') + '! I\'m ' + myName + ' with Design Lab. How can I help?' : b.dataset.say);
+        });
+
+        // ---------- browse the DIY Shop for the customer (agent mode) ----------
+        var browseFinish = null;
+        function browseUrl() {
+            if (!cart.look) return Promise.resolve('/diy-wizard/?agent=1&step=mfr');
+            return sb.from('finishes').select('code,door_styles(code)').eq('id', cart.look.finish_id).maybeSingle().then(function (r) {
+                var f = r.data;
+                return f && f.door_styles ? '/diy-wizard/?agent=1&style=' + encodeURIComponent(f.door_styles.code) + '&finish=' + encodeURIComponent(f.code)
+                    : '/diy-wizard/?agent=1&step=mfr';
+            });
+        }
+        function openBrowse() {
+            browseFinish = cart.look ? cart.look.finish_id : null;
+            browseUrl().then(function (url) {
+                $('browse-frame').src = url;
+                $('browse').hidden = false;
+                $('browse-btn').textContent = 'Close catalog';
+            });
+        }
+        function closeBrowse() {
+            $('browse').hidden = true; $('browse-frame').src = 'about:blank';
+            $('browse-btn').textContent = 'Browse catalog';
+        }
+        function syncBrowse() {
+            if ($('browse').hidden) return;
+            var fin = cart.look ? cart.look.finish_id : null;
+            if (fin !== browseFinish) { openBrowse(); return; } // the customer's look changed
+            var w = $('browse-frame').contentWindow;
+            if (w) w.postMessage({ dl: 'agent-cart', lines: cart.lines }, location.origin);
+        }
+        $('browse-btn').addEventListener('click', function () { if ($('browse').hidden) openBrowse(); else closeBrowse(); });
+        $('browse-frame').addEventListener('load', function () {
+            var w = $('browse-frame').contentWindow;
+            if (w && !$('browse').hidden) w.postMessage({ dl: 'agent-cart', lines: cart.lines }, location.origin);
+        });
+        window.addEventListener('message', function (e) {
+            if (e.origin !== location.origin || !e.data || !current) return;
+            if (e.data.dl === 'agent-add' && e.data.line) {
+                var l = e.data.line;
+                send('op', { op: 'add', line: l });
+                log('Added ' + (l.quantity || 1) + ' × ' + ((l.display && l.display.title) || 'an item') + ' from the catalog.');
+            } else if (e.data.dl === 'agent-blocked') {
+                alertMsg(e.data.reason);
             }
         });
 
