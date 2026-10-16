@@ -19,6 +19,8 @@
     var OPEN_PATHS = /^\/(proto\/)?(consultation|dashboard)\//;
 
     if (OPEN_PATHS.test(location.pathname)) return;
+    // The DIY Shop inside the Help Desk (agent mode): the Help Desk has its own employee sign-in.
+    try { if (window !== window.top && window.parent.location.pathname.indexOf('/help-desk/') === 0) return; } catch (e) {}
 
     function lastActive() {
         try { return parseInt(localStorage.getItem(ACCESS_KEY), 10) || 0; } catch (e) { return 0; }

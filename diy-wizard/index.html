@@ -1329,7 +1329,8 @@
         function addedToast() {
             var p = sel.product;
             var toast = document.getElementById('toast');
-            document.getElementById('toast-text').textContent = 'Added ' + sel.qty + ' × ' + data.families[p.family_id].name;
+            document.getElementById('toast-text').textContent = (DL.agentMode ? 'Sent ' : 'Added ') + sel.qty + ' × ' + data.families[p.family_id].name +
+                (DL.agentMode ? ' to the customer\'s cart' : '');
             toast.classList.add('show');
             clearTimeout(toast._t);
             toast._t = setTimeout(function () { toast.classList.remove('show'); }, 3500);
