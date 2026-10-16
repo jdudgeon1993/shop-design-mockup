@@ -1,0 +1,423 @@
+<!-- Employee-only: live quote help. Customers ask for help from the cart page
+     (Assets/dl-help.js); they wait in the 'dl-help-lobby' presence channel, and an
+     agent accepts here. Both then share 'dl-help-s-<sid>': the customer's cart
+     arrives on every change, and edits made here go back through the customer's own
+     cart (so the one-look rule still applies). Nothing is stored in the database. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Help Desk - Design Lab</title>
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/Assets/dl-core.js"></script>
+    <style>
+        :root { --gold: #d4af37; --white: #fff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); --muted: rgba(255,255,255,0.68); --ok: #5fbf77; }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); }
+        button, input, select { font: inherit; }
+        [hidden] { display: none !important; }
+        .top-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 4%; border-bottom: 1px solid var(--border); }
+        .top-bar a { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .who { font-size: 13px; color: var(--muted); }
+        main { padding: 22px 4% 60px; }
+        h1 { margin: 0 0 4px; font-size: 26px; }
+        .kicker { margin: 0 0 6px; color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+        .sub { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+        .grid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        .panel { border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,0.03); padding: 18px; }
+        .panel h2 { margin: 0 0 12px; font-size: 16px; }
+        .note { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0; }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #888; margin-right: 6px; vertical-align: 1px; }
+        .dot.on { background: var(--ok); }
+        .queue { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+        .queue li { border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: grid; gap: 6px; }
+        .queue b { font-size: 15px; }
+        .queue span { font-size: 12px; color: var(--muted); }
+        .btn { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--gold); background: var(--gold); color: #111; font-weight: 700; cursor: pointer; }
+        .btn.ghost { background: transparent; color: var(--gold); }
+        .btn.small { padding: 6px 12px; font-size: 13px; }
+        .btn:disabled { opacity: .5; cursor: default; }
+        .sess-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .sess-head .look { color: var(--gold); font-weight: 700; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .lines { display: grid; gap: 8px; margin: 0 0 16px; }
+        .line { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px 14px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; }
+        .line.flash { animation: flash 1.2s ease; }
+        @keyframes flash { from { background: rgba(212,175,55,.25); } to { background: transparent; } }
+        .line b { display: block; font-size: 14px; }
+        .line small { color: var(--muted); font-size: 12px; }
+        .qty { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 999px; }
+        .qty button { background: none; border: 0; color: var(--white); width: 30px; height: 30px; cursor: pointer; font-size: 16px; }
+        .qty span { min-width: 24px; text-align: center; font-weight: 700; }
+        .rm { background: none; border: 0; color: #ff8f8f; cursor: pointer; font-size: 13px; }
+        .add { border-top: 1px solid var(--border); padding-top: 14px; }
+        .add form { display: flex; gap: 8px; flex-wrap: wrap; }
+        .add input, .add select { padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,.3); color: var(--white); }
+        .add input[type=search] { flex: 1 1 220px; min-width: 0; }
+        .results { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+        .results li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+        .results small { color: var(--muted); }
+        .results .pick { display: flex; gap: 6px; align-items: center; }
+        .results select, .results input { padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); background: rgba(0,0,0,.3); color: var(--white); width: auto; }
+        .results input { width: 56px; }
+        .video { position: relative; height: 340px; margin-bottom: 16px; border-radius: 10px; overflow: hidden; border: 1px solid var(--gold); background: #000; }
+        .video > iframe { position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0; }
+        .log { margin-top: 16px; font-size: 12px; color: var(--muted); display: grid; gap: 3px; max-height: 140px; overflow: auto; }
+        .alert { padding: 10px 12px; border-radius: 8px; background: rgba(255,143,143,.12); color: #ffb3b3; font-size: 13px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <a href="/dashboard/">&larr; Employee Dashboard</a>
+        <span class="who" id="who"></span>
+    </header>
+    <main>
+        <p class="kicker">Design Lab Team</p>
+        <h1>Live Quote Help</h1>
+        <p class="sub">Customers who tap "Get live help" in their cart wait here. Accept one to see their cart live, change it with them, and start a video call.</p>
+
+        <div class="panel" id="signin" hidden>
+            <p class="note">Sign in on the <a href="/dashboard/" style="color:var(--gold)">Employee Dashboard</a> first, then come back to this page.</p>
+        </div>
+
+        <div class="grid" id="desk" hidden>
+            <section class="panel" aria-labelledby="q-title">
+                <h2 id="q-title">Waiting <span id="q-count" class="note"></span></h2>
+                <p class="note" id="q-empty">No one's waiting. Keep this page open and new requests appear here.</p>
+                <ul class="queue" id="queue"></ul>
+                <p class="note" style="margin-top:14px"><span class="dot on"></span><span id="agents"></span></p>
+            </section>
+
+            <section class="panel" aria-live="polite">
+                <div id="idle"><h2>No one connected</h2><p class="note">Accept someone from the list to start.</p></div>
+                <div id="sess" hidden>
+                    <div class="sess-head">
+                        <div>
+                            <h2 style="margin:0"><span class="dot" id="c-dot"></span><span id="c-name"></span></h2>
+                            <span class="note" id="c-where"></span>
+                        </div>
+                        <div class="actions">
+                            <button class="btn small" id="video-btn" type="button">Start video call</button>
+                            <button class="btn small ghost" id="end-btn" type="button">End session</button>
+                        </div>
+                    </div>
+                    <div class="alert" id="alert" hidden></div>
+                    <div class="video" id="video" hidden></div>
+                    <p class="note" style="margin-bottom:10px">Look: <span class="look" id="c-look">—</span> · <span id="c-count"></span></p>
+                    <div class="lines" id="lines"></div>
+                    <div class="add">
+                        <form id="search-form">
+                            <label class="sr-only" for="search">Find an item</label>
+                            <input type="search" id="search" placeholder="Add an item: number or name (e.g. B30, panel, filler)" autocomplete="off">
+                            <button class="btn small" type="submit">Find</button>
+                        </form>
+                        <p class="note" id="search-note" style="margin-top:8px">Items are added in the customer's look.</p>
+                        <ul class="results" id="results"></ul>
+                    </div>
+                    <div class="log" id="log"></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+    (function () {
+        var sb = DL.supabase, esc = DL.escapeHtml;
+        var TOKEN_ENDPOINT = 'https://shop-design-railway.up.railway.app/api/jitsi-token';
+        var JITSI_DOMAIN = '8x8.vc';
+        var APP_ID = 'vpaas-magic-cookie-f0a0399c162749f2805d91eef3967b80';
+        var KEY = 'dl_help_agent_v1';
+        var $ = function (id) { return document.getElementById(id); };
+
+        var me = null, myName = 'Design Lab', agentId = null;
+        var lobby = null, session = null, current = null; // current: { sid, name, status }
+        var cart = { lines: [], look: null }, waiting = [], videoApi = null;
+        var gone = {}; // sid -> time: cancelled or taken, hidden before presence catches up
+
+        function log(msg) {
+            var d = document.createElement('div');
+            d.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ' · ' + msg;
+            $('log').prepend(d);
+        }
+        function alertMsg(msg) { $('alert').textContent = msg; $('alert').hidden = !msg; if (msg) setTimeout(function () { $('alert').hidden = true; }, 6000); }
+        function mins(ms) { var m = Math.max(0, Math.round((Date.now() - ms) / 60000)); return m < 1 ? 'just now' : m + ' min'; }
+
+        // ---------- sign-in: employees only ----------
+        sb.auth.getSession().then(function (r) {
+            var user = r.data.session && r.data.session.user;
+            if (!user) { $('signin').hidden = false; return; }
+            sb.from('profiles').select('role,full_name').eq('id', user.id).maybeSingle().then(function (p) {
+                var role = p.data && p.data.role;
+                if (role !== 'employee' && role !== 'admin') { $('signin').hidden = false; return; }
+                me = user;
+                myName = (p.data.full_name || user.email.split('@')[0]).split(' ')[0];
+                var saved = null; try { saved = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (e) {}
+                agentId = saved && saved.agentId || user.id + '-' + Math.random().toString(36).slice(2, 7);
+                $('who').textContent = 'Signed in as ' + user.email;
+                $('desk').hidden = false;
+                joinLobby();
+                if (saved && saved.sid) accept(saved.sid, saved.name);
+                setInterval(paintQueue, 30000);
+            });
+        });
+
+        // ---------- the queue ----------
+        function joinLobby() {
+            lobby = sb.channel('dl-help-lobby', { config: { presence: { key: 'agent-' + agentId } } });
+            lobby.on('presence', { event: 'sync' }, function () {
+                var st = lobby.presenceState(), list = [], agents = 0;
+                Object.keys(st).forEach(function (k) {
+                    var m = st[k][0] || {};
+                    if (k.indexOf('agent-') === 0) agents++;
+                    else if (m.role === 'customer' && m.sid && !(gone[m.sid] > Date.now() - 15000)) list.push(m);
+                });
+                var before = waiting.map(function (w) { return w.sid; });
+                waiting = list.sort(function (a, b) { return a.since - b.since; });
+                if (waiting.some(function (w) { return before.indexOf(w.sid) < 0; }) && document.hidden) document.title = '(' + waiting.length + ') Help Desk - Design Lab';
+                $('agents').textContent = agents + (agents === 1 ? ' agent' : ' agents') + ' online (including you)';
+                paintQueue();
+            });
+            // A customer cancelled, or another agent took them: drop them now.
+            lobby.on('broadcast', { event: 'gone' }, function (m) {
+                var sid = (m.payload || {}).sid; if (!sid) return;
+                gone[sid] = Date.now();
+                waiting = waiting.filter(function (w) { return w.sid !== sid; });
+                paintQueue();
+            });
+            lobby.subscribe(function (s) { if (s === 'SUBSCRIBED') lobby.track({ role: 'agent', name: myName }); });
+        }
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) document.title = 'Help Desk - Design Lab'; });
+
+        function paintQueue() {
+            $('q-empty').hidden = waiting.length > 0;
+            $('q-count').textContent = waiting.length ? '(' + waiting.length + ')' : '';
+            $('queue').innerHTML = waiting.map(function (w) {
+                return '<li><b>' + esc(w.name || 'Customer') + '</b><span>Waiting ' + mins(w.since) + ' · ' + (w.items || 0) + ' item' + (w.items === 1 ? '' : 's') +
+                    (w.look ? ' · ' + esc(w.look) : '') + '</span>' +
+                    '<button class="btn small" type="button" data-accept="' + esc(w.sid) + '" data-name="' + esc(w.name || 'Customer') + '"' + (current ? ' disabled title="End your current session first"' : '') + '>Accept</button></li>';
+            }).join('');
+        }
+        $('queue').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-accept]');
+            if (b && !current) accept(b.dataset.accept, b.dataset.name);
+        });
+
+        // ---------- a session ----------
+        function accept(sid, name) {
+            current = { sid: sid, name: name || 'Customer', status: 'connecting' };
+            sessionStorage.setItem(KEY, JSON.stringify({ sid: sid, name: current.name, agentId: agentId }));
+            cart = { lines: [], look: null };
+            $('idle').hidden = true; $('sess').hidden = false; $('log').innerHTML = '';
+            paintSession(); paintQueue();
+            session = sb.channel('dl-help-s-' + sid, { config: { broadcast: { self: false }, presence: { key: 'agent' } } });
+            session.on('broadcast', { event: 'accepted' }, function (m) {
+                var p = m.payload || {};
+                if (!current || p.agentId !== agentId) return;
+                if (p.name) current.name = p.name;
+                if (current.status !== 'connected') {
+                    log('Connected with ' + current.name + '.');
+                    lobby.send({ type: 'broadcast', event: 'gone', payload: { sid: current.sid } });
+                }
+                current.status = 'connected'; paintSession();
+            });
+            session.on('broadcast', { event: 'taken' }, function (m) {
+                if ((m.payload || {}).agentId !== agentId) return;
+                alertMsg('Another agent already picked this one up.');
+                leave(false);
+            });
+            session.on('broadcast', { event: 'cart' }, function (m) {
+                if (!current) return;
+                var p = m.payload || {}, old = {};
+                cart.lines.forEach(function (l) { old[l.id] = l.quantity; });
+                cart = { lines: p.lines || [], look: p.look || null, page: p.page };
+                if (p.name) current.name = p.name;
+                current.changed = cart.lines.filter(function (l) { return old[l.id] !== l.quantity; }).map(function (l) { return l.id; });
+                paintSession();
+            });
+            session.on('broadcast', { event: 'back' }, function () { if (current) log(current.name + ' is back.'); });
+            session.on('broadcast', { event: 'op-result' }, function (m) { if (!(m.payload || {}).ok) alertMsg((m.payload || {}).reason || 'That change didn\'t go through.'); });
+            session.on('broadcast', { event: 'end' }, function () {
+                if (!current) return; // we ended it; this is the customer's goodbye
+                log(current.name + ' ended the session.'); alertMsg(current.name + ' ended the session.'); leave(false);
+            });
+            session.on('presence', { event: 'sync' }, function () {
+                var here = !!session.presenceState().customer;
+                if (current && current.here !== undefined && current.here !== here) log(here ? current.name + ' is online.' : current.name + ' left the page (they may come back).');
+                if (current) current.here = here;
+                paintSession();
+            });
+            session.subscribe(function (s) {
+                if (s !== 'SUBSCRIBED') return;
+                session.track({ role: 'agent', name: myName });
+                session.send({ type: 'broadcast', event: 'accept', payload: { agentId: agentId, agentName: myName } });
+            });
+        }
+        function send(event, payload) { if (session) session.send({ type: 'broadcast', event: event, payload: payload }); }
+        function leave(notify) {
+            stopVideo();
+            if (notify) send('end', {});
+            var ch = session;
+            if (ch) setTimeout(function () { sb.removeChannel(ch); }, 400);
+            session = null; current = null;
+            sessionStorage.removeItem(KEY);
+            $('sess').hidden = true; $('idle').hidden = false; $('results').innerHTML = '';
+            paintQueue();
+        }
+        $('end-btn').addEventListener('click', function () { if (confirm('End this session? The customer keeps their cart.')) leave(true); });
+
+        function paintSession() {
+            if (!current) return;
+            $('c-name').textContent = current.name;
+            $('c-dot').classList.toggle('on', !!current.here);
+            $('c-where').textContent = current.status !== 'connected' ? 'Connecting…' :
+                (current.here ? 'Online' + (cart.page ? ' · on ' + (cart.page.indexOf('/cart') === 0 ? 'their cart' : cart.page.indexOf('/diy') === 0 ? 'the DIY Shop' : 'Collections') : '') : 'Away');
+            $('c-look').textContent = cart.look ? cart.look.label : 'not picked yet';
+            var n = cart.lines.reduce(function (s, l) { return s + (l.quantity || 0); }, 0);
+            $('c-count').textContent = n + (n === 1 ? ' item' : ' items');
+            $('lines').innerHTML = cart.lines.length ? cart.lines.map(function (l) {
+                var d = l.display || {};
+                return '<div class="line' + ((current.changed || []).indexOf(l.id) >= 0 ? ' flash' : '') + '" data-id="' + esc(l.id) + '"><div><b>' + esc(d.title || 'Item') + '</b><small>' +
+                    esc([d.sku ? '# ' + d.sku : '', d.detail].filter(Boolean).join(' · ')) + '</small></div>' +
+                    '<div class="qty"><button type="button" data-q="-1" aria-label="One less">&minus;</button><span>' + l.quantity +
+                    '</span><button type="button" data-q="1" aria-label="One more">+</button></div>' +
+                    '<button class="rm" type="button" data-rm>Remove</button></div>';
+            }).join('') : '<p class="note">Their cart is empty' + (cart.look ? '' : ', and they haven\'t picked a look yet. Items can be added once they have.') + '</p>';
+            current.changed = [];
+        }
+        $('lines').addEventListener('click', function (e) {
+            var row = e.target.closest('[data-id]'); if (!row) return;
+            var line = cart.lines.filter(function (l) { return l.id === row.dataset.id; })[0]; if (!line) return;
+            var q = e.target.closest('[data-q]');
+            if (q) {
+                var next = line.quantity + Number(q.dataset.q);
+                if (next < 1) return;
+                send('op', { op: 'qty', id: line.id, qty: next });
+                log('Changed ' + (line.display.title || 'item') + ' to ' + next + '.');
+            } else if (e.target.closest('[data-rm]')) {
+                send('op', { op: 'remove', id: line.id });
+                log('Removed ' + (line.display.title || 'item') + '.');
+            }
+        });
+
+        // ---------- add an item in the customer's look ----------
+        var found = {};
+        $('search-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var q = $('search').value.trim();
+            if (!q) return;
+            if (!cart.look) { $('search-note').textContent = 'The customer needs to pick a look (door style and finish) first.'; return; }
+            $('search-note').textContent = 'Searching…';
+            var like = '%' + q.replace(/[%,()]/g, ' ') + '%';
+            sb.from('finishes').select('door_style_id').eq('id', cart.look.finish_id).maybeSingle().then(function (f) {
+                var styleId = f.data && f.data.door_style_id;
+                return sb.from('products').select('id,sku,mfg_sku,family_id,description,width,hinge').eq('is_active', true)
+                    .or('mfg_sku.ilike.' + like + ',sku.ilike.' + like + ',description.ilike.' + like).limit(40)
+                    .then(function (p) {
+                        var prods = p.data || [];
+                        if (!prods.length) return { prods: [] };
+                        var ids = prods.map(function (x) { return x.id; });
+                        return Promise.all([
+                            sb.from('storefront_offers').select('product_id').eq('door_style_id', styleId).in('product_id', ids),
+                            sb.from('product_families').select('id,name,slug').in('id', prods.map(function (x) { return x.family_id; }))
+                        ]).then(function (r) {
+                            var offered = {}; (r[0].data || []).forEach(function (o) { offered[o.product_id] = true; });
+                            var fams = {}; (r[1].data || []).forEach(function (x) { fams[x.id] = x; });
+                            return { prods: prods.filter(function (x) { return offered[x.id]; }).slice(0, 12), fams: fams, total: prods.length };
+                        });
+                    });
+            }).then(function (res) {
+                found = {};
+                $('search-note').textContent = res.prods.length ? 'In ' + cart.look.label + ':' :
+                    (res.total ? 'Found items, but none come in ' + cart.look.label + '.' : 'Nothing matches "' + q + '".');
+                $('results').innerHTML = res.prods.map(function (p) {
+                    var fam = res.fams[p.family_id] || {};
+                    found[p.id] = { p: p, fam: fam };
+                    var title = (fam.name || p.description) + (p.width != null ? ' — ' + Number(p.width) + '"' : '');
+                    return '<li data-pid="' + p.id + '"><div>' + esc(title) + '<br><small># ' + esc(p.mfg_sku || p.sku) + ' · ' + esc(p.description || '') + '</small></div>' +
+                        '<div class="pick">' + (p.hinge === 'L/R required' ? '<select aria-label="Hinge"><option value="">Hinge…</option><option value="L">Left</option><option value="R">Right</option></select>' : '') +
+                        '<input type="number" min="1" max="99" value="1" aria-label="Quantity"><button class="btn small" type="button" data-add>Add</button></div></li>';
+                }).join('');
+            }).catch(function () { $('search-note').textContent = 'Search didn\'t work. Try again.'; });
+        });
+        $('results').addEventListener('click', function (e) {
+            if (!e.target.closest('[data-add]')) return;
+            var li = e.target.closest('[data-pid]'), hit = found[li.dataset.pid];
+            if (!hit || !cart.look) return;
+            var p = hit.p, fam = hit.fam;
+            var sel = li.querySelector('select'), hinge = sel ? sel.value : null;
+            if (sel && !hinge) { sel.focus(); return; }
+            var qty = Math.max(1, Math.min(99, parseInt(li.querySelector('input').value, 10) || 1));
+            var title = (fam.name || p.description) + (p.width != null ? ' — ' + Number(p.width) + '"' : '');
+            var line = {
+                type: 'product', product_id: p.id, finish_id: cart.look.finish_id, vendor_id: cart.look.vendor_id, look_label: cart.look.label,
+                upgrade_id: null, hinge_side: hinge || null, modification_ids: [], quantity: qty,
+                display: {
+                    title: title,
+                    detail: [cart.look.label, p.description, hinge ? 'Hinge ' + (hinge === 'L' ? 'left' : 'right') : ''].filter(Boolean).join(' · '),
+                    sku: p.mfg_sku, image: null, unit_price: null,
+                    link: fam.slug ? '/diy-wizard/?family=' + encodeURIComponent(fam.slug) : null
+                }
+            };
+            send('op', { op: 'add', line: line });
+            log('Added ' + qty + ' × ' + title + '.');
+            li.remove();
+        });
+
+        // ---------- video call, side by side with the cart ----------
+        $('video-btn').addEventListener('click', function () {
+            if (!current) return;
+            var btn = $('video-btn');
+            btn.disabled = true; btn.textContent = 'Starting…';
+            var room = 'dl-help-' + current.sid;
+            sb.auth.getSession().then(function (r) {
+                var s = r.data.session;
+                if (!s) throw new Error('signed out');
+                return fetch(TOKEN_ENDPOINT, { method: 'POST', headers: { Authorization: 'Bearer ' + s.access_token } });
+            }).then(function (resp) {
+                if (!resp.ok) throw new Error('token');
+                return resp.json();
+            }).then(function (body) {
+                sb.from('consultation_rooms').insert({ room_name: room, created_by: me.id }).then(function () {});
+                return loadJitsi().then(function () {
+                    $('video').hidden = false;
+                    videoApi = new JitsiMeetExternalAPI(JITSI_DOMAIN, {
+                        roomName: APP_ID + '/' + room, parentNode: $('video'), width: '100%', height: '100%', jwt: body.jwt,
+                        configOverwrite: { prejoinPageEnabled: false, prejoinConfig: { enabled: false }, disableInviteFunctions: true, subject: 'Design Lab · Live help' },
+                        interfaceConfigOverwrite: { DISABLE_INVITE_FUNCTIONS: true }
+                    });
+                    videoApi.addEventListener('readyToClose', stopVideo);
+                    send('video', { room: room });
+                    log('Started a video call and invited ' + current.name + '.');
+                    btn.textContent = 'In video call';
+                });
+            }).catch(function () {
+                alertMsg('Could not start the video call. Try again in a moment.');
+                btn.disabled = false; btn.textContent = 'Start video call';
+            });
+        });
+        function loadJitsi() {
+            if (window.JitsiMeetExternalAPI) return Promise.resolve();
+            return new Promise(function (ok, fail) {
+                var s = document.createElement('script');
+                s.src = 'https://' + JITSI_DOMAIN + '/' + APP_ID + '/external_api.js';
+                s.onload = ok; s.onerror = fail;
+                document.body.appendChild(s);
+            });
+        }
+        function stopVideo() {
+            if (videoApi) { try { videoApi.dispose(); } catch (e) {} videoApi = null; }
+            $('video').hidden = true; $('video').innerHTML = '';
+            $('video-btn').disabled = false; $('video-btn').textContent = 'Start video call';
+            if (session) send('video', { room: null });
+        }
+    })();
+    </script>
+    <style>.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }</style>
+</body>
+</html>
