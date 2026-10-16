@@ -85,6 +85,7 @@
 
         .narrow-form { max-width: 320px; margin: 0 auto; }
 
+        .help-panel .help-open { display: inline-block; margin-top: 12px; text-decoration: none; }
         .panel {
             max-width: 320px; margin: 0 auto 20px; padding: 24px; border: 1px solid var(--border);
             border-radius: 8px; background: rgba(255,255,255,0.03);
@@ -212,6 +213,12 @@
                     <h3>Open Rooms</h3>
                     <p class="note" id="rooms-empty" hidden>No rooms yet — start one above.</p>
                     <ul class="rooms-list" id="rooms-list"></ul>
+                </div>
+
+                <div class="panel help-panel">
+                    <h3>Live Quote Help</h3>
+                    <p class="note" id="help-waiting">Checking for customers…</p>
+                    <a class="btn-pill help-open" href="/help-desk/" target="_blank" rel="noopener">Open Help Desk</a>
                 </div>
 
                 <p class="group-label">Orders</p>
@@ -413,6 +420,21 @@
                     });
             }
 
+            // Customers waiting for live quote help (the Help Desk page handles them).
+            var helpLobby = null;
+            function watchHelpQueue() {
+                if (helpLobby) return;
+                helpLobby = supabase.channel('dl-help-lobby', { config: { presence: { key: 'watch-' + Math.random().toString(36).slice(2, 8) } } });
+                helpLobby.on('presence', { event: 'sync' }, function () {
+                    var st = helpLobby.presenceState(), n = 0;
+                    Object.keys(st).forEach(function (k) { var m = st[k][0] || {}; if (m.role === 'customer') n++; });
+                    document.getElementById('help-waiting').textContent = n
+                        ? n + (n === 1 ? ' customer is' : ' customers are') + ' waiting for help.'
+                        : 'No one is waiting right now.';
+                });
+                helpLobby.subscribe();
+            }
+
             // Only employee/admin profiles get the dashboard; anyone else is signed back out.
             function checkTeamAccess(user) {
                 return supabase.from('profiles').select('role').eq('id', user.id).maybeSingle().then(function (res) {
@@ -427,6 +449,7 @@
                 stageDashboard.hidden = false;
                 loadRooms();
                 loadOrders();
+                watchHelpQueue();
 
                 // authuser hints Google to prefer this account if it's one of
                 // several already signed into this browser — it can't sign anyone
