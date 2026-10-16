@@ -74,7 +74,7 @@ create or replace view public.storefront_collections as
     ds.name as door_style,
     ds.code as door_style_code,
     case when (select exists (select 1 from public.profiles pr where pr.id = (select auth.uid()) and pr.role in ('employee', 'admin')))
-         then s.flat_price end as flat_price,
+         then s.flat_price end::numeric(12, 2) as flat_price,
     case when (select exists (select 1 from public.profiles pr where pr.id = (select auth.uid()) and pr.role in ('employee', 'admin')))
          then (select sum(ci.quantity::numeric * round(pp.list_price * lp.dealer_multiplier * lp.retail_multiplier, 2))
                  from curated_collection_items ci
