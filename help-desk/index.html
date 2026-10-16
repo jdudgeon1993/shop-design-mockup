@@ -91,6 +91,11 @@
     </style>
 </head>
 <body>
+    <script>
+        // Inside the dashboard (Live Help section): the dashboard has the header.
+        if (/[?&]embed=1\b/.test(location.search)) document.documentElement.classList.add('embedded');
+    </script>
+    <style>.embedded .top-bar, .embedded main > .kicker, .embedded main > h1, .embedded main > .sub { display: none; } .embedded main { padding: 16px; }</style>
     <header class="top-bar">
         <a href="/dashboard/">&larr; Employee Dashboard</a>
         <span class="who" id="who"></span>
@@ -228,7 +233,7 @@
                 waiting = waiting.filter(function (w) { return w.sid !== sid; });
                 paintQueue();
             });
-            lobby.subscribe(function (s) { if (s === 'SUBSCRIBED') lobby.track({ role: 'agent', name: myName }); });
+            lobby.subscribe(function (s) { if (s === 'SUBSCRIBED') lobby.track({ role: 'agent', name: myName, uid: me.id }); });
         }
         document.addEventListener('visibilitychange', function () { if (!document.hidden) document.title = 'Help Desk - Design Lab'; });
 

@@ -1,640 +1,85 @@
-<!-- Employee-only. Linked from the site footer, not the main nav. -->
-<!-- deploy-check: 2026-07-24 — if you can see the Team Calendar panel below,
-     this build is live; if not, GitHub Pages is still serving a stale build. -->
+<!-- Employee dashboard. Employee-only (profiles.role employee/admin), linked from the
+     site footer, not the main nav, and not behind the pre-launch gate (it has its own
+     sign-in).
+
+     Structure: this page is the shell (sign-in, sidebar, top bar). dash.js runs it:
+     auth, routing (#overview, #orders, ...), alerts and the shared helpers. Each section
+     is one file in modules/ that registers itself with DLDash.register({...}); to add a
+     section, add a file there and a <script> line below. See modules/README.md. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Employee Dashboard - Design Lab</title>
+    <title>Dashboard - Design Lab</title>
     <meta name="description" content="Design Lab team dashboard.">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#141414">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
-    <!-- Deliberately not deferred: our own inline script at the end of <body>
-         uses window.supabase immediately, so this has to finish executing
-         before that runs, not merely appear earlier in the document. -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); }
-        *, *::before, *::after { box-sizing: border-box; }
-        html, body {
-            min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
-            background: var(--black); color: var(--white);
-        }
-
-        .page { display: flex; flex-direction: column; min-height: 100dvh; width: 100%; }
-
-        .top-bar {
-            flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 5%; border-bottom: 1px solid var(--border);
-        }
-        .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
-        .back-link:hover { text-decoration: underline; }
-        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
-
-        .call-frame {
-            flex: 1; min-height: 0; width: 100%; background: #000;
-            display: flex; align-items: center; justify-content: center; position: relative;
-        }
-
-        /* Same fix as the consultation page: Jitsi's script sets its own inline
-           width/height on the iframe it injects, which doesn't reliably resolve
-           against a flex-grown container. Absolute-position + inset:0 sidesteps
-           that entirely. Direct-child selector on purpose — Jitsi injects its
-           iframe straight into #call-frame (parentNode), but the calendar iframe
-           lives several levels deeper inside .stage > .panel, and a descendant
-           selector here would wrongly stretch that one full-viewport too. */
-        .call-frame > iframe {
-            position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0;
-        }
-
-        .stage { text-align: center; padding: 40px 20px; width: 100%; max-height: 100%; overflow-y: auto; }
-        .stage p { color: rgba(255,255,255,0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
-        .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.5; }
-        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
-        .intro-heading { margin: 0 0 14px; font-size: clamp(22px, 4vw, 30px); font-weight: 700; line-height: 1.2; }
-
-        .room-input {
-            width: 100%; background: #242424; border: 1px solid var(--border); color: var(--white);
-            padding: 10px 12px; border-radius: 4px; font-family: inherit; font-size: 14px;
-            margin-bottom: 14px; text-align: center;
-        }
-
-        .room-label { color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin: 0 0 6px; }
-        .room-code { color: var(--gold); font-size: 20px; font-weight: 700; margin: 0 0 20px; word-break: break-all; }
-
-        .btn-pill, .btn-secondary {
-            appearance: none; -webkit-appearance: none; -moz-appearance: none;
-            outline: none; box-shadow: none; box-sizing: border-box;
-            display: inline-block; padding: 14px 32px; border: none; border-radius: 999px;
-            font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
-            text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1.5px;
-            cursor: pointer; transition: 0.3s; margin: 4px;
-        }
-        .btn-pill { background: var(--white); color: var(--black); }
-        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); }
-        .btn-pill:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
-        .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
-
-        .note { margin: 20px 0 0; padding: 12px 16px; border-radius: 4px; background: rgba(212,175,55,0.1); color: var(--gold); font-size: 13px; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .error-note { background: rgba(220,80,80,0.15); color: #ff9a9a; }
-
-        .narrow-form { max-width: 320px; margin: 0 auto; }
-
-        .help-panel .help-open { display: inline-block; margin-top: 12px; text-decoration: none; }
-        .panel {
-            max-width: 320px; margin: 0 auto 20px; padding: 24px; border: 1px solid var(--border);
-            border-radius: 8px; background: rgba(255,255,255,0.03);
-        }
-        .panel h3 { margin: 0 0 16px; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--white); }
-        .panel.coming-soon { opacity: 0.55; }
-        .panel.coming-soon p { font-size: 13px; margin: 0; }
-
-        .calendar-panel { max-width: 760px; }
-        .calendar-frame { width: 100%; height: 520px; border: 0; border-radius: 4px; background: #fff; display: block; }
-        .calendar-note { font-size: 12px; color: rgba(255,255,255,0.4); margin: 14px 0 0; max-width: none; }
-
-        .rooms-panel { max-width: 480px; text-align: left; }
-        .rooms-list { list-style: none; margin: 0; padding: 0; }
-        .rooms-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--border); }
-        .rooms-list li:last-child { border-bottom: none; }
-        .room-info { min-width: 0; }
-        .room-name { font-weight: 700; font-size: 14px; word-break: break-all; }
-        .room-meta { display: block; margin-top: 2px; font-size: 12px; color: rgba(255,255,255,0.45); }
-        .room-actions { flex-shrink: 0; display: flex; gap: 6px; }
-        .btn-small {
-            padding: 6px 14px; font-size: 11px; letter-spacing: 1px; margin: 0;
-        }
-        .btn-danger { border-color: rgba(220,80,80,0.4); color: #ff9a9a; }
-        .btn-danger:hover, .btn-danger:focus-visible { border-color: #ff9a9a; color: #ff9a9a; background: rgba(220,80,80,0.12); }
-
-        /* Section labels — the panel list has grown enough that a flat
-           stack of them stops being scannable at a glance. */
-        .group-label {
-            max-width: 640px; margin: 36px auto 14px; padding-top: 20px;
-            border-top: 1px solid var(--border);
-            text-align: left; font-size: 11px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.4);
-        }
-        .group-label:first-of-type { margin-top: 8px; padding-top: 0; border-top: none; }
-
-        .catalog-panel { max-width: 420px; text-align: left; }
-        .catalog-links { display: flex; flex-wrap: wrap; gap: 10px; }
-        .orders-panel { max-width: 760px; text-align: left; }
-        .orders-list { list-style: none; margin: 0; padding: 0; }
-        .orders-list > li { border-bottom: 1px solid var(--border); }
-        .orders-list > li:last-child { border-bottom: none; }
-        .orders-list details summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 70px 1fr auto auto; gap: 12px; align-items: center; padding: 12px 4px; font-size: 13px; }
-        .orders-list details summary::-webkit-details-marker { display: none; }
-        .order-num { color: var(--gold); font-weight: 700; }
-        .order-who { min-width: 0; }
-        .order-who b { display: block; font-size: 14px; }
-        .order-who span { color: rgba(255,255,255,0.45); font-size: 12px; }
-        .order-status { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 3px 9px; border-radius: 999px; background: rgba(212,175,55,0.15); color: var(--gold); }
-        .order-total { font-weight: 700; font-variant-numeric: tabular-nums; }
-        .order-items { list-style: none; margin: 0 0 14px; padding: 0 4px 0 82px; font-size: 13px; color: rgba(255,255,255,0.75); }
-        .order-items li { padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.06); }
-        .order-items small { display: block; color: rgba(255,255,255,0.45); }
-        .order-contact { padding: 0 4px 14px 82px; font-size: 12px; color: rgba(255,255,255,0.5); }
-        @media (max-width: 640px) {
-            .orders-list details summary { grid-template-columns: 56px 1fr auto; }
-            .order-status { display: none; }
-            .order-items, .order-contact { padding-left: 4px; }
-        }
-        .catalog-desc { margin: 0 0 18px; font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; }
-
-        .proto-panel { max-width: 640px; text-align: left; }
-        .proto-intro { margin: 0 0 18px; font-size: 13px; color: rgba(255,255,255,0.5); text-align: left; }
-        .proto-list { list-style: none; margin: 0; padding: 0; }
-        .proto-list li { padding: 12px 4px; border-bottom: 1px solid var(--border); }
-        .proto-list li:last-child { border-bottom: none; }
-        .proto-list a { color: var(--white); font-weight: 700; font-size: 14px; text-decoration: none; }
-        .proto-list a:hover, .proto-list a:focus-visible { color: var(--gold); text-decoration: underline; }
-        .proto-list span { display: block; margin-top: 4px; font-size: 12px; color: rgba(255,255,255,0.45); }
-
-        .price-toggle { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
-        .price-toggle .catalog-desc { margin: 0; flex: 1 1 260px; }
-        .price-toggle button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); }
-        .sign-out-link {
-            appearance: none; background: none; border: none; cursor: pointer;
-            color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px;
-            text-decoration: underline; margin: 20px auto 0; display: block;
-        }
-        .sign-out-link:hover, .sign-out-link:focus-visible { color: var(--gold); }
-
-        body.in-call .top-bar { padding: 10px 5%; }
-
-        [hidden] { display: none !important; }
-    </style>
+    <script src="/Assets/dl-core.js"></script>
+    <link rel="stylesheet" href="/dashboard/dash.css">
 </head>
 <body>
+    <!-- Sign in -->
+    <main class="signin" id="signin" hidden>
+        <form class="signin-card" id="signin-form">
+            <img src="/Assets/Logos/apple-touch-icon.png" alt="" class="signin-logo" width="56" height="56">
+            <p class="kicker">Design Lab Team</p>
+            <h1>Sign in</h1>
+            <label class="field">Work email<input type="email" id="si-email" autocomplete="username" required></label>
+            <label class="field">Password<input type="password" id="si-password" autocomplete="current-password" required></label>
+            <p class="form-error" id="si-error" role="alert" hidden></p>
+            <button class="btn btn-primary btn-block" type="submit" id="si-submit">Sign in</button>
+            <p class="muted small">Employees only. <a href="/home/">Back to the storefront</a></p>
+        </form>
+    </main>
 
-    <div class="page">
-        <div class="top-bar">
-            <a class="back-link" href="/home/">&larr; Back to storefront</a>
-            <span class="page-title">Employee Dashboard</span>
-        </div>
-
-        <div class="call-frame" id="call-frame">
-            <!-- Stage 1: sign in -->
-            <div class="stage" id="stage-login">
-                <p class="kicker">Design Lab Team</p>
-                <h1 class="intro-heading">Employee Sign In</h1>
-                <p class="intro-line">Sign in with your Design Lab account to start a video consultation.</p>
-                <form class="narrow-form" id="login-form">
-                    <input type="email" id="login-email" class="room-input" placeholder="Work email" autocomplete="username" required>
-                    <input type="password" id="login-password" class="room-input" placeholder="Password" autocomplete="current-password" required>
-                    <button class="btn-pill" type="submit" id="login-submit-btn">Sign In</button>
-                    <p class="note error-note" id="login-error" hidden></p>
-                </form>
+    <!-- The app -->
+    <div class="app" id="app" hidden>
+        <aside class="sidebar" aria-label="Sections">
+            <a class="brand" href="#overview"><img src="/Assets/Logos/apple-touch-icon.png" alt="" width="30" height="30"><span>Design Lab<small>Team</small></span></a>
+            <nav class="nav" id="nav"></nav>
+            <div class="side-foot">
+                <a href="/home/" target="_blank" rel="noopener">Storefront ↗</a>
+                <button type="button" id="signout">Sign out</button>
             </div>
-
-            <!-- Stage 2: signed in -->
-            <div class="stage" id="stage-dashboard" hidden>
-                <p class="kicker" id="dashboard-greeting">Signed In</p>
-                <h1 class="intro-heading">Employee Dashboard</h1>
-
-                <p class="group-label">Video Consultations</p>
-
-                <div class="panel">
-                    <h3>Start a Conference Call</h3>
-                    <form id="create-room-form">
-                        <input type="text" id="room-name-input" class="room-input" placeholder="e.g. Smith Family Kitchen" autocomplete="off">
-                        <button class="btn-pill" type="submit" id="create-room-btn">Start Conference Call</button>
-                        <p class="note error-note" id="create-error" hidden></p>
-                    </form>
-                </div>
-
-                <div class="panel rooms-panel">
-                    <h3>Open Rooms</h3>
-                    <p class="note" id="rooms-empty" hidden>No rooms yet — start one above.</p>
-                    <ul class="rooms-list" id="rooms-list"></ul>
-                </div>
-
-                <div class="panel help-panel">
-                    <h3>Live Quote Help</h3>
-                    <p class="note" id="help-waiting">Checking for customers…</p>
-                    <a class="btn-pill help-open" href="/help-desk/" target="_blank" rel="noopener">Open Help Desk</a>
-                </div>
-
-                <p class="group-label">Orders</p>
-                <div class="panel orders-panel">
-                    <h3>Recent Orders</h3>
-                    <p class="note" id="orders-empty" hidden>No orders yet. Submitted orders from the cart show up here.</p>
-                    <ul class="orders-list" id="orders-list"></ul>
-                </div>
-                <p class="group-label">Catalog</p>
-                <div class="panel catalog-panel">
-                    <h3>Storefront &amp; Catalog</h3>
-                    <p class="catalog-desc">The DIY Shop and Curated Collections read the catalog live from Supabase. Prices, products, finishes and collections are edited in the Supabase table editor.</p>
-                    <div class="catalog-links">
-                        <a class="btn-secondary btn-small" href="/diy-wizard/" target="_blank" rel="noopener">DIY Shop</a>
-                        <a class="btn-secondary btn-small" href="/collections/" target="_blank" rel="noopener">Collections</a>
-                        <a class="btn-secondary btn-small" href="https://supabase.com/dashboard/project/nutgbxgnkvvruaoloqch/editor" target="_blank" rel="noopener">Supabase Tables</a>
-                    </div>
-                    <div class="price-toggle">
-                        <button class="btn-secondary btn-small" id="price-toggle" type="button" aria-pressed="false">Show pricing</button>
-                        <p class="catalog-desc" id="price-toggle-note">Customers see &ldquo;Pricing coming soon&rdquo;. Turn pricing on to see prices in the DIY Shop, Collections and cart on this browser while you&rsquo;re signed in.</p>
+        </aside>
+        <div class="main-col">
+            <header class="topbar">
+                <h1 class="page-title" id="page-title"></h1>
+                <span class="sp"></span>
+                <label class="avail" title="Customers see an agent is available, and you get an alert when someone asks for help">
+                    <input type="checkbox" id="avail"><span class="switch" aria-hidden="true"></span><span class="avail-text">Available for live help</span>
+                </label>
+                <div class="bell-wrap">
+                    <button class="icon-btn" id="bell" type="button" aria-label="Notifications" aria-expanded="false">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        <span class="badge" id="bell-count" hidden></span>
+                    </button>
+                    <div class="bell-menu" id="bell-menu" hidden>
+                        <div class="bell-head"><strong>Notifications</strong><button type="button" id="bell-clear">Clear</button></div>
+                        <ul id="bell-list"></ul>
                     </div>
                 </div>
-
-                <p class="group-label">Team</p>
-
-                <div class="panel calendar-panel">
-                    <h3>Team Calendar</h3>
-                    <iframe class="calendar-frame" id="calendar-frame" title="Design Lab team calendar" frameborder="0" scrolling="no"></iframe>
-                    <p class="note calendar-note">Shown using your Design Lab Google account. If this looks empty, make sure you're signed into that account (not a personal one) in this browser.</p>
-                </div>
-
-                <p class="group-label">Reference</p>
-
-                <div class="panel proto-panel">
-                    <h3>Prototypes &amp; Experiments</h3>
-                    <p class="proto-intro">Early sandbox pages kept for reference. Not linked from the live site.</p>
-                    <ul class="proto-list">
-                        <li><a href="../proto/diy-wizard/index.html" target="_blank" rel="noopener">DIY Wizard</a><span>Original accordion-style cabinet builder with cart &amp; pricing</span></li>
-                        <li><a href="../proto/vendors/index.html" target="_blank" rel="noopener">Vendor / Curated Showcase</a><span>5 sample vendors, each with curated collections you can customize</span></li>
-                    </ul>
-                </div>
-
-                <div class="panel coming-soon">
-                    <h3>Coming Soon</h3>
-                    <p>Usage tracking and appointment scheduling will appear here once they're wired up.</p>
-                </div>
-
-                <button class="sign-out-link" id="logout-btn" type="button">Sign out</button>
-            </div>
-
-            <!-- Stage 3: conference call ready, not yet in-call -->
-            <div class="stage" id="stage-ready" hidden>
-                <p class="room-label">Conference Call</p>
-                <p class="room-code" id="room-code-display"></p>
-                <button class="btn-secondary" id="copy-link-btn">Copy Invite Link</button>
-                <button class="btn-pill" id="join-btn">Join Video Call</button>
-            </div>
+                <div class="me" id="me"></div>
+            </header>
+            <main class="content" id="content"></main>
         </div>
     </div>
+    <div class="toasts" id="toasts" aria-live="polite"></div>
 
-    <script>
-        (function () {
-            // ---- Fill these in once the Supabase project + Railway service exist ----
-            var SUPABASE_URL = 'https://nutgbxgnkvvruaoloqch.supabase.co';
-            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51dGdieGdua3Z2cnVhb2xvcWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NDEzNDgsImV4cCI6MjEwMDIxNzM0OH0.v9hXYtxOslhyXOu-mZVjm_EFaUIdTqTWKn9P3B7BY64';
-            // Deployed Railway service from /server — mints short-lived JaaS tokens.
-            var TOKEN_ENDPOINT = 'https://shop-design-railway.up.railway.app/api/jitsi-token';
-            // --------------------------------------------------------------------------
-
-            var JITSI_DOMAIN = '8x8.vc';
-            var APP_ID = 'vpaas-magic-cookie-f0a0399c162749f2805d91eef3967b80';
-            // Shared team calendar — restricted to Design Lab LLC Google accounts,
-            // never public (confirmed in Calendar's own sharing settings). This ID
-            // being visible in page source doesn't expose anything: Google still
-            // requires an authorized sign-in to actually view it.
-            var CALENDAR_ID = 'c_9089d8c980992d45cb984c6a34f591828f33a49387d17a67496e669859499399@group.calendar.google.com';
-
-            var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-            var callFrame = document.getElementById('call-frame');
-            var stageLogin = document.getElementById('stage-login');
-            var stageDashboard = document.getElementById('stage-dashboard');
-            var stageReady = document.getElementById('stage-ready');
-            var loginForm = document.getElementById('login-form');
-            var loginEmail = document.getElementById('login-email');
-            var loginPassword = document.getElementById('login-password');
-            var loginSubmitBtn = document.getElementById('login-submit-btn');
-            var loginError = document.getElementById('login-error');
-            var dashboardGreeting = document.getElementById('dashboard-greeting');
-            var createRoomForm = document.getElementById('create-room-form');
-            var roomNameInput = document.getElementById('room-name-input');
-            var createRoomBtn = document.getElementById('create-room-btn');
-            var createError = document.getElementById('create-error');
-            var roomsList = document.getElementById('rooms-list');
-            var roomsEmpty = document.getElementById('rooms-empty');
-            var logoutBtn = document.getElementById('logout-btn');
-            var roomCodeDisplay = document.getElementById('room-code-display');
-            var copyLinkBtn = document.getElementById('copy-link-btn');
-            var joinBtn = document.getElementById('join-btn');
-            var calendarFrame = document.getElementById('calendar-frame');
-
-            var roomName = null;
-            var pendingJwt = null;
-            var currentUser = null;
-
-            // Employees type the room name now — no more random adjective-noun
-            // codes. Slugified so it's safe as both a Jitsi room name and a
-            // URL query param: lowercase, hyphens only, "dl-" namespaced.
-            function slugify(raw) {
-                var slug = raw.trim().toLowerCase()
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/^-+|-+$/g, '');
-                return slug ? 'dl-' + slug : '';
-            }
-
-            function roomInviteUrl(name) {
-                // Clients always join through the public consultation page,
-                // never through this dashboard — it stays employee-only.
-                var url = new URL('../consultation/index.html', window.location.href);
-                url.searchParams.set('room', name);
-                return url.toString();
-            }
-
-            function loadRooms() {
-                supabase.from('consultation_rooms').select('id,room_name,created_at,created_by,profiles(full_name)').order('created_at', { ascending: false })
-                    .then(function (result) {
-                        roomsList.innerHTML = '';
-                        var rows = result.data || [];
-                        roomsEmpty.hidden = rows.length > 0;
-                        rows.forEach(function (room) {
-                            var li = document.createElement('li');
-                            var createdAt = new Date(room.created_at).toLocaleString();
-                            li.innerHTML =
-                                '<div class="room-info"><span class="room-name">' + esc(room.room_name) + '</span>' +
-                                '<span class="room-meta">' + esc(roomCreator(room)) + ' &middot; ' + esc(createdAt) + '</span></div>' +
-                                '<div class="room-actions">' +
-                                '<button class="btn-secondary btn-small" type="button" data-copy>Copy</button>' +
-                                '<button class="btn-secondary btn-small btn-danger" type="button" data-delete>Delete</button>' +
-                                '</div>';
-                            li.querySelector('[data-copy]').addEventListener('click', function (e) {
-                                navigator.clipboard.writeText(roomInviteUrl(room.room_name)).then(function () {
-                                    var btn = e.target;
-                                    var original = btn.textContent;
-                                    btn.textContent = 'Copied!';
-                                    setTimeout(function () { btn.textContent = original; }, 1800);
-                                });
-                            });
-                            li.querySelector('[data-delete]').addEventListener('click', function () {
-                                if (!window.confirm('Remove "' + room.room_name + '" from this list? This does not end a call already in progress.')) return;
-                                supabase.from('consultation_rooms').delete().eq('id', room.id).then(loadRooms);
-                            });
-                            roomsList.appendChild(li);
-                        });
-                    });
-            }
-
-            function esc(v) {
-                return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
-                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-                });
-            }
-            function roomCreator(room) {
-                if (currentUser && room.created_by === currentUser.id) return 'You';
-                return (room.profiles && room.profiles.full_name) || 'Team member';
-            }
-
-            var money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-            function loadOrders() {
-                var list = document.getElementById('orders-list');
-                supabase.from('orders')
-                    .select('order_number,status,contact_name,contact_email,contact_phone,shipping_address,customer_notes,subtotal,created_at,order_items(item_type,name_snapshot,sku_snapshot,mfg_sku_snapshot,vendor_snapshot,finish_snapshot,hinge_side,mods_snapshot,unit_price,quantity,line_total)')
-                    .order('created_at', { ascending: false }).limit(15)
-                    .then(function (res) {
-                        var rows = res.data || [];
-                        document.getElementById('orders-empty').hidden = rows.length > 0;
-                        list.innerHTML = rows.map(function (o) {
-                            var items = (o.order_items || []).map(function (i) {
-                                // Employees see the real maker and its part number (customers only see our brand).
-                                var maker = i.vendor_snapshot ? 'Order from ' + i.vendor_snapshot + (i.mfg_sku_snapshot ? ' # ' + i.mfg_sku_snapshot : '') : '';
-                                var extra = [maker, i.finish_snapshot, i.sku_snapshot && i.sku_snapshot !== i.mfg_sku_snapshot ? 'Our # ' + i.sku_snapshot : '', i.hinge_side ? 'Hinge ' + i.hinge_side : '']
-                                    .filter(Boolean).join(' · ');
-                                var mods = (i.mods_snapshot || []).map(function (m) {
-                                    return i.item_type === 'collection' ? m.quantity + ' × ' + m.mfg_sku : m.name;
-                                }).join(', ');
-                                return '<li>' + i.quantity + ' × ' + esc(i.name_snapshot) + ' — ' + money.format(i.line_total) +
-                                    '<small>' + esc(extra) + (mods ? '<br>' + (i.item_type === 'collection' ? 'Includes: ' : 'Mods: ') + esc(mods) : '') + '</small></li>';
-                            }).join('');
-                            var a = o.shipping_address;
-                            var contact = [o.contact_email, o.contact_phone, a ? [a.line1, a.city, a.state, a.zip].filter(Boolean).join(', ') : '']
-                                .filter(Boolean).join(' · ');
-                            return '<li><details><summary><span class="order-num">#' + o.order_number + '</span>' +
-                                '<span class="order-who"><b>' + esc(o.contact_name) + '</b><span>' + esc(new Date(o.created_at).toLocaleString()) + '</span></span>' +
-                                '<span class="order-status">' + esc(o.status.replace(/_/g, ' ')) + '</span>' +
-                                '<span class="order-total">' + money.format(o.subtotal) + '</span></summary>' +
-                                '<ul class="order-items">' + items + '</ul>' +
-                                '<div class="order-contact">' + esc(contact) + (o.customer_notes ? '<br>Notes: ' + esc(o.customer_notes) : '') + '</div>' +
-                                '</details></li>';
-                        }).join('');
-                    });
-            }
-
-            // Customers waiting for live quote help (the Help Desk page handles them).
-            var helpLobby = null;
-            function watchHelpQueue() {
-                if (helpLobby) return;
-                helpLobby = supabase.channel('dl-help-lobby', { config: { presence: { key: 'watch-' + Math.random().toString(36).slice(2, 8) } } });
-                helpLobby.on('presence', { event: 'sync' }, function () {
-                    var st = helpLobby.presenceState(), n = 0;
-                    Object.keys(st).forEach(function (k) { var m = st[k][0] || {}; if (m.role === 'customer') n++; });
-                    document.getElementById('help-waiting').textContent = n
-                        ? n + (n === 1 ? ' customer is' : ' customers are') + ' waiting for help.'
-                        : 'No one is waiting right now.';
-                });
-                helpLobby.subscribe();
-            }
-
-            // Only employee/admin profiles get the dashboard; anyone else is signed back out.
-            function checkTeamAccess(user) {
-                return supabase.from('profiles').select('role').eq('id', user.id).maybeSingle().then(function (res) {
-                    return !!(res.data && (res.data.role === 'employee' || res.data.role === 'admin'));
-                });
-            }
-
-            function showDashboard(user) {
-                currentUser = user;
-                dashboardGreeting.textContent = 'Signed in as ' + user.email;
-                stageLogin.hidden = true;
-                stageDashboard.hidden = false;
-                loadRooms();
-                loadOrders();
-                watchHelpQueue();
-
-                // authuser hints Google to prefer this account if it's one of
-                // several already signed into this browser — it can't sign anyone
-                // in on its own, only skip the "wrong account" default when the
-                // right one is already authenticated somewhere in the session.
-                calendarFrame.src = 'https://calendar.google.com/calendar/embed?src=' +
-                    encodeURIComponent(CALENDAR_ID) + '&authuser=' + encodeURIComponent(user.email);
-            }
-
-            function showLogin() {
-                stageDashboard.hidden = true;
-                stageReady.hidden = true;
-                stageLogin.hidden = false;
-                loginForm.reset();
-                calendarFrame.src = '';
-            }
-
-            loginForm.addEventListener('submit', function (e) {
-                e.preventDefault();
-                loginError.hidden = true;
-                loginSubmitBtn.disabled = true;
-                loginSubmitBtn.textContent = 'Signing In…';
-
-                supabase.auth.signInWithPassword({
-                    email: loginEmail.value.trim(),
-                    password: loginPassword.value
-                }).then(function (result) {
-                    loginSubmitBtn.disabled = false;
-                    loginSubmitBtn.textContent = 'Sign In';
-                    if (result.error) {
-                        loginError.textContent = 'Incorrect email or password.';
-                        loginError.hidden = false;
-                        return;
-                    }
-                    return checkTeamAccess(result.data.user).then(function (ok) {
-                        if (ok) return showDashboard(result.data.user);
-                        loginError.textContent = 'This account does not have team access.';
-                        loginError.hidden = false;
-                        return supabase.auth.signOut();
-                    });
-                }).catch(function () {
-                    loginSubmitBtn.disabled = false;
-                    loginSubmitBtn.textContent = 'Sign In';
-                    loginError.textContent = 'Could not reach the sign-in service. Check your connection and try again.';
-                    loginError.hidden = false;
-                });
-            });
-
-            logoutBtn.addEventListener('click', function () {
-                setPrices(false);
-                supabase.auth.signOut().then(showLogin);
-            });
-
-            // "Show pricing": a per-browser switch read by DL.prices in dl-core.js. The
-            // database only returns prices to employees, so it does nothing for anyone else.
-            var PRICES_KEY = 'dl_show_prices_v1';
-            var priceToggle = document.getElementById('price-toggle');
-            function pricesOn() { try { return localStorage.getItem(PRICES_KEY) === '1'; } catch (e) { return false; } }
-            function setPrices(on) {
-                try { if (on) localStorage.setItem(PRICES_KEY, '1'); else localStorage.removeItem(PRICES_KEY); } catch (e) {}
-                paintPriceToggle();
-            }
-            function paintPriceToggle() {
-                var on = pricesOn();
-                priceToggle.setAttribute('aria-pressed', String(on));
-                priceToggle.textContent = on ? 'Hide pricing' : 'Show pricing';
-                document.getElementById('price-toggle-note').innerHTML = on
-                    ? 'Pricing is <b>on</b> for you on this browser. Customers still see &ldquo;Pricing coming soon&rdquo;.'
-                    : 'Customers see &ldquo;Pricing coming soon&rdquo;. Turn pricing on to see prices in the DIY Shop, Collections and cart on this browser while you&rsquo;re signed in.';
-            }
-            priceToggle.addEventListener('click', function () { setPrices(!pricesOn()); });
-            paintPriceToggle();
-
-            createRoomForm.addEventListener('submit', function (e) {
-                e.preventDefault();
-                createError.hidden = true;
-
-                var slug = slugify(roomNameInput.value);
-                if (!slug) {
-                    createError.textContent = 'Enter a name for this room.';
-                    createError.hidden = false;
-                    roomNameInput.focus();
-                    return;
-                }
-
-                createRoomBtn.disabled = true;
-                createRoomBtn.textContent = 'Creating…';
-
-                supabase.auth.getSession().then(function (sessionResult) {
-                    var session = sessionResult.data.session;
-                    if (!session) {
-                        showLogin();
-                        return Promise.reject(new Error('no session'));
-                    }
-                    return fetch(TOKEN_ENDPOINT, {
-                        method: 'POST',
-                        headers: { Authorization: 'Bearer ' + session.access_token }
-                    });
-                }).then(function (response) {
-                    if (!response.ok) throw new Error('token request failed');
-                    return response.json();
-                }).then(function (body) {
-                    pendingJwt = body.jwt;
-                    // Best-effort tracking for the Open Rooms list. Supabase
-                    // resolves with {data, error} rather than rejecting, so a
-                    // failed insert here can't block actually starting the call.
-                    return supabase.from('consultation_rooms').insert({
-                        room_name: slug,
-                        created_by: currentUser.id
-                    });
-                }).then(function () {
-                    loadRooms();
-                    showReadyStage(slug);
-                }).catch(function (err) {
-                    if (err.message === 'no session') return;
-                    createError.textContent = 'Could not start a conference call right now. Try again in a moment.';
-                    createError.hidden = false;
-                }).finally(function () {
-                    createRoomBtn.disabled = false;
-                    createRoomBtn.textContent = 'Start Conference Call';
-                });
-            });
-
-            function showReadyStage(name) {
-                roomName = name;
-                roomCodeDisplay.textContent = name;
-                stageDashboard.hidden = true;
-                stageReady.hidden = false;
-            }
-
-            copyLinkBtn.addEventListener('click', function () {
-                navigator.clipboard.writeText(roomInviteUrl(roomName)).then(function () {
-                    var original = copyLinkBtn.textContent;
-                    copyLinkBtn.textContent = 'Copied!';
-                    setTimeout(function () { copyLinkBtn.textContent = original; }, 1800);
-                });
-            });
-
-            joinBtn.addEventListener('click', function () {
-                joinBtn.disabled = true;
-                joinBtn.textContent = 'Loading…';
-
-                var script = document.createElement('script');
-                script.src = 'https://' + JITSI_DOMAIN + '/' + APP_ID + '/external_api.js';
-                script.onload = startCall;
-                script.onerror = function () {
-                    stageReady.innerHTML = '<p class="note error-note">Could not reach the video service. Check your connection and try again.</p>';
-                };
-                document.body.appendChild(script);
-            });
-
-            function startCall() {
-                if (typeof JitsiMeetExternalAPI === 'undefined') {
-                    stageReady.innerHTML = '<p class="note error-note">Could not load the video service. Check your connection and try again.</p>';
-                    return;
-                }
-                document.body.classList.add('in-call');
-                stageReady.remove();
-                var api = new JitsiMeetExternalAPI(JITSI_DOMAIN, {
-                    roomName: APP_ID + '/' + roomName,
-                    parentNode: callFrame,
-                    width: '100%',
-                    height: '100%',
-                    jwt: pendingJwt,
-                    configOverwrite: { prejoinPageEnabled: false, disableInviteFunctions: true },
-                    interfaceConfigOverwrite: { DISABLE_INVITE_FUNCTIONS: true }
-                });
-
-                // Same fix as the consultation page — send the employee back to our
-                // own site instead of Jitsi's own "meeting ended" page.
-                api.addEventListener('readyToClose', function () {
-                    api.dispose();
-                    window.location.href = '/home/';
-                });
-            }
-
-            // Restore a signed-in session on page reload instead of asking again.
-            supabase.auth.getSession().then(function (result) {
-                var user = result.data.session && result.data.session.user;
-                if (!user) return;
-                checkTeamAccess(user).then(function (ok) {
-                    if (ok) showDashboard(user); else supabase.auth.signOut();
-                });
-            });
-        })();
-    </script>
+    <script src="/dashboard/dash.js"></script>
+    <!-- Sections, in sidebar order. -->
+    <script src="/dashboard/modules/overview.js"></script>
+    <script src="/dashboard/modules/live-help.js"></script>
+    <script src="/dashboard/modules/orders.js"></script>
+    <script src="/dashboard/modules/video.js"></script>
+    <script src="/dashboard/modules/catalog.js"></script>
+    <script src="/dashboard/modules/signups.js"></script>
+    <script src="/dashboard/modules/team.js"></script>
+    <script>DLDash.start();</script>
 </body>
 </html>
