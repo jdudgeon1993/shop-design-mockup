@@ -1,9 +1,10 @@
 <!-- TEST PAGE (not linked from the site): Curated Collections as physical cards.
-     A row of front cards; clicking one lifts it to the middle of the screen and flips it to the back
-     (the spec sheet). "See the full collection" goes on to the collection page.
+     A row of front cards. Clicking one picks it up (front facing); "Flip" turns it over to the back
+     (the spec sheet) and back again. "See the full collection" goes on to the collection page.
      Two modes for the CEO to compare:
        live  = his blank photo/drawing with the text set by the site (HTML, reflows on phones)
        canva = his finished Canva PNGs shown as-is (text baked into the image)
+     "Mobile" previews the page in a phone-sized frame (the page itself, in an iframe, with ?embed=1).
      Data is hard-coded below for the test; nothing is read from or written to Supabase. -->
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +19,7 @@
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Oswald:wght@300;400;500&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Oswald:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,600&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --panel: #222; --border: rgba(255,255,255,0.15); --muted: rgba(255,255,255,0.58);
@@ -44,70 +45,92 @@
         h1 { font-family: 'Playfair Display', serif; font-weight: 600; margin: 0 0 8px; font-size: clamp(30px, 4.5vw, 44px); }
         .intro-sub { margin: 0 0 22px; color: var(--muted); font-size: 15px; max-width: 640px; line-height: 1.55; }
 
-        /* ---------- mode switch ---------- */
-        .mode { display: inline-flex; padding: 4px; border: 1px solid var(--border); border-radius: 999px; margin-bottom: 28px; background: rgba(255,255,255,0.03); flex-wrap: wrap; }
-        .mode button {
+        /* ---------- test controls (text source + desktop/mobile preview) ---------- */
+        .controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; margin-bottom: 28px; }
+        .seg { display: inline-flex; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: rgba(255,255,255,0.03); }
+        .seg button {
             appearance: none; border: none; background: none; color: rgba(255,255,255,0.75); padding: 9px 16px; border-radius: 999px;
             font-size: 13px; font-weight: 700; cursor: pointer;
         }
-        .mode button[aria-pressed="true"] { background: var(--gold); color: var(--black); }
-        .mode button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        .seg button[aria-pressed="true"] { background: var(--gold); color: var(--black); }
+        .seg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        .seg-label { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-right: 8px; }
+        /* A real phone is already the mobile view. */
+        @media (max-width: 699px) { .view-group { display: none; } }
+        body.embed .controls { display: none; }
+
+        .phone-wrap { display: flex; justify-content: center; }
+        .phone {
+            width: 414px; height: 820px; max-height: calc(100vh - 24px); min-height: 560px; padding: 12px; border-radius: 48px; background: #050505;
+            box-shadow: 0 0 0 2px #3a3a3a, 0 30px 70px rgba(0,0,0,0.6);
+        }
+        .phone iframe { width: 390px; height: 100%; border: 0; border-radius: 36px; display: block; background: var(--black); }
 
         /* ---------- the row of front cards ---------- */
-        .deck { display: grid; grid-template-columns: 1fr; gap: 22px; }
+        .deck { display: grid; grid-template-columns: 1fr; gap: 26px; }
         @media (min-width: 700px) { .deck { grid-template-columns: 1fr 1fr; } }
         @media (min-width: 1100px) { .deck { grid-template-columns: 1fr 1fr 1fr; } }
+        .slot { display: flex; flex-direction: column; gap: 10px; }
         .card {
             appearance: none; display: block; width: 100%; padding: 0; border: none; background: none; cursor: pointer; text-align: left; color: inherit;
-            border-radius: 14px; aspect-ratio: 16 / 9; position: relative; transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: 12px; aspect-ratio: 16 / 9; position: relative; transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 10px 24px rgba(0,0,0,0.45);
         }
         .card:hover, .card:focus-visible { transform: translateY(-3px) rotate(-0.4deg); box-shadow: 0 16px 34px rgba(0,0,0,0.55); outline: none; }
         .card:focus-visible .face { outline: 2px solid var(--gold); outline-offset: 3px; }
         .card.is-lifted { visibility: hidden; }
+        .card-cap { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); }
+        .card-cap b { color: var(--white); font-weight: 600; }
+        .card-cap span { display: inline-flex; align-items: center; gap: 6px; color: var(--gold); font-weight: 700; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+        .card-cap svg { width: 14px; height: 14px; }
 
-        /* A face is the front or back of a card, used both in the deck and in the lifted card. */
-        .face { position: absolute; inset: 0; border-radius: 14px; overflow: hidden; background: #111; }
+        /* A face is the front or back of a card, used both in the deck and in the picked-up card. */
+        .face { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #111; container-type: inline-size; }
         .front img.photo { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .front.drawing-only { background: #f4f1ec; }
-        .front .shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 34%, rgba(0,0,0,0) 66%); }
-        .front .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 22px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; text-shadow: 0 1px 8px rgba(0,0,0,0.6); }
-        /* No photo yet: the drawing on top, the title in a solid band below it (never on top of it). */
-        .front.drawing-only { display: flex; flex-direction: column; }
-        .front.drawing-only img.photo { flex: 1; min-height: 0; object-fit: contain; padding: 4% 8%; }
-        .front.drawing-only .shade { display: none; }
-        .front.drawing-only .info { position: static; background: #161616; padding: 12px 22px 14px; }
-        .front .no { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
-        .front h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 600; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.1; color: #fff; }
-        .front .space { display: block; margin-top: 4px; font-size: 13px; color: rgba(255,255,255,0.8); }
-        .flip-hint {
-            flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-            color: #fff; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.3); border-radius: 999px; padding: 6px 10px;
-        }
-        .flip-hint svg { width: 14px; height: 14px; }
         .front.baked img.photo { object-fit: contain; background: #fff; }
-        .front.baked .flip-hint { position: absolute; right: 12px; bottom: 12px; }
+
+        /* Live front: the CEO's Canva layout, rebuilt as text over his blank photo. Sizes follow the card
+           width (cqw) like a printed card, with a floor so captions stay readable on phones. */
+        .ov { position: absolute; color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,0.35); }
+        .ov-title { left: 3.4%; top: 4.2%; font-family: 'Playfair Display', serif; font-weight: 400; font-size: max(17px, 3.6cqw); letter-spacing: 0.02em; color: #111; text-shadow: 0 0 14px rgba(255,255,255,0.7); }
+        .ov-mark { right: 2.7%; top: 4.3%; width: 9.2%; aspect-ratio: 125 / 143; background: #fff; display: flex; align-items: center; justify-content: center; padding: 1.2%; }
+        .ov-mark img { width: 82%; height: auto; display: block; }
+        .ov-band { left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0)); }
+        .ov-caption { left: 5.6%; bottom: 3.6%; font-weight: 400; font-size: max(10.5px, 1.75cqw); }
+        .ov-tag { right: 5.6%; bottom: 3.6%; font-weight: 400; font-size: max(10.5px, 1.75cqw); text-align: right; }
+        .ov-tag::before {
+            content: ''; position: absolute; right: 3%; bottom: calc(100% + 0.6cqw); width: 0; height: 0;
+            border-left: 1.5cqw solid transparent; border-right: 1.5cqw solid transparent; border-top: 2.4cqw solid #1f9a4a;
+        }
+
+        /* Small cards (phones): the captions wrap instead of running into each other. */
+        @container (max-width: 560px) {
+            .ov-band { height: 30%; }
+            .ov-caption { max-width: 56%; line-height: 1.3; }
+            .ov-tag { max-width: 34%; line-height: 1.3; }
+        }
+
         .missing {
             position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 18px; text-align: center;
-            background: repeating-linear-gradient(45deg, #1d1d1d, #1d1d1d 12px, #222 12px, #222 24px); border: 2px dashed rgba(212,175,55,0.45); border-radius: 14px;
+            background: repeating-linear-gradient(45deg, #1d1d1d, #1d1d1d 12px, #222 12px, #222 24px); border: 2px dashed rgba(212,175,55,0.45); border-radius: 12px;
         }
         .missing b { font-size: 15px; color: var(--gold); }
         .missing span { font-size: 12.5px; color: var(--muted); }
-        .missing code { font-size: 11.5px; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; }
 
-        /* ---------- the lifted card (modal) ---------- */
+        /* ---------- the picked-up card (modal) ---------- */
         .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(8,8,8,0); transition: background var(--lift-ms); }
-        .overlay.open { background: rgba(8,8,8,0.82); }
+        .overlay.open { background: rgba(8,8,8,0.86); }
         .stage {
-            position: fixed; z-index: 51; perspective: 2200px;
+            position: fixed; z-index: 51; perspective: 2400px;
             transition: top var(--lift-ms) cubic-bezier(.2,.8,.2,1), left var(--lift-ms) cubic-bezier(.2,.8,.2,1),
                         width var(--lift-ms) cubic-bezier(.2,.8,.2,1), height var(--lift-ms) cubic-bezier(.2,.8,.2,1);
         }
+        .stage.flipping { transition-duration: var(--flip-ms); }
         .flipper { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform var(--flip-ms) cubic-bezier(.45,.05,.3,1); }
         .stage.flipped .flipper { transform: rotateY(180deg); }
         .stage .face { backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.6); }
-        .stage .back { transform: rotateY(180deg); background: #fff; color: var(--sheet-ink); display: flex; flex-direction: column; }
-        /* Once the flip has finished, drop the 3D so the back scrolls reliably on phones. */
+        .stage .back { transform: rotateY(180deg); background: #fff; color: var(--sheet-ink); }
+        /* Once the back is facing, drop the 3D so it scrolls reliably on phones. */
         .stage.settled .flipper, .stage.settled .flipper * { transition: none !important; }
         .stage.settled .flipper { transform: none; }
         .stage.settled .front { display: none; }
@@ -116,34 +139,39 @@
         .close-btn {
             position: fixed; z-index: 52; top: 12px; right: 12px; width: 42px; height: 42px; border-radius: 50%;
             border: 1px solid rgba(255,255,255,0.35); background: rgba(20,20,20,0.85); color: #fff; font-size: 22px; line-height: 1; cursor: pointer;
-            opacity: 0; transition: opacity 0.2s;
         }
-        .overlay.open ~ .close-btn { opacity: 1; }
         .close-btn:hover, .close-btn:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
-
-        .back-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-        .back-actions {
-            flex-shrink: 0; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; padding: 12px 16px;
-            border-top: 1px solid rgba(31,42,92,0.15); background: #f7f6f2;
+        .toolbar {
+            position: fixed; z-index: 52; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; gap: 10px;
+            width: max-content; max-width: calc(100vw - 20px);
         }
+        @media (max-width: 699px) {
+            .toolbar { bottom: 10px; width: calc(100vw - 20px); }
+            .toolbar .btn { flex: 1 1 0; min-width: 0; padding: 12px 10px; font-size: 12px; white-space: normal; text-align: center; line-height: 1.25; }
+        }
+        .close-btn, .toolbar { opacity: 0; transition: opacity 0.2s; }
+        .overlay.open ~ .close-btn, .overlay.open ~ .toolbar { opacity: 1; }
         .btn {
-            appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 20px; border-radius: 999px;
-            font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; text-decoration: none; cursor: pointer;
+            appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 22px; border-radius: 999px;
+            font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; text-decoration: none; cursor: pointer; white-space: nowrap;
         }
-        .btn-ghost { background: none; border: 1px solid rgba(31,42,92,0.35); color: var(--sheet-ink); }
-        .btn-ghost:hover, .btn-ghost:focus-visible { border-color: var(--sheet-ink); outline: none; }
-        .btn-more { background: var(--black); border: 1px solid var(--black); color: var(--gold); }
-        .btn-more:hover, .btn-more:focus-visible { filter: brightness(1.3); outline: none; }
+        .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .btn-flip { background: var(--gold); border: 1px solid var(--gold); color: var(--black); }
+        .btn-flip:hover, .btn-flip:focus-visible { filter: brightness(1.08); outline: none; }
+        .btn-more { background: rgba(20,20,20,0.9); border: 1px solid rgba(255,255,255,0.35); color: var(--white); }
+        .btn-more:hover, .btn-more:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
+
+        .back-scroll { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
         /* ---------- back: Canva PNG as-is ---------- */
-        .baked-back { display: flex; align-items: center; justify-content: center; min-height: 100%; padding: 12px; background: #fff; }
+        .baked-back { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; padding: 10px; background: #fff; }
         .baked-back a { display: block; width: 100%; }
         .baked-back img { width: 100%; height: auto; display: block; }
-        .baked-note { margin: 0; padding: 0 16px 12px; font-size: 12px; color: var(--sheet-soft); text-align: center; }
+        .baked-note { margin: 8px 0 0; font-size: 12px; color: var(--sheet-soft); text-align: center; }
         .back .missing { position: static; min-height: 100%; border-radius: 0; }
 
         /* ---------- back: live spec sheet ---------- */
-        .sheet { margin: 14px; border: 2px solid var(--sheet-line); font-size: 13px; }
+        .sheet { margin: 12px; border: 2px solid var(--sheet-line); font-size: 13px; }
         .sheet-head { display: grid; grid-template-columns: 1.35fr 1.6fr 1fr 0.95fr; border-bottom: 2px solid var(--sheet-line); }
         .sheet-head > div { padding: 10px 14px; border-right: 1px solid var(--sheet-line); display: flex; flex-direction: column; justify-content: center; }
         .sheet-head > div:last-child { border-right: none; padding: 0; }
@@ -155,8 +183,8 @@
         .brand small.tag { color: var(--sheet-gold); }
         .title-cell { text-align: center; align-items: center; }
         .title-cell .no { font-size: 10.5px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
-        .title-cell h2 { margin: 3px 0; padding-bottom: 4px; border-bottom: 1px solid var(--sheet-line); font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 25px; line-height: 1.15; color: var(--sheet-ink); }
-        .title-cell .space { font-size: 11.5px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        .title-cell h2 { margin: 3px 0; padding-bottom: 4px; border-bottom: 1px solid var(--sheet-line); font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 25px; line-height: 1.15; letter-spacing: 1px; text-transform: uppercase; color: var(--sheet-ink); }
+        .title-cell .space { font-size: 11.5px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
         .drawing-cell { text-align: center; align-items: center; }
         .drawing-cell small { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
         .drawing-cell b { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 18px; text-transform: uppercase; margin-top: 3px; }
@@ -166,7 +194,7 @@
         .meta th { font-weight: 600; text-transform: uppercase; border-right: 1px solid var(--sheet-line); width: 46%; }
         .meta td { text-align: right; font-weight: 600; }
 
-        .sheet-body { display: grid; grid-template-columns: 1fr 300px; border-bottom: 2px solid var(--sheet-line); }
+        .sheet-body { display: grid; grid-template-columns: 1fr 320px; border-bottom: 2px solid var(--sheet-line); }
         .sheet-drawing { padding: 14px; border-right: 1px solid var(--sheet-line); display: flex; flex-direction: column; justify-content: center; }
         .sheet-drawing a { display: block; cursor: zoom-in; }
         .sheet-drawing img { width: 100%; height: auto; display: block; }
@@ -176,9 +204,8 @@
         .specs { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0 0 14px; padding-bottom: 14px; border-bottom: 1px solid var(--sheet-line); font-size: 12px; }
         .specs dt { color: var(--sheet-soft); }
         .specs dd { margin: 0; }
-        .notes { margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.45; }
-        .notes li { margin-bottom: 4px; padding-left: 2px; }
-        .tbd { color: #b4561f; font-style: italic; }
+        .notes { margin: 0; padding-left: 24px; font-size: 12px; line-height: 1.45; text-transform: uppercase; letter-spacing: 0.2px; }
+        .notes li { margin-bottom: 5px; padding-left: 4px; }
 
         .schedule-wrap { padding: 14px; border-bottom: 2px solid var(--sheet-line); }
         .schedule-wrap h3 { margin: 0 0 8px; font-family: 'Oswald', sans-serif; font-weight: 500; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
@@ -193,14 +220,12 @@
         .sheet-foot > div:last-child { border-right: none; text-align: center; }
         .sheet-foot small { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
         .sheet-foot b { display: block; margin-top: 3px; font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 17px; text-transform: uppercase; }
-        .sheet-foot .proj b { text-transform: none; font-size: 19px; }
         .sheet-foot .accent { color: #2848a8; }
-        .sheet-foot .maker b { font-size: 22px; letter-spacing: 1px; }
-        .sheet-foot .maker em { display: block; font-style: normal; font-family: 'Playfair Display', serif; color: var(--sheet-gold); font-size: 14px; }
+        .sheet-foot .maker b { font-size: 19px; letter-spacing: 0.5px; }
 
         /* Phones and narrow windows: the sheet stacks instead of shrinking. */
         @media (max-width: 860px) {
-            .sheet { margin: 10px; }
+            .sheet { margin: 8px; }
             .sheet-head { grid-template-columns: 1fr 1fr; }
             .sheet-head > div { border-bottom: 1px solid var(--sheet-line); }
             .sheet-head .brand { grid-column: 1 / -1; border-right: none; }
@@ -210,6 +235,7 @@
             .title-cell h2 { font-size: 24px; }
             .sheet-body { grid-template-columns: 1fr; }
             .sheet-drawing { border-right: none; border-bottom: 1px solid var(--sheet-line); padding: 10px; }
+            .notes { font-size: 13px; }
             .schedule thead { display: none; }
             .schedule, .schedule tbody, .schedule tr, .schedule td { display: block; width: 100%; }
             .schedule tr { padding: 8px 0; border-bottom: 1px solid rgba(31,42,92,0.18); }
@@ -222,8 +248,8 @@
             .sheet-foot > div { border-bottom: 1px solid var(--sheet-line); }
             .sheet-foot > div:nth-child(2) { border-right: none; }
             .sheet-foot > div:nth-last-child(-n+2) { border-bottom: none; }
-            .back-actions { justify-content: stretch; }
-            .back-actions .btn { flex: 1; }
+            /* room for the toolbar that floats over the bottom of the card */
+            .sheet { margin-bottom: 74px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -246,14 +272,21 @@
     <main class="content">
         <p class="kicker">Curated Collections</p>
         <h1>Designed together. Priced together.</h1>
-        <p class="intro-sub">Tap a card to flip it over and see the plan, the specs and every cabinet in the set.</p>
+        <p class="intro-sub">Tap a card to pick it up, then flip it over to see the plan and every detail of the set.</p>
 
-        <div class="mode" role="group" aria-label="How the card text is made">
-            <button type="button" data-mode="live" aria-pressed="true">Live text</button>
-            <button type="button" data-mode="canva" aria-pressed="false">Canva PNGs</button>
+        <div class="controls">
+            <div><span class="seg-label">Card text</span><div class="seg" role="group" aria-label="How the card text is made">
+                <button type="button" data-mode="live" aria-pressed="true">Live text</button>
+                <button type="button" data-mode="canva" aria-pressed="false">Canva PNGs</button>
+            </div></div>
+            <div class="view-group"><span class="seg-label">Preview</span><div class="seg" role="group" aria-label="Preview size">
+                <button type="button" data-view="desktop" aria-pressed="true">Desktop</button>
+                <button type="button" data-view="mobile" aria-pressed="false">Mobile</button>
+            </div></div>
         </div>
 
         <div class="deck" id="deck"></div>
+        <div class="phone-wrap" id="phone-wrap" hidden><div class="phone"><iframe id="phone-frame" title="Mobile preview" loading="lazy"></iframe></div></div>
     </main>
 
     <footer class="shop-footer">
@@ -266,67 +299,57 @@
         <div class="flipper" id="flipper"></div>
     </div>
     <button class="close-btn" id="close" type="button" aria-label="Close" hidden>&times;</button>
+    <div class="toolbar" id="toolbar" hidden>
+        <button type="button" class="btn btn-flip" id="flip"></button>
+        <a class="btn btn-more" id="more" href="/collections/">See the full collection &rarr;</a>
+    </div>
 
     <script>
     (function () {
         var IMG = '/Assets/Images/curated/';
-        var TBD = '<span class="tbd">TBD</span>';
+        var params = new URLSearchParams(location.search);
+        if (params.get('embed') === '1') document.body.classList.add('embed');
 
         // Test data, copied from the CEO's files in "Design Labs/Curated Collection".
-        // canva.front / canva.back are his finished PNGs; null = not sent yet (the card says what to send).
+        // live: his blank photo + drawing, with the text below laid over them.
+        // canva: his finished PNGs (null = not sent yet; the card says so).
         var COLLECTIONS = [
             {
-                slug: 'study-time', no: '001', name: 'Study Time', space: 'Study / Office',
+                slug: 'study-time', no: '001', name: 'Study Time', subtitle: 'Built-In Desk System',
                 front: IMG + 'study-time-front.webp', drawing: IMG + 'study-time-drawing.webp', drawingTitle: 'Front Elevation',
-                sheet: { sheet: 'A1', scale: 'NTS', date: null, rev: 'A' },
-                maker: { name: 'CNC', sub: 'Cabinetry · Classic Series' },
-                specs: [['Manufacturer', 'CNC Cabinetry'], ['Series', 'Classic'], ['Door Style', null], ['Finish', null], ['Hinges', null], ['Drawer System', null]],
-                notes: [
-                    'Overall width: 99" (30" base + 39" desk + 30" base).',
-                    'Overall height: 90".',
-                    'Two 18" wide x 60" tall open towers, 15" deep (extended depth, doors removed).',
-                    'Desk height 28.5" not including the 1 1/2" top.',
-                    'Base cabinets 24" deep with flush toe and molding.',
-                    '3" skirt across the 39" knee space; base mold under the board.',
-                    'One rollout in the right-hand base.'
-                ],
-                schedule: [
-                    { qty: 1, sku: 'CT1860', hinge: 'N/A', fin: 'Both', mods: 'CT-EXD-W 15"', extra: 'Remove door' },
-                    { qty: 1, sku: 'CT1860', hinge: 'N/A', fin: 'Both', mods: 'CT-EXD-W 15"', extra: 'Remove door' },
-                    { qty: 1, sku: 'Custom base', hinge: 'L/R', fin: 'Both', mods: 'Custom', extra: 'Requires factory quote' },
-                    { qty: 1, sku: 'Custom base', hinge: 'L/R', fin: 'Both', mods: 'Custom', extra: 'Requires factory quote' },
-                    { qty: 6, sku: 'F696', hinge: '', fin: '', mods: '', extra: '' }
-                ],
-                canva: { front: null, back: null }
-            },
-            {
-                slug: 'the-laundry-guy-and-cat', no: '007', name: 'The Laundry Guy & Cat', space: 'Laundry / Utility',
-                front: null, drawing: IMG + 'laundry-drawing.webp', drawingTitle: 'Front Elevation',
+                card: { title: 'STUDY TIME?', caption: 'CNC Classic Series Curated Collection 001', tag: 'Designed in the Lab' },
                 sheet: { sheet: 'A1', scale: 'NTS', date: '09/18/2026', rev: 'A' },
-                maker: { name: 'STRUCTURE | 3', sub: 'Cabinetry & Closets' },
-                specs: [['Manufacturer', 'STRUCTURE|3 Cabinetry'], ['Construction', 'Frameless'], ['Material', 'Engineered TFL (Walnut)'],
-                        ['Door Style', 'Aspen (Slab)'], ['Hinges', 'Soft Close'], ['Drawer System', 'White Double Wall Metal Drawers, Full Extension, Soft Close']],
+                maker: 'CNC Cabinetry: Classic Series',
+                specs: [],
                 notes: [
-                    'Overall width: 152".',
-                    'Overall height: 90".',
-                    'Upper wall cabinets: (3) W2736 (83" total width).',
-                    'Left section: W3012 pull to 26" with hang rod, .25" back panel (cut to size on site), and base 2-drawer (custom).',
-                    'Sink base: 26" deep with 1" O-Fill.',
-                    'Base cabinets: (2) 24" deep cabinets, 31.5" tall.',
-                    'Right section: 30" wide washer/dryer opening (by others) with false panel depending on opening height.',
-                    'Fillers: 1 1/2" left, 1 1/2" between left section and sink base, 1" O-Fill (as shown), 3" each side of washer/dryer opening.',
-                    'See Design Lab for countertops, sink, and faucet. Washer & dryer by others.'
+                    'Overall width = 99".',
+                    'Cabinetry height = 90".',
+                    'Tower widths = 18" each.',
+                    'Tower depth = 15".',
+                    'Desk height = 28.5" (top included).',
+                    'Countertop included (1 1/2" thick).',
+                    'Cabinet depth = 24".',
+                    'Knee space width = 39" with 3" skirt.',
+                    'Flush toe kick with molding (as shown).',
+                    'Includes base molding along back.',
+                    'Base cabinets include 1 rollout each (as shown).',
+                    'Manufacturer: CNC Cabinetry Classic Series.',
+                    '0.75" frameless construction.',
+                    'Finish: White paint.',
+                    'Door style: Woodbourne (extended lead time).',
+                    'See Design Lab for alternative sizes, colors, and door style options.'
                 ],
                 schedule: [],
-                canva: { front: null, back: IMG + 'laundry-baked-back.webp' }
+                canva: { front: IMG + 'study-time-canva-front.webp', back: IMG + 'study-time-canva-back.webp' }
             }
         ];
 
-        var mode = new URLSearchParams(location.search).get('mode') === 'canva' ? 'canva' : 'live';
+        var mode = params.get('mode') === 'canva' ? 'canva' : 'live';
         var deck = document.getElementById('deck');
         var overlay = document.getElementById('overlay'), stage = document.getElementById('stage');
         var flipper = document.getElementById('flipper'), closeBtn = document.getElementById('close');
-        var open = null; // { card, c }
+        var toolbar = document.getElementById('toolbar'), flipBtn = document.getElementById('flip'), moreLink = document.getElementById('more');
+        var open = null; // { card, c, back: bool, busy: bool }
         var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         function esc(s) {
@@ -335,26 +358,26 @@
         var flipIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"></path><path d="M3 21v-5h5"></path></svg>';
 
         function missing(what, c) {
-            return '<div class="missing"><b>Canva ' + what + ' not sent yet</b><span>' + esc(c.name) + '</span>' +
-                '<code>' + esc(c.slug) + '-' + what + '.png</code></div>';
+            return '<div class="missing"><b>Canva ' + what + ' not sent yet</b><span>' + esc(c.name) + '</span></div>';
         }
 
         // ---------- faces ----------
         function frontHtml(c) {
             if (mode === 'canva') {
                 if (!c.canva.front) return '<div class="face front">' + missing('front', c) + '</div>';
-                return '<div class="face front baked"><img class="photo" src="' + esc(c.canva.front) + '" alt="' + esc(c.name) + '"><span class="flip-hint">' + flipIcon + 'Flip</span></div>';
+                return '<div class="face front baked"><img class="photo" src="' + esc(c.canva.front) + '" alt="' + esc(c.name) + '"></div>';
             }
-            var img = c.front || c.drawing;
-            return '<div class="face front' + (c.front ? '' : ' drawing-only') + '"><img class="photo" src="' + esc(img) + '" alt="">' +
-                '<div class="shade"></div><div class="info"><div><span class="no">Curated Collection No. ' + esc(c.no) + '</span>' +
-                '<h2>' + esc(c.name) + '</h2><span class="space">' + esc(c.space) + '</span></div>' +
-                '<span class="flip-hint">' + flipIcon + 'Flip</span></div></div>';
+            return '<div class="face front"><img class="photo" src="' + esc(c.front) + '" alt="">' +
+                '<div class="ov ov-band"></div>' +
+                '<div class="ov ov-title">' + esc(c.card.title) + '</div>' +
+                '<div class="ov ov-mark"><img src="' + IMG + 'dl-mark-gold.webp" alt="Design Lab"></div>' +
+                '<div class="ov ov-caption">' + esc(c.card.caption) + '</div>' +
+                '<div class="ov ov-tag">' + esc(c.card.tag) + '</div></div>';
         }
 
         function sheetHtml(c) {
             var s = c.sheet;
-            var specs = c.specs.map(function (p) { return '<dt>' + esc(p[0]) + ':</dt><dd>' + (p[1] ? esc(p[1]) : TBD) + '</dd>'; }).join('');
+            var specs = c.specs.map(function (p) { return '<dt>' + esc(p[0]) + ':</dt><dd>' + esc(p[1]) + '</dd>'; }).join('');
             var notes = c.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('');
             function cell(label, v) { return '<td data-label="' + label + '"' + (v ? '' : ' class="empty"') + '>' + esc(v || '—') + '</td>'; }
             var rows = c.schedule.map(function (r) {
@@ -365,22 +388,22 @@
                 '<div class="sheet-head">' +
                     '<div class="brand"><img src="' + IMG + 'dl-mark-gold.webp" alt="DL"><span class="rule"></span><div><b>DESIGN LAB</b>' +
                         '<small>ONLINE CABINETRY.</small><small>CUSTOMER FOCUSED.</small><small class="tag">BEST FLIPPIN’ HOME ON THE BLOCK.</small></div></div>' +
-                    '<div class="title-cell"><span class="no">Curated Collection No. ' + esc(c.no) + '</span><h2>' + esc(c.name) + '</h2><span class="space">' + esc(c.space) + '</span></div>' +
+                    '<div class="title-cell"><span class="no">Curated Collection No. ' + esc(c.no) + '</span><h2>' + esc(c.name) + '</h2><span class="space">' + esc(c.subtitle) + '</span></div>' +
                     '<div class="drawing-cell"><small>Technical Drawing</small><b>' + esc(c.drawingTitle) + '</b></div>' +
                     '<div><table class="meta"><tr><th>Sheet</th><td>' + esc(s.sheet) + '</td></tr><tr><th>Scale</th><td>' + esc(s.scale) + '</td></tr>' +
-                        '<tr><th>Date</th><td>' + (s.date ? esc(s.date) : TBD) + '</td></tr><tr><th>Rev.</th><td>' + esc(s.rev) + '</td></tr></table></div>' +
+                        '<tr><th>Date</th><td>' + esc(s.date) + '</td></tr><tr><th>Rev.</th><td>' + esc(s.rev) + '</td></tr></table></div>' +
                 '</div>' +
                 '<div class="sheet-body">' +
                     '<div class="sheet-drawing"><a href="' + esc(c.drawing) + '" target="_blank" rel="noopener"><img src="' + esc(c.drawing) + '" alt="' + esc(c.drawingTitle) + ' drawing of ' + esc(c.name) + '"></a>' +
                         '<div class="zoom-note">Tap the drawing to open it full size</div></div>' +
-                    '<div class="sheet-side"><h3>Specifications:</h3><dl class="specs">' + specs + '</dl><h3>Notes:</h3><ol class="notes">' + notes + '</ol></div>' +
+                    '<div class="sheet-side">' + (specs ? '<h3>Specifications:</h3><dl class="specs">' + specs + '</dl>' : '') + '<h3>Notes:</h3><ol class="notes">' + notes + '</ol></div>' +
                 '</div>' +
                 (rows ? '<div class="schedule-wrap"><h3>Cabinet schedule:</h3><table class="schedule"><thead><tr><th>Qty</th><th>Cabinet</th><th>Hinge</th><th>Integral fin ends</th><th>Mods</th><th>Additional</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '') +
                 '<div class="sheet-foot">' +
-                    '<div class="proj"><small>Project</small><b>' + esc(c.name) + '</b></div>' +
+                    '<div><small>Project</small><b>' + esc(c.name) + '<br>' + esc(c.subtitle) + '</b></div>' +
                     '<div><small>Collection</small><b class="accent">Curated Collection No. ' + esc(c.no) + '</b></div>' +
                     '<div><small>Drawing</small><b class="accent">' + esc(c.drawingTitle) + '</b></div>' +
-                    '<div class="maker"><small>Manufacturer / Cabinet Brand</small><b>' + esc(c.maker.name) + '</b><em>' + esc(c.maker.sub) + '</em></div>' +
+                    '<div class="maker"><small>Manufacturer / Cabinet Brand</small><b>' + esc(c.maker) + '</b></div>' +
                 '</div>' +
             '</div>';
         }
@@ -389,70 +412,96 @@
             var body;
             if (mode === 'canva') {
                 body = c.canva.back
-                    ? '<div class="baked-back"><a href="' + esc(c.canva.back) + '" target="_blank" rel="noopener"><img src="' + esc(c.canva.back) + '" alt="Spec sheet for ' + esc(c.name) + '"></a></div>' +
-                      '<p class="baked-note">Canva image as sent. Tap it to open full size.</p>'
+                    ? '<div class="baked-back"><a href="' + esc(c.canva.back) + '" target="_blank" rel="noopener"><img src="' + esc(c.canva.back) + '" alt="Spec sheet for ' + esc(c.name) + '"></a>' +
+                      '<p class="baked-note">Canva image as sent. Tap it to open full size.</p></div>'
                     : missing('back', c);
             } else {
                 body = sheetHtml(c);
             }
-            return '<div class="face back"><div class="back-scroll">' + body + '</div>' +
-                '<div class="back-actions"><button type="button" class="btn btn-ghost" data-flip-back>' + flipIcon.replace('aria-hidden', 'width="16" height="16" aria-hidden') + 'Flip back</button>' +
-                '<a class="btn btn-more" href="/collections/?c=' + encodeURIComponent(c.slug) + '">See the full collection &rarr;</a></div></div>';
+            return '<div class="face back"><div class="back-scroll">' + body + '</div></div>';
         }
 
         // ---------- deck ----------
         function renderDeck() {
             deck.innerHTML = COLLECTIONS.map(function (c, i) {
-                return '<button type="button" class="card" data-i="' + i + '" aria-label="' + esc(c.name) + ', Curated Collection No. ' + esc(c.no) + '. Flip to see the plan.">' + frontHtml(c) + '</button>';
+                return '<div class="slot"><button type="button" class="card" data-i="' + i + '" aria-label="' + esc(c.name) + ', Curated Collection No. ' + esc(c.no) + '. Pick up the card.">' + frontHtml(c) + '</button>' +
+                    '<div class="card-cap"><b>' + esc(c.name) + '</b><span>' + flipIcon + 'Tap to pick up</span></div></div>';
             }).join('');
-            document.querySelectorAll('.mode button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === mode)); });
+            document.querySelectorAll('[data-mode]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === mode)); });
         }
 
-        // ---------- lift + flip ----------
+        // ---------- pick up, flip, put down ----------
         function place(r) {
             stage.style.top = r.top + 'px'; stage.style.left = r.left + 'px';
             stage.style.width = r.width + 'px'; stage.style.height = r.height + 'px';
         }
-        function targetRect() {
-            var vw = window.innerWidth, vh = window.innerHeight;
-            if (vw < 700) return { top: 64, left: 10, width: vw - 20, height: vh - 76 };   // phones: nearly full screen, below the close button
-            var w = Math.min(1120, vw - 80), h = Math.min(vh - 80, Math.round(w * 0.82));
-            return { top: Math.round((vh - h) / 2), left: Math.round((vw - w) / 2), width: w, height: h };
+        // Where the card sits for each side. The front keeps the card's 16:9; the back is a taller sheet.
+        function targetRect(side) {
+            var vw = window.innerWidth, vh = window.innerHeight, phone = vw < 700;
+            var top = 64, bottom = phone ? 10 : 84;           // room for the close button above, the toolbar below
+            var availH = vh - top - bottom, w, h;
+            if (side === 'front') {
+                w = Math.min(phone ? vw - 20 : 1100, vw - (phone ? 20 : 80));
+                h = Math.round(w * 9 / 16);
+                if (h > availH) { h = availH; w = Math.round(h * 16 / 9); }
+            } else {
+                w = phone ? vw - 20 : Math.min(1100, vw - 80);
+                h = phone ? availH : Math.min(availH, Math.round(w * 0.8));
+            }
+            return { top: Math.round(top + (availH - h) / 2), left: Math.round((vw - w) / 2), width: w, height: h };
         }
         function after(ms, fn) { return setTimeout(fn, reduced ? 0 : ms); }
+        function setFlipLabel() {
+            flipBtn.innerHTML = flipIcon + (open && open.back ? 'Flip to front' : 'Flip to back');
+        }
 
-        function openCard(card) {
+        function openCard(card, startOnBack) {
             if (open) return;
             var c = COLLECTIONS[Number(card.dataset.i)];
-            open = { card: card, c: c };
+            open = { card: card, c: c, back: false, busy: false };
             flipper.innerHTML = frontHtml(c) + backHtml(c);
-            stage.classList.remove('flipped', 'settled');
+            stage.classList.remove('flipped', 'settled', 'flipping');
             stage.style.transition = 'none';
             place(card.getBoundingClientRect());
-            overlay.hidden = false; stage.hidden = false; closeBtn.hidden = false;
+            overlay.hidden = false; stage.hidden = false; closeBtn.hidden = false; toolbar.hidden = false;
+            moreLink.href = '/collections/?c=' + encodeURIComponent(c.slug);
+            setFlipLabel();
             card.classList.add('is-lifted');
             document.body.classList.add('modal-open');
             stage.offsetWidth; // apply the start position before animating
             stage.style.transition = '';
             overlay.classList.add('open');
-            place(targetRect());
-            after(260, function () { stage.classList.add('flipped'); });
-            after(260 + 720, function () { if (open) stage.classList.add('settled'); });
-            closeBtn.focus();
+            place(targetRect('front'));
+            flipBtn.focus({ preventScroll: true });
+            if (startOnBack) after(480, flip);
+        }
+
+        function flip() {
+            if (!open || open.busy) return;
+            open.busy = true;
+            stage.classList.add('flipping');
+            if (!open.back) {
+                stage.classList.add('flipped');
+                place(targetRect('back'));
+                after(720, function () { stage.classList.add('settled'); stage.classList.remove('flipping'); open.back = true; open.busy = false; setFlipLabel(); });
+            } else {
+                stage.classList.remove('settled');
+                stage.offsetWidth; // back to the 3D "back facing" state before turning it over
+                stage.classList.remove('flipped');
+                place(targetRect('front'));
+                after(720, function () { stage.classList.remove('flipping'); open.back = false; open.busy = false; setFlipLabel(); });
+            }
         }
 
         function closeCard() {
-            if (!open) return;
+            if (!open || open.busy) return;
+            if (open.back) { flip(); after(740, closeCard); return; }
             var card = open.card;
-            stage.classList.remove('settled');
-            stage.offsetWidth;
-            stage.classList.remove('flipped');
-            after(560, function () {
-                overlay.classList.remove('open');
-                place(card.getBoundingClientRect());
-            });
-            after(560 + 440, function () {
-                overlay.hidden = true; stage.hidden = true; closeBtn.hidden = true;
+            open.busy = true;
+            overlay.classList.remove('open');
+            place(card.getBoundingClientRect());
+            after(440, function () {
+                overlay.hidden = true; stage.hidden = true; closeBtn.hidden = true; toolbar.hidden = true;
                 card.classList.remove('is-lifted');
                 document.body.classList.remove('modal-open');
                 flipper.innerHTML = '';
@@ -465,28 +514,40 @@
             var card = e.target.closest('.card');
             if (card) openCard(card);
         });
-        stage.addEventListener('click', function (e) {
-            if (e.target.closest('[data-flip-back]')) closeCard();
-        });
+        flipBtn.addEventListener('click', flip);
         overlay.addEventListener('click', closeCard);
         closeBtn.addEventListener('click', closeCard);
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeCard(); });
-        window.addEventListener('resize', function () { if (open && stage.classList.contains('settled')) place(targetRect()); });
+        window.addEventListener('resize', function () { if (open && !open.busy) place(targetRect(open.back ? 'back' : 'front')); });
 
-        document.querySelector('.mode').addEventListener('click', function (e) {
-            var b = e.target.closest('[data-mode]');
-            if (!b || b.dataset.mode === mode) return;
-            mode = b.dataset.mode;
-            history.replaceState(null, '', mode === 'canva' ? '?mode=canva' : location.pathname);
-            if (open) closeCard();
-            renderDeck();
+        // ---------- test controls ----------
+        var view = 'desktop';
+        var phoneWrap = document.getElementById('phone-wrap'), phoneFrame = document.getElementById('phone-frame');
+        function frameSrc() { return location.pathname + '?embed=1' + (mode === 'canva' ? '&mode=canva' : ''); }
+        document.querySelector('.controls').addEventListener('click', function (e) {
+            var b = e.target.closest('button');
+            if (!b) return;
+            if (b.dataset.mode && b.dataset.mode !== mode) {
+                mode = b.dataset.mode;
+                history.replaceState(null, '', mode === 'canva' ? '?mode=canva' : location.pathname);
+                renderDeck();
+                if (view === 'mobile') phoneFrame.src = frameSrc();
+            } else if (b.dataset.view && b.dataset.view !== view) {
+                view = b.dataset.view;
+                document.querySelectorAll('[data-view]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.dataset.view === view)); });
+                deck.hidden = view === 'mobile';
+                phoneWrap.hidden = view !== 'mobile';
+                if (view === 'mobile') {
+                    phoneFrame.src = frameSrc();
+                    phoneWrap.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
+                }
+            }
         });
 
         renderDeck();
-        // ?card=<slug> opens that card on arrival (links straight to a flipped card).
-        var start = new URLSearchParams(location.search).get('card');
-        var startIdx = COLLECTIONS.map(function (c) { return c.slug; }).indexOf(start);
-        if (startIdx >= 0) openCard(deck.querySelector('[data-i="' + startIdx + '"]'));
+        // ?card=<slug> picks that card up on arrival; add &side=back to land on the back.
+        var startIdx = COLLECTIONS.map(function (c) { return c.slug; }).indexOf(params.get('card'));
+        if (startIdx >= 0) openCard(deck.querySelector('[data-i="' + startIdx + '"]'), params.get('side') === 'back');
     })();
     </script>
 </body>
