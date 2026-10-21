@@ -28,6 +28,9 @@ calls and live help sessions keep running.
 ## What `ctx` gives you
 
 - `ctx.sb`: Supabase client (signed in as the employee). `ctx.user`, `ctx.profile`, `ctx.firstName`.
+- `ctx.has('admin' | 'pricing' | 'makers' | ...)`: whether you have a tag (Dashboard → Tags). Use it to decide what to
+  show; the database checks the same tags. `ctx.tagList()` (all tags, cached; `true` re-reads), `ctx.tagPill(tag)`.
+- `ctx.lobby.names(agents)`: "Sam and you" for who's available for live help.
 - `ctx.toast(msg, 'bad'?)`, `ctx.notify({ title, text, href, loud })`: bell list, toast, and (loud) sound plus a desktop pop-up.
 - `ctx.drawer(title)` returns `{ body, close, setTitle }`, a side panel for details.
 - `ctx.esc`, `ctx.money`, `ctx.fmtDate(v, withTime)`, `ctx.timeAgo(v)`, `ctx.copy(text, button?)`, `ctx.csv(rows, filename)`, `ctx.initials(name)`.

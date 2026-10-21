@@ -40,7 +40,7 @@ DLDash.register({
             var suWeek = data.signups.filter(function (x) { return new Date(x.created_at).getTime() > week; }).length;
             var w = live.waiting.length;
             el.querySelector('#ov-kpis').innerHTML = [
-                kpi('#live-help', 'Waiting for help', w, w ? 'Someone needs you now' : live.agents.length + ' agent' + (live.agents.length === 1 ? '' : 's') + ' available', w > 0),
+                kpi('#live-help', 'Waiting for help', w, w ? 'Someone needs you now' : live.agents.length ? 'Available: ' + ctx.lobby.names(live.agents) : 'Nobody available', w > 0),
                 kpi('#orders/status-submitted', 'New orders', fresh, fresh ? 'Ready to review' : 'All caught up', fresh > 0),
                 kpi('#orders', 'Open orders', open, thisWeek + ' this week'),
                 kpi('#video', 'Video rooms', data.rooms.length, data.rooms[0] ? 'Last ' + ctx.timeAgo(data.rooms[0].created_at) : 'None yet'),

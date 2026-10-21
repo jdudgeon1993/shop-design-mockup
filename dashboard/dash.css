@@ -163,3 +163,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .toasts { bottom: 84px; }
     .bar-row { grid-template-columns: 110px minmax(0, 1fr) 30px; }
 }
+
+/* Tags: checkboxes inside .field keep their own size; the picked color is ringed, not filled */
+.field input[type="checkbox"] { width: auto; padding: 0; flex: none; }
+.color-chips .chip[aria-pressed="true"] { background: none; border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }

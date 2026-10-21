@@ -214,16 +214,18 @@
         function joinLobby() {
             lobby = sb.channel('dl-help-lobby', { config: { presence: { key: 'agent-' + agentId } } });
             lobby.on('presence', { event: 'sync' }, function () {
-                var st = lobby.presenceState(), list = [], agents = 0;
+                var st = lobby.presenceState(), list = [], others = {};
                 Object.keys(st).forEach(function (k) {
                     var m = st[k][0] || {};
-                    if (k.indexOf('agent-') === 0) agents++;
+                    // One name per person, even with the dashboard and Help Desk both open.
+                    if (k.indexOf('agent-') === 0) { if (m.uid !== me.id) others[m.uid || m.name || k] = m.name || 'Agent'; }
                     else if (m.role === 'customer' && m.sid && !(gone[m.sid] > Date.now() - 15000)) list.push(m);
                 });
                 var before = waiting.map(function (w) { return w.sid; });
                 waiting = list.sort(function (a, b) { return a.since - b.since; });
                 if (waiting.some(function (w) { return before.indexOf(w.sid) < 0; }) && document.hidden) document.title = '(' + waiting.length + ') Help Desk - Design Lab';
-                $('agents').textContent = agents + (agents === 1 ? ' agent' : ' agents') + ' online (including you)';
+                var names = Object.keys(others).map(function (k) { return others[k]; }).sort();
+                $('agents').textContent = names.length ? 'Online: you, ' + names.join(', ') : 'Online: just you';
                 paintQueue();
             });
             // A customer cancelled, or another agent took them: drop them now.
