@@ -6,7 +6,7 @@ DLDash.register({
     id: 'team', label: 'Team', order: 70,
     icon: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
     mount: function (el, ctx) {
-        var esc = ctx.esc, people = [], held = {}, tags = [], live = { agents: [] }, panel = null;
+        var esc = ctx.esc, people = [], dir = {}, held = {}, tags = [], live = { agents: [] }, panel = null;
         var isAdmin = ctx.has('admin');
         el.innerHTML =
             '<section class="card"><div class="card-head"><h2>Team</h2><span class="sp"></span><span class="muted small" id="tm-live"></span>' +
@@ -24,9 +24,11 @@ DLDash.register({
             var here = {}; live.agents.forEach(function (a) { if (a.uid) here[a.uid] = true; here[(a.name || '').toLowerCase()] = true; });
             el.querySelector('#tm-live').textContent = live.agents.length ? 'Available for live help: ' + ctx.lobby.names(live.agents) : 'Nobody available for live help';
             el.querySelector('#tm-list').innerHTML = people.length ? people.map(function (p) {
-                var name = p.full_name || 'Team member', first = name.split(' ')[0].toLowerCase(), on = here[p.id] || here[first];
-                return '<li' + (isAdmin ? ' data-id="' + esc(p.id) + '" tabindex="0" style="cursor:pointer"' : '') + '><span class="avatar">' + esc(ctx.initials(name)) + '</span><div class="grow"><div class="t">' + esc(name) + (p.id === ctx.user.id ? ' <span class="muted small">(you)</span>' : '') + '</div>' +
-                    '<div class="d">' + (p.phone ? esc(p.phone) + ' ' : '') + pillsFor(p.id) + '</div></div>' +
+                var d = dir[p.id] || {}, name = p.full_name || d.email || 'Team member', first = name.split(' ')[0].toLowerCase(), on = here[p.id] || here[first];
+                var sub = [p.full_name ? d.email : '', d.last_sign_in_at ? 'signed in ' + ctx.timeAgo(d.last_sign_in_at) : 'never signed in', p.phone].filter(Boolean).join(' · ');
+                return '<li' + (isAdmin ? ' data-id="' + esc(p.id) + '" tabindex="0" style="cursor:pointer"' : '') + '><span class="avatar">' + esc(ctx.initials(name)) + '</span><div class="grow"><div class="t">' + esc(name) + (p.id === ctx.user.id ? ' <span class="muted small">(you)</span>' : '') +
+                    (p.full_name ? '' : ' <span class="pill warn">' + (isAdmin ? 'Add a name' : 'No name yet') + '</span>') + '</div>' +
+                    '<div class="d">' + esc(sub) + '</div><div class="d" style="margin-top:4px">' + pillsFor(p.id) + '</div></div>' +
                     '<span class="pill ' + (on ? 'ok' : '') + '"><span class="dot' + (on ? ' on' : '') + '"></span>' + (on ? 'Available' : 'Away') + '</span></li>';
             }).join('') : '<li class="empty-state">No team members found.</li>';
         }
@@ -34,9 +36,11 @@ DLDash.register({
             return Promise.all([
                 ctx.sb.from('profiles').select('id,full_name,role,phone').in('role', ['employee', 'admin']).order('full_name'),
                 ctx.sb.from('profile_tags').select('profile_id,tag'),
-                ctx.tagList(true)
+                ctx.tagList(true),
+                ctx.sb.rpc('team_directory')
             ]).then(function (r) {
                 people = r[0].data || []; tags = r[2];
+                dir = {}; (r[3].data || []).forEach(function (x) { dir[x.id] = x; });
                 held = {}; (r[1].data || []).forEach(function (x) { (held[x.profile_id] = held[x.profile_id] || []).push(x.tag); });
                 paint();
             });
@@ -111,11 +115,13 @@ DLDash.register({
             if (!p) return;
             var me = p.id === ctx.user.id, mine = (held[id] || []).slice();
             if (panel) panel.close();
-            panel = ctx.drawer(p.full_name || 'Team member');
+            var email = (dir[id] || {}).email || '';
+            panel = ctx.drawer(p.full_name || email || 'Team member');
             panel.onClose = function () { panel = null; };
             panel.body.innerHTML =
                 '<form class="card card-pad" style="display:grid;gap:12px" id="mm-form">' +
-                    '<label class="field">Name<input id="mm-name" required maxlength="80"></label>' +
+                    (email ? '<div class="muted small">Signs in as <strong style="color:var(--ink)">' + esc(email) + '</strong></div>' : '') +
+                    '<label class="field">Name<input id="mm-name" required maxlength="80" placeholder="First and last name"></label>' +
                     '<label class="field">Phone<input id="mm-phone" type="tel" maxlength="30"></label>' +
                     '<div class="field">Tags<div style="display:grid;gap:10px;margin-top:4px">' + tagBoxes(mine) + '</div></div>' +
                     '<p class="form-error" id="mm-error" role="alert" hidden></p>' +

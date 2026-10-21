@@ -151,8 +151,9 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .app { grid-template-columns: 1fr; }
     .sidebar { position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 30; height: auto; flex-direction: row; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); border-right: 0; border-top: 1px solid var(--line); }
     .brand, .side-foot { display: none; }
-    .nav { display: flex; width: 100%; justify-content: space-around; overflow-x: auto; }
-    .nav a { flex-direction: column; gap: 3px; padding: 6px 8px; font-size: 10.5px; position: relative; }
+    .nav { display: flex; width: 100%; min-width: 0; }
+    /* Every section shares the bar equally, so adding one never pushes the page wider. */
+    .nav a { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 3px; padding: 6px 1px; font-size: 10px; text-align: center; position: relative; }
     .nav .count { position: absolute; top: 0; right: 4px; margin: 0; min-width: 18px; padding: 0 5px; font-size: 10px; }
     .topbar { padding: 10px 14px; gap: 10px; }
     .avail-text, .me .who { display: none; }
@@ -167,3 +168,6 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 /* Tags: checkboxes inside .field keep their own size; the picked color is ringed, not filled */
 .field input[type="checkbox"] { width: auto; padding: 0; flex: none; }
 .color-chips .chip[aria-pressed="true"] { background: none; border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+/* Long emails (a member with no name yet) wrap instead of widening the page */
+.list .grow { min-width: 0; }
+.list .t, .list .d { overflow-wrap: anywhere; }
