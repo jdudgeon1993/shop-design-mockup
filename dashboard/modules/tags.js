@@ -8,7 +8,7 @@ DLDash.register({
     id: 'tags', label: 'Tags', order: 75,
     icon: '<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
     mount: function (el, ctx) {
-        var esc = ctx.esc, tags = [], people = [], held = [], panel = null;
+        var esc = ctx.esc, tags = [], people = [], dir = {}, held = [], panel = null;
         var isAdmin = ctx.has('admin');
         var KINDS = [{ key: 'member', label: 'Team members' }, { key: 'product', label: 'Products', later: true }];
         var COLORS = [{ key: '', label: 'Plain' }, { key: 'gold', label: 'Gold' }, { key: 'ok', label: 'Green' }, { key: 'info', label: 'Blue' }, { key: 'warn', label: 'Amber' }, { key: 'bad', label: 'Red' }];
@@ -27,7 +27,8 @@ DLDash.register({
             '</section>';
 
         function holders(slug) { return held.filter(function (h) { return h.tag === slug; }).map(function (h) { return h.profile_id; }); }
-        function nameOf(id) { var p = people.filter(function (x) { return x.id === id; })[0]; return p ? p.full_name || 'Team member' : 'Former member'; }
+        function nameOf(id) { var p = people.filter(function (x) { return x.id === id; })[0]; return p ? personName(p) : 'Former member'; }
+        function personName(p) { return p.full_name || (dir[p.id] || {}).email || 'Team member'; }
         function paint() {
             el.querySelector('#tg-count').textContent = tags.length + (tags.length === 1 ? ' tag' : ' tags');
             el.querySelector('#tg-rows').innerHTML = tags.map(function (t) {
@@ -41,8 +42,13 @@ DLDash.register({
             return Promise.all([
                 ctx.tagList(true),
                 ctx.sb.from('profiles').select('id,full_name').in('role', ['employee', 'admin']).order('full_name'),
-                ctx.sb.from('profile_tags').select('profile_id,tag')
-            ]).then(function (r) { tags = r[0]; people = r[1].data || []; held = r[2].data || []; paint(); });
+                ctx.sb.from('profile_tags').select('profile_id,tag'),
+                ctx.sb.rpc('team_directory')
+            ]).then(function (r) {
+                tags = r[0]; people = r[1].data || []; held = r[2].data || [];
+                dir = {}; (r[3].data || []).forEach(function (x) { dir[x.id] = x; });
+                paint();
+            });
         }
         function slugify(s) {
             var x = s.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
@@ -89,8 +95,8 @@ DLDash.register({
                 '<section class="card"><div class="card-head"><h2>Who has it</h2><span class="sp"></span><span class="muted small" id="tg-who">' + who.length + ' of ' + people.length + '</span></div><ul class="list">' +
                     people.map(function (p) {
                         var has = who.indexOf(p.id) >= 0;
-                        return '<li><span class="avatar">' + esc(ctx.initials(p.full_name || '?')) + '</span><div class="grow"><div class="t">' + esc(p.full_name || 'Team member') + (p.id === ctx.user.id ? ' <span class="muted small">(you)</span>' : '') + '</div></div>' +
-                            (edit ? '<label class="avail"><input type="checkbox" data-pid="' + esc(p.id) + '"' + (has ? ' checked' : '') + '><span class="switch" aria-hidden="true"></span><span class="sr-only">' + esc(t.label) + ' for ' + esc(p.full_name || '') + '</span></label>'
+                        return '<li><span class="avatar">' + esc(ctx.initials(personName(p))) + '</span><div class="grow"><div class="t">' + esc(personName(p)) + (p.id === ctx.user.id ? ' <span class="muted small">(you)</span>' : '') + '</div></div>' +
+                            (edit ? '<label class="avail"><input type="checkbox" data-pid="' + esc(p.id) + '"' + (has ? ' checked' : '') + '><span class="switch" aria-hidden="true"></span><span class="sr-only">' + esc(t.label) + ' for ' + esc(personName(p)) + '</span></label>'
                                   : (has ? '<span class="pill ok">Has it</span>' : '<span class="muted small">—</span>')) + '</li>';
                     }).join('') + '</ul></section>');
             if (!edit) return;
