@@ -18,7 +18,7 @@ DLDash.register({
                     '<button class="btn btn-sm" id="or-refresh" type="button">Refresh</button>' +
                 '</div>' +
                 '<div class="card-body" style="padding-bottom:0"><div class="chips" id="or-chips" role="group" aria-label="Filter by status"></div></div>' +
-                '<div class="table-wrap"><table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Placed</th><th>Items</th><th>Maker</th><th class="r">Total</th><th>Status</th></tr></thead>' +
+                '<div class="table-wrap"><table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Placed</th><th>Items</th>' + (MAKERS ? '<th>Maker</th>' : '') + '<th class="r">Total</th><th>Status</th></tr></thead>' +
                 '<tbody id="or-rows"></tbody></table></div>' +
                 '<p class="empty-state" id="or-empty" hidden></p>' +
             '</section>';
@@ -27,14 +27,26 @@ DLDash.register({
         function load() {
             return ctx.sb.from('orders')
                 .select('id,order_number,status,contact_name,contact_email,contact_phone,shipping_address,customer_notes,subtotal,internal_notes,quickbooks_invoice_id,created_at,updated_at,' +
-                    'order_items(id,item_type,name_snapshot,sku_snapshot,mfg_sku_snapshot,vendor_snapshot,finish_snapshot,hinge_side,mods_snapshot,unit_price,quantity,line_total)')
+                    'order_items(id,item_type,name_snapshot,sku_snapshot,mfg_sku_snapshot,finish_snapshot,hinge_side,mods_snapshot,unit_price,quantity,line_total)')
                 .order('created_at', { ascending: false }).limit(500)
                 .then(function (r) {
                     if (r.error) { ctx.toast('Could not load orders.', 'bad'); return; }
                     orders = r.data || [];
+                    return withMakers(orders);
+                }).then(function () {
+                    if (!orders) return;
                     paint();
                     if (openNumber) openOrder(openNumber);
                 });
+        }
+        // The real maker (vendor_snapshot) comes from order_makers(), only with the 'makers' tag.
+        var MAKERS = ctx.has('makers');
+        function withMakers(list) {
+            if (!MAKERS || !list.length) return Promise.resolve();
+            return ctx.sb.rpc('order_makers', { p_order_ids: list.map(function (o) { return o.id; }) }).then(function (r) {
+                var by = {}; (r.data || []).forEach(function (m) { by[m.item_id] = m.maker; });
+                list.forEach(function (o) { (o.order_items || []).forEach(function (i) { i.vendor_snapshot = by[i.id] || null; }); });
+            });
         }
         function itemsOf(o) { return (o.order_items || []).reduce(function (n, i) { return n + (i.quantity || 0); }, 0); }
         function makersOf(o) {
@@ -61,7 +73,7 @@ DLDash.register({
                 return '<tr data-n="' + o.order_number + '" tabindex="0"><td><strong>#' + o.order_number + '</strong></td>' +
                     '<td>' + esc(o.contact_name) + '<div class="muted small">' + esc(o.contact_email || '') + '</div></td>' +
                     '<td>' + esc(ctx.fmtDate(o.created_at)) + '<div class="muted small">' + esc(ctx.timeAgo(o.created_at)) + '</div></td>' +
-                    '<td>' + itemsOf(o) + '</td><td>' + esc(makersOf(o) || '—') + '</td>' +
+                    '<td>' + itemsOf(o) + '</td>' + (MAKERS ? '<td>' + esc(makersOf(o) || '—') + '</td>' : '') +
                     '<td class="r">' + (o.subtotal != null ? ctx.money.format(o.subtotal) : '—') + '</td><td>' + ctx.statusPill(o.status) + '</td></tr>';
             }).join('');
             var empty = el.querySelector('#or-empty');
@@ -90,7 +102,7 @@ DLDash.register({
         function portalSheet(o) {
             var by = {};
             (o.order_items || []).forEach(function (i) {
-                var maker = i.vendor_snapshot || 'Maker not recorded';
+                var maker = MAKERS ? i.vendor_snapshot || 'Maker not recorded' : 'Order sheet';
                 (by[maker] = by[maker] || []).push(i);
             });
             return Object.keys(by).map(function (maker) {
@@ -143,7 +155,7 @@ DLDash.register({
                             (i.vendor_snapshot ? '<br><span style="color:var(--gold)">Order from ' + esc(i.vendor_snapshot) + (i.mfg_sku_snapshot ? ' # ' + esc(i.mfg_sku_snapshot) : '') + '</span>' : '') +
                             '</div></div><span class="small">' + (i.line_total != null ? ctx.money.format(i.line_total) : '') + '</span></li>';
                     }).join('') + '</ul></section>' +
-                '<section class="card"><div class="card-head"><h2>Partner portal sheet</h2><span class="sp"></span><span class="muted small">Copy into the maker\'s ordering site</span></div><div class="card-body" style="display:grid;gap:14px">' +
+                '<section class="card"><div class="card-head"><h2>' + (MAKERS ? 'Partner portal sheet' : 'Order sheet') + '</h2><span class="sp"></span><span class="muted small">' + (MAKERS ? 'Copy into the maker\'s ordering site' : 'Makers are shown with the See real makers tag') + '</span></div><div class="card-body" style="display:grid;gap:14px">' +
                     sheets.map(function (s, k) {
                         return '<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><strong>' + esc(s.maker) + '</strong><span class="sp"></span>' +
                             '<button class="btn btn-sm" data-copy="' + k + '">Copy</button></div>' +

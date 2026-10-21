@@ -37,6 +37,20 @@
         </form>
     </main>
 
+    <!-- First sign-in after an admin added you: choose a password -->
+    <main class="signin" id="pw" hidden>
+        <form class="signin-card" id="pw-form">
+            <img src="/Assets/Logos/apple-touch-icon.png" alt="" class="signin-logo" width="56" height="56">
+            <p class="kicker">Design Lab Team</p>
+            <h1>Choose your password</h1>
+            <p class="muted small" id="pw-hello"></p>
+            <label class="field">New password<input type="password" id="pw-new" autocomplete="new-password" minlength="10" required></label>
+            <label class="field">Type it again<input type="password" id="pw-again" autocomplete="new-password" minlength="10" required></label>
+            <p class="form-error" id="pw-error" role="alert" hidden></p>
+            <button class="btn btn-primary btn-block" type="submit" id="pw-submit">Save and continue</button>
+        </form>
+    </main>
+
     <!-- The app -->
     <div class="app" id="app" hidden>
         <aside class="sidebar" aria-label="Sections">
@@ -80,6 +94,7 @@
     <script src="/dashboard/modules/catalog.js"></script>
     <script src="/dashboard/modules/signups.js"></script>
     <script src="/dashboard/modules/team.js"></script>
+    <script src="/dashboard/modules/tags.js"></script>
     <script>DLDash.start();</script>
 </body>
 </html>

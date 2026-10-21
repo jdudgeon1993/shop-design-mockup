@@ -28,6 +28,11 @@ DLDash.register({
             return '<li><div class="grow"><a class="t" href="' + href + '" target="_blank" rel="noopener" style="color:var(--ink);text-decoration:none">' + esc(t) + ' ↗</a><div class="d">' + esc(d) + '</div></div></li>';
         }
         var toggle = el.querySelector('#ca-prices');
+        // The database only sends prices with the See pricing tag.
+        if (!ctx.has('pricing')) {
+            toggle.disabled = true; DL.prices.set(false);
+            toggle.closest('.card-body').insertAdjacentHTML('beforeend', '<p class="muted small" style="margin:0">You need the See pricing tag for this. Ask an admin.</p>');
+        }
         toggle.checked = DL.prices.shown();
         toggle.addEventListener('change', function () { DL.prices.set(toggle.checked); ctx.toast(toggle.checked ? 'Prices are showing in this browser.' : 'Prices are hidden again.'); });
 

@@ -173,6 +173,12 @@
         setBadge('live-help', waiting.length);
         lobbyListeners.forEach(function (fn) { fn({ waiting: waiting, agents: agents }); });
     }
+    // "Sam", "Sam and you", "Ana, Sam and you": who's available, for labels.
+    function agentNames(list) {
+        var names = list.filter(function (a) { return a.uid !== ctx.user.id; }).map(function (a) { return a.name || 'Agent'; }).sort();
+        if (list.some(function (a) { return a.uid === ctx.user.id; })) names.push('you');
+        return names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0] || '';
+    }
     function available() { try { return localStorage.getItem(AVAIL_KEY) === '1'; } catch (e) { return false; } }
     function trackMe() { if (lobby) lobby.track({ role: 'agent', name: ctx.firstName, uid: ctx.user.id }); }
     $('avail').addEventListener('change', function () {
@@ -245,20 +251,41 @@
         sb: sb, esc: esc, money: money, fmtDate: fmtDate, timeAgo: timeAgo, toast: toast, copy: copy, csv: csv, notify: notify,
         drawer: drawer, initials: initials, STATUS: STATUS, statusOf: statusOf, statusPill: statusPill, setBadge: setBadge,
         go: function (hash) { location.hash = hash; },
-        lobby: { onChange: onLobby, available: available },
+        lobby: { onChange: onLobby, available: available, names: agentNames },
         orders: { onChange: function (fn) { ordersListeners.push(fn); }, refresh: function () { watchOrders(); } },
         TOKEN_ENDPOINT: 'https://shop-design-railway.up.railway.app/api/jitsi-token',
         JITSI_DOMAIN: '8x8.vc', APP_ID: 'vpaas-magic-cookie-f0a0399c162749f2805d91eef3967b80',
         CALENDAR_ID: 'c_9089d8c980992d45cb984c6a34f591828f33a49387d17a67496e669859499399@group.calendar.google.com',
-        user: null, profile: null, firstName: ''
+        user: null, profile: null, firstName: '',
+        // Tags (Dashboard → Tags). has('admin'), has('pricing'), has('makers') gate parts of the
+        // dashboard; the database enforces the same tags, so these only decide what to show.
+        tags: [], has: function (t) { return ctx.tags.indexOf(t) >= 0; },
+        tagList: loadTags, tagPill: tagPill
     };
+
+    // Every tag, cached for the session; loadTags(true) re-reads after a change.
+    var tagCache = null;
+    function loadTags(fresh) {
+        if (tagCache && !fresh) return tagCache;
+        tagCache = sb.from('tags').select('slug,label,description,color,applies_to,is_system,sort_order,created_at')
+            .order('sort_order').order('label').then(function (r) { return r.data || []; });
+        return tagCache;
+    }
+    function tagPill(t) {
+        return '<span class="pill ' + esc(t.color || '') + '" title="' + esc(t.description || '') + '">' + esc(t.label) + '</span>';
+    }
 
     // ---------- sign in ----------
     // Employee or admin profiles only; anyone else is signed back out.
     function employeeFor(user) {
-        return sb.from('profiles').select('role,full_name,phone').eq('id', user.id).maybeSingle().then(function (r) {
-            var p = r.data;
-            return p && (p.role === 'employee' || p.role === 'admin') ? p : null;
+        return Promise.all([
+            sb.from('profiles').select('role,full_name,phone').eq('id', user.id).maybeSingle(),
+            sb.from('profile_tags').select('tag').eq('profile_id', user.id)
+        ]).then(function (r) {
+            var p = r[0].data;
+            if (!p || (p.role !== 'employee' && p.role !== 'admin')) return null;
+            p.tags = (r[1].data || []).map(function (x) { return x.tag; });
+            return p;
         });
     }
     function showSignin(msg) {
@@ -283,12 +310,15 @@
         sb.auth.signOut().then(function () { location.hash = ''; location.reload(); });
     });
 
+    // Added by an admin with a temporary password: choose your own before going on.
     function start2(user, profile) {
-        ctx.user = user; ctx.profile = profile;
+        if (user.user_metadata && user.user_metadata.must_change_password) return choosePassword(user, profile);
+        ctx.user = user; ctx.profile = profile; ctx.tags = profile.tags || [];
+        if (!ctx.has('pricing')) DL.prices.set(false);
         var full = profile.full_name || user.email.split('@')[0];
         ctx.firstName = full.split(' ')[0];
         $('me').innerHTML = '<span class="avatar">' + esc(initials(full)) + '</span><span class="who"><strong>' + esc(full) + '</strong><br><span class="muted">' +
-            esc(profile.role === 'admin' ? 'Admin' : 'Team') + '</span></span>';
+            esc(ctx.has('admin') ? 'Admin' : 'Team') + '</span></span>';
         $('signin').hidden = true; $('app').hidden = false;
         $('avail').checked = available();
         buildNav(); paintBell();
@@ -296,6 +326,29 @@
         watchOrders(); setInterval(watchOrders, 60000);
         window.addEventListener('hashchange', route);
         route();
+    }
+
+    function choosePassword(user, profile) {
+        $('signin').hidden = true; $('app').hidden = true; $('pw').hidden = false;
+        $('pw-hello').textContent = 'Welcome, ' + (profile.full_name || user.email).split(' ')[0] + '. Choose a password only you know.';
+        $('pw-new').focus();
+        $('pw-form').onsubmit = function (e) {
+            e.preventDefault();
+            var a = $('pw-new').value, b = $('pw-again').value;
+            var bad = a.length < 10 ? 'Use at least 10 characters.' : a !== b ? 'The two passwords don\'t match.' : '';
+            $('pw-error').hidden = !bad; $('pw-error').textContent = bad;
+            if (bad) return;
+            $('pw-submit').disabled = true;
+            sb.auth.updateUser({ password: a, data: { must_change_password: false } }).then(function (r) {
+                if (r.error) throw r.error;
+                $('pw').hidden = true;
+                start2(r.data.user, profile);
+                toast('Password saved. Welcome to the team!');
+            }).catch(function (err) {
+                $('pw-error').hidden = false;
+                $('pw-error').textContent = /different from the old/i.test(err.message) ? 'Pick a new password, not the temporary one.' : 'That didn\'t save: ' + err.message;
+            }).finally(function () { $('pw-submit').disabled = false; });
+        };
     }
 
     window.DLDash = {
