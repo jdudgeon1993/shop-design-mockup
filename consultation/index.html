@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
     <title>Video Consultation - Design Lab</title>
     <meta name="description" content="Meet your Design Lab designer over video, from anywhere. Enter your private room code to join.">
     <meta name="theme-color" content="#1a1a1a">
@@ -11,7 +13,7 @@
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); }
+        :root { --white: var(--text); --black: var(--bg); --border: rgba(var(--ink),0.15); }
         *, *::before, *::after { box-sizing: border-box; }
         html, body {
             min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
@@ -29,7 +31,7 @@
         }
         .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
         .back-link:hover { text-decoration: underline; }
-        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(var(--ink),0.7); }
 
         /* The call frame takes all remaining space — this is the whole point */
         .call-frame {
@@ -47,13 +49,15 @@
            whatever inline sizing Jitsi's own script applies. Direct-child
            selector on purpose — Jitsi injects straight into #call-frame, so this
            shouldn't reach into deeper-nested iframes some other feature adds later. */
+        /* Test schemes: the intro stage follows the page color (Original keeps black). */
+        html[data-scheme] .call-frame { background: var(--bg); }
         .call-frame > iframe {
             position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0;
         }
 
         .stage { text-align: center; padding: 40px 20px; width: 100%; max-height: 100%; overflow-y: auto; }
-        .stage p { color: rgba(255,255,255,0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
-        .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(255,255,255,0.55); font-size: 14px; line-height: 1.5; }
+        .stage p { color: rgba(var(--ink),0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
+        .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(var(--ink),0.55); font-size: 14px; line-height: 1.5; }
 
         .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
 
@@ -64,7 +68,7 @@
             list-style: none; margin: 0 auto 40px; padding: 0; max-width: 460px;
             text-align: left; display: flex; flex-direction: column; gap: 18px;
         }
-        .how-it-works li { display: flex; align-items: flex-start; gap: 14px; font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.5; }
+        .how-it-works li { display: flex; align-items: flex-start; gap: 14px; font-size: 14px; color: rgba(var(--ink),0.75); line-height: 1.5; }
         .step-num {
             flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--gold);
             color: var(--gold); font-size: 12px; font-weight: 700; line-height: 24px; text-align: center;
@@ -72,17 +76,17 @@
 
         .join-panel {
             max-width: 320px; margin: 0 auto; padding: 28px 24px; border: 1px solid var(--border);
-            border-radius: 8px; background: rgba(255,255,255,0.03);
+            border-radius: 8px; background: rgba(var(--ink),0.03);
         }
         .join-panel h3 { margin: 0 0 16px; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--white); }
 
         .room-input {
-            width: 100%; background: #242424; border: 1px solid var(--border); color: var(--white);
+            width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--white);
             padding: 10px 12px; border-radius: 4px; font-family: inherit; font-size: 14px;
             margin-bottom: 14px; text-align: center;
         }
 
-        .room-label { color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin: 0 0 6px; }
+        .room-label { color: rgba(var(--ink),0.5); text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin: 0 0 6px; }
         .room-code { color: var(--gold); font-size: 20px; font-weight: 700; margin: 0 0 20px; word-break: break-all; }
 
         .btn-pill, .btn-secondary {
@@ -99,21 +103,21 @@
         .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
         .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
 
-        .note { margin: 20px 0 0; padding: 12px 16px; border-radius: 4px; background: rgba(212,175,55,0.1); color: var(--gold); font-size: 13px; max-width: 500px; margin-left: auto; margin-right: auto; }
-        .error-note { background: rgba(220,80,80,0.15); color: #ff9a9a; }
+        .note { margin: 20px 0 0; padding: 12px 16px; border-radius: 4px; background: rgba(var(--gold-rgb),0.1); color: var(--gold); font-size: 13px; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .error-note { background: rgba(220,80,80,0.15); color: var(--danger); }
 
         .narrow-form { max-width: 320px; margin: 0 auto; }
 
         .employee-link {
             appearance: none; background: none; border: none; cursor: pointer;
-            color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px;
+            color: rgba(var(--ink),0.4); font-family: inherit; font-size: 12px;
             text-decoration: underline; margin: 44px auto 0; display: block; width: fit-content;
         }
         .employee-link:hover, .employee-link:focus-visible { color: var(--gold); }
 
         .privacy-caption {
             flex-shrink: 0; padding: 8px 5% 12px; font-size: 12px; text-align: center;
-            color: rgba(255,255,255,0.4);
+            color: rgba(var(--ink),0.4);
         }
         .privacy-caption strong { color: var(--gold); font-weight: 600; }
 

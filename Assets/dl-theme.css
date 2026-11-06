@@ -1,0 +1,156 @@
+/* Design Lab color schemes (test, 2026-11).
+ *
+ * Every storefront page loads this file BEFORE its own <style>, and its
+ * colors come from these tokens instead of hard-coded hex values:
+ *
+ *   --bg / --bg-rgb      page background
+ *   --surface            cards and panels          (was #222)
+ *   --surface-2          raised panels, hovers     (was #2a2a2a)
+ *   --sunk               inset areas, inputs       (was #141414)
+ *   --ink                text color as "r,g,b", so pages can write
+ *                        rgba(var(--ink), .7) for muted text
+ *   --text               solid text color (rgb(var(--ink)))
+ *   --gold / --gold-rgb  the accent (deeper on light schemes so text stays readable)
+ *   --on-gold            text on a gold fill
+ *
+ * The "frame" (top bars, the home navbar, footers) can use its own colors:
+ * the Gallery and Stone schemes keep a dark frame around a light page.
+ *
+ * No data-scheme attribute = "original", so the site looks exactly as before.
+ * The switcher lives in Assets/dl-theme.js.
+ */
+:root {
+    --bg: #1a1a1a; --bg-rgb: 26,26,26;
+    --surface: #222222; --surface-2: #2a2a2a; --sunk: #141414;
+    --ink: 255,255,255; --text: #ffffff;
+    --gold: #d4af37; --gold-rgb: 212,175,55; --on-gold: #1a1a1a;
+    --danger: #ffaaaa;
+}
+
+/* 1. Walnut Night: our black and gold, warmed with an espresso undertone. */
+html[data-scheme="walnut"] {
+    --bg: #1c1714; --bg-rgb: 28,23,20;
+    --surface: #27201b; --surface-2: #312821; --sunk: #14100d;
+    --ink: 243,236,226; --text: #f3ece2;
+    --gold: #d4af37; --gold-rgb: 212,175,55; --on-gold: #1c1714;
+}
+
+/* 2. Gallery: dark frame (top bar, footer, hero photos) around ivory pages. */
+html[data-scheme="gallery"] {
+    --danger: #b42318;
+    --bg: #f6f1e9; --bg-rgb: 246,241,233;
+    --surface: #fffdf9; --surface-2: #efe8dc; --sunk: #ebe3d6;
+    --ink: 28,25,22; --text: #1c1916;
+    --gold: #8a6a1f; --gold-rgb: 138,106,31; --on-gold: #fffdf9;
+}
+html[data-scheme="gallery"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+    --bg: #1a1714; --bg-rgb: 26,23,20;
+    --surface: #24201c; --surface-2: #2d2823; --sunk: #12100e;
+    --ink: 246,241,233; --text: #f6f1e9;
+    --gold: #d4af37; --gold-rgb: 212,175,55; --on-gold: #1a1714;
+}
+
+/* 3. Ivory & Gold: fully light, warm white with deep gold. */
+html[data-scheme="ivory"] {
+    --danger: #b42318;
+    --bg: #faf7f2; --bg-rgb: 250,247,242;
+    --surface: #ffffff; --surface-2: #f1ece3; --sunk: #efe9df;
+    --ink: 28,25,22; --text: #1c1916;
+    --gold: #8a6a1f; --gold-rgb: 138,106,31; --on-gold: #ffffff;
+}
+
+/* 4. Stone & Brass: soft greige with a taupe frame and brass accent. */
+html[data-scheme="stone"] {
+    --danger: #b42318;
+    --bg: #e6e2da; --bg-rgb: 230,226,218;
+    --surface: #f3f0ea; --surface-2: #dbd6cc; --sunk: #d8d2c7;
+    --ink: 36,32,28; --text: #24201c;
+    --gold: #7d5f1e; --gold-rgb: 125,95,30; --on-gold: #f3f0ea;
+}
+html[data-scheme="stone"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+    --bg: #4f4842; --bg-rgb: 79,72,66;
+    --surface: #5a524b; --surface-2: #645b53; --sunk: #433d38;
+    --ink: 240,236,229; --text: #f0ece5;
+    --gold: #d2b47a; --gold-rgb: 210,180,122; --on-gold: #2a2622;
+}
+
+/* 5. Midnight Navy: still dark and powerful, with depth instead of a void. */
+html[data-scheme="navy"] {
+    --bg: #0f1e2e; --bg-rgb: 15,30,46;
+    --surface: #172a3e; --surface-2: #1f354c; --sunk: #0a1622;
+    --ink: 244,239,230; --text: #f4efe6;
+    --gold: #d4af37; --gold-rgb: 212,175,55; --on-gold: #0f1e2e;
+}
+
+/* Older page aliases (--white, --black, --panel, --border, --muted) are
+   declared on :root, so they resolve against the root colors. Anywhere the
+   tokens are re-scoped (the frame above, text over photos below) they have
+   to be re-declared too, or they'd keep the page colors. */
+:is(.top-bar, .navbar, .shop-footer, .site-footer, .on-photo) {
+    --white: var(--text); --black: var(--bg); --panel: var(--surface);
+    --border: rgba(var(--ink), .15); --muted: rgba(var(--ink), .58);
+}
+/* Text that sits on a photo or a dark scrim stays white in every scheme. */
+.on-photo {
+    --ink: 255,255,255; --text: #ffffff; --bg: #1a1a1a; --bg-rgb: 26,26,26;
+    --gold: #d4af37; --gold-rgb: 212,175,55; --on-gold: #1a1a1a; --danger: #ffaaaa;
+    color: var(--text);
+}
+
+/* Footers and top bars pick the frame colors up from the rules above;
+   make sure they actually paint them (some pages left them transparent). */
+html[data-scheme="gallery"] :is(.shop-footer, .site-footer, .top-bar),
+html[data-scheme="stone"] :is(.shop-footer, .site-footer, .top-bar) { background: var(--bg); }
+
+/* ---------- the scheme switcher (centered in the header) ---------- */
+.dl-scheme {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5;
+    display: inline-flex; align-items: center; gap: 2px;
+    padding: 3px; border-radius: 999px;
+    background: rgba(var(--bg-rgb), .85); border: 1px solid rgba(var(--gold-rgb), .55);
+    box-shadow: 0 4px 18px rgba(0,0,0,.25);
+    font-family: 'Montserrat', sans-serif; color: var(--text);
+}
+.dl-scheme button {
+    appearance: none; border: 0; background: transparent; color: inherit; cursor: pointer;
+    font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .5px;
+    min-width: 30px; height: 30px; border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.dl-scheme button:hover { background: rgba(var(--ink), .1); }
+.dl-scheme button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.dl-scheme .dl-scheme-name { padding: 0 12px 0 8px; white-space: nowrap; }
+.dl-scheme .dl-dot {
+    width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+    border: 1px solid rgba(var(--ink), .45);
+    background: linear-gradient(135deg, var(--a) 0 50%, var(--b) 50% 100%);
+}
+.dl-scheme-menu {
+    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    min-width: 230px; padding: 6px; margin: 0; list-style: none; border-radius: 14px;
+    background: var(--surface); border: 1px solid rgba(var(--ink), .15);
+    box-shadow: 0 14px 40px rgba(0,0,0,.35);
+}
+.dl-scheme-menu[hidden] { display: none; }
+.dl-scheme-menu button { width: 100%; justify-content: flex-start; padding: 6px 10px; height: auto; min-height: 40px; border-radius: 10px; text-align: left; }
+.dl-scheme-menu button[aria-checked="true"] { background: rgba(var(--gold-rgb), .16); }
+.dl-scheme-menu small { display: block; font-weight: 400; letter-spacing: 0; opacity: .7; font-size: 11.5px; margin-top: 1px; }
+/* The switcher takes the header's center during the test, so the small
+   centered page title steps aside on pages that have one. */
+.has-dl-scheme .page-title { visibility: hidden; }
+.dl-scheme.in-flow { position: relative; left: auto; top: auto; transform: none; }
+@media (min-width: 769px) and (max-width: 1180px) { .dl-scheme.in-flow .dl-scheme-name { display: none; } }
+@media (max-width: 640px) {
+    /* Phones: sit in the bar's own row between the back link and the right side. */
+    .dl-scheme { position: relative; left: auto; top: auto; transform: none; flex-shrink: 0; }
+    .has-dl-scheme .page-title { display: none; }
+    .top-bar > .dl-scheme { margin: 0 auto; }
+    .has-dl-scheme .top-links { gap: 12px; white-space: nowrap; }
+    .dl-scheme-menu { left: auto; right: -60px; transform: none; }
+    .dl-scheme .dl-scheme-name { display: none; }
+    .dl-scheme [data-step] { display: none; }
+    .dl-scheme .dl-scheme-open { padding: 0 8px; }
+}
+
+/* The white logo turns charcoal where the footer goes light. */
+html[data-scheme="ivory"] .footer-logo { filter: brightness(0) opacity(.85); }

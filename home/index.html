@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
     <meta name="robots" content="noindex, nofollow">
     <title>Design Lab — Online Cabinetry</title>
     <meta name="description" content="Design Lab: quality cabinetry for every room. Build your own in the DIY Shop, start from a designer-planned Curated Collection, or meet a designer over video.">
@@ -16,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
+            --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
             --font-serif: 'Playfair Display', serif;
 
             /* Real measured height of .navbar (18px padding + 30px logo, both
@@ -192,19 +194,19 @@
            column keeping its own inset instead. */
         .hero-stats {
             display: grid; grid-template-columns: repeat(5, 1fr);
-            background: rgba(0,0,0,0.85); border-top: 1px solid rgba(255,255,255,0.12);
+            background: rgba(var(--bg-rgb),0.92); color: var(--text); border-top: 1px solid rgba(var(--ink),0.12);
         }
         .hero-stat {
-            padding: 26px 22px; border-right: 1px solid rgba(255,255,255,0.12);
+            padding: 26px 22px; border-right: 1px solid rgba(var(--ink),0.12);
             transition: transform 0.25s ease;
         }
         .hero-stat:last-child { border-right: none; }
         .hero-stat:hover { transform: translateY(-3px); }
-        .hero-stat-icon { width: 30px; height: 30px; margin-bottom: 12px; color: var(--white); transition: color 0.25s ease; }
+        .hero-stat-icon { width: 30px; height: 30px; margin-bottom: 12px; color: var(--text); transition: color 0.25s ease; }
         .hero-stat-icon svg { width: 100%; height: 100%; }
         .hero-stat:hover .hero-stat-icon { color: var(--gold); }
-        .hero-stat h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--white); }
-        .hero-stat p { margin: 0; font-size: 12.5px; line-height: 1.5; color: rgba(255,255,255,0.6); }
+        .hero-stat h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text); }
+        .hero-stat p { margin: 0; font-size: 12.5px; line-height: 1.5; color: rgba(var(--ink),0.6); }
 
 
         /* Footer: sized to its own content now (no more min-height:100dvh) —
@@ -213,15 +215,15 @@
         .site-footer {
             width: 100%; scroll-snap-align: start;
             display: flex; flex-direction: column; justify-content: center;
-            background: var(--black); color: var(--white);
+            background: var(--bg); color: var(--text);
             padding: 80px 10% 40px;
         }
         .footer-top { display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; align-items: flex-start; }
         .footer-brand { flex: 1 1 220px; max-width: 340px; }
         .footer-logo { height: 34px; width: auto; display: block; margin-bottom: 16px; }
-        .footer-tagline { color: rgba(255,255,255,0.6); margin: 0 0 20px; line-height: 1.5; }
+        .footer-tagline { color: rgba(var(--ink),0.6); margin: 0 0 20px; line-height: 1.5; }
         .footer-social { display: flex; gap: 16px; }
-        .footer-social a { color: var(--white); display: inline-flex; transition: color 0.2s; }
+        .footer-social a { color: var(--text); display: inline-flex; transition: color 0.2s; }
         .footer-social a:hover { color: var(--gold); }
         .footer-social svg { width: 20px; height: 20px; }
 
@@ -229,12 +231,12 @@
            two links that have no other path to them (Video Consultation,
            Employee Login) live here alongside About Us and Contact. */
         .footer-links { display: flex; flex-wrap: wrap; gap: 12px 28px; list-style: none; margin: 0; padding: 0; }
-        .footer-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-links a { color: rgba(var(--ink),0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
         .footer-links a:hover { color: var(--gold); }
 
         .footer-bottom {
-            margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.5); font-size: 13px;
+            margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(var(--ink),0.1);
+            color: rgba(var(--ink),0.5); font-size: 13px;
         }
 
         /* Feature sections (DIY / Curated / Full Service / Why) — full-screen
@@ -271,7 +273,7 @@
             .nav-menu {
                 display: none; flex-direction: column; align-items: flex-start; gap: 20px;
                 position: absolute; top: 68px; left: 0; width: 100%;
-                background: var(--black); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+                background: var(--bg); padding: 20px; border-bottom: 1px solid rgba(var(--ink),0.1);
             }
             #nav-toggle:checked ~ .nav-menu { display: flex; }
             .nav-links { flex-direction: column; gap: 16px; align-items: flex-start; }
@@ -294,7 +296,7 @@
             /* Roomy single column now that stats aren't fighting for
                vertical space inside the same screen as the photo. */
             .hero-stats { grid-template-columns: 1fr; }
-            .hero-stat { padding: 22px 8%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.12); }
+            .hero-stat { padding: 22px 8%; border-right: none; border-bottom: 1px solid rgba(var(--ink),0.12); }
             .hero-stat:last-child { border-bottom: none; }
 
             .site-footer { padding: 60px 10% 30px; }
@@ -307,7 +309,7 @@
 </head>
 <body>
 
-    <nav class="navbar">
+    <nav class="navbar on-photo">
         <input type="checkbox" id="nav-toggle">
         <div class="nav-brand"><img class="nav-logo" src="/Assets/Logos/dl-logo-white.webp" alt="Design Lab"></div>
         <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
@@ -332,7 +334,7 @@
 
     <div class="scroll-container">
         <section class="hero">
-            <div class="hero-photo">
+            <div class="hero-photo on-photo">
                 <div class="hero-slide"></div>
                 <div class="hero-slide"></div>
 
@@ -379,21 +381,21 @@
             </div>
         </section>
 
-        <section class="feature" style="background-image: url('/Assets/Images/diy-section.webp')" aria-labelledby="diy-heading">
+        <section class="feature on-photo" style="background-image: url('/Assets/Images/diy-section.webp')" aria-labelledby="diy-heading">
             <p class="feature-kicker">DIY Shop</p>
             <h2 id="diy-heading">Design it yourself, down to the drawer front.</h2>
             <p>Every cabinet in the line, filterable by room, type, width and door style. Pick your size, finish and upgrades, and watch your order come together as you go.</p>
             <a class="btn-pill" href="/diy-wizard/">Shop DIY</a>
         </section>
 
-        <section class="feature right" style="background-image: url('/Assets/Images/curated-section.webp')" aria-labelledby="curated-heading">
+        <section class="feature right on-photo" style="background-image: url('/Assets/Images/curated-section.webp')" aria-labelledby="curated-heading">
             <p class="feature-kicker">Curated Collections</p>
             <h2 id="curated-heading">Designed together. Delivered matched.</h2>
             <p>Complete kitchens and baths planned by our designers, ready to order as one set. Choose the door style and finish; every piece arrives matched.</p>
             <a class="btn-pill" href="/collections/">Explore Collections</a>
         </section>
 
-        <section class="feature" style="background-image: url('/Assets/Images/full-service-section.webp')" aria-labelledby="service-heading">
+        <section class="feature on-photo" style="background-image: url('/Assets/Images/full-service-section.webp')" aria-labelledby="service-heading">
             <p class="feature-kicker">Full Service</p>
             <h2 id="service-heading">Rather have a designer handle it?</h2>
             <p>Meet face to face over video, from anywhere. We'll measure, plan and spec your space with you, then build the order for your approval.</p>
@@ -403,7 +405,7 @@
             </div>
         </section>
 
-        <section class="feature right" style="background-image: url('/Assets/Images/why-choose-us.webp')" aria-labelledby="why-heading">
+        <section class="feature right on-photo" style="background-image: url('/Assets/Images/why-choose-us.webp')" aria-labelledby="why-heading">
             <p class="feature-kicker">Why Design Lab</p>
             <h2 id="why-heading">A retail experience, at the source.</h2>
             <ul class="feature-points">
