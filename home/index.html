@@ -67,6 +67,8 @@
         .nav-brand, .footer-brand-mark { display: inline-flex; align-items: center; gap: 12px; color: var(--text, #fff); text-decoration: none; }
         .nav-logo { display: block; height: 32px; width: auto; }
         .brand-name { font-family: 'Libre Caslon Display', serif; font-weight: 400; font-size: 24px; line-height: 1; letter-spacing: 0.04em; white-space: nowrap; }
+        /* Phones: just the DL mark in the header (the footer keeps the full lockup). */
+        @media (max-width: 768px) { .nav-brand .brand-name { display: none; } }
 
         #nav-toggle { display: none; }
         .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; z-index: 1001; }
