@@ -24,7 +24,7 @@
     if (AGENT) {
         document.documentElement.classList.add('dl-agent');
         var agentCss = document.createElement('style');
-        agentCss.textContent = '.dl-agent .top-bar,.dl-agent .shop-footer,.dl-agent .stepper,.dl-agent #toast a{display:none!important}';
+        agentCss.textContent = '.dl-agent .top-bar,.dl-agent .site-header,.dl-agent .shop-footer,.dl-agent .stepper,.dl-agent #toast a{display:none!important}';
         document.head.appendChild(agentCss);
         window.addEventListener('message', function (e) {
             if (e.origin !== location.origin || !e.data || e.data.dl !== 'agent-cart') return;

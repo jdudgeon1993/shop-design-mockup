@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/Assets/dl-theme.css">
     <script src="/Assets/dl-theme.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
     <meta name="robots" content="noindex, nofollow">
     <title>Design Lab — Online Cabinetry</title>
     <meta name="description" content="Design Lab: quality cabinetry for every room. Build your own in the DIY Shop, start from a designer-planned Curated Collection, or meet a designer over video.">
@@ -130,7 +132,7 @@
 
         .hero-photo {
             position: relative; overflow: hidden;
-            flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between;
+            flex: 1 1 auto; display: flex; flex-direction: column; justify-content: flex-end;
             padding: var(--navbar-h) 0 0;
         }
         /* Scrim removed per CEO feedback — the photo was reading too dark.
@@ -314,40 +316,14 @@
         }
     </style>
 </head>
-<body>
-
-    <nav class="navbar on-photo">
-        <input type="checkbox" id="nav-toggle">
-        <a class="nav-brand" href="/home/" aria-label="Design Lab home"><img class="nav-logo" src="/Assets/Logos/dl-mark-gold.svg" alt=""><span class="brand-name">Design Lab</span></a>
-        <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
-
-        <div class="nav-menu">
-            <div class="nav-links">
-                <a href="/home/">Home</a>
-                <a href="/diy-wizard/">DIY Shop</a>
-                <a href="/collections/">Collections</a>
-                <a href="mailto:hello@shopdesignlab.com">Contact</a>
-            </div>
-            <div class="nav-icons">
-                <a href="/diy-wizard/?focus=search" class="nav-icon" aria-label="Search the catalog">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                </a>
-                <a href="/cart/" class="nav-icon" aria-label="Cart">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5L6 7Z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
-                </a>
-            </div>
-        </div>
-    </nav>
+<body data-header="overlay">
+    <script src="/Assets/dl-header.js"></script>
 
     <div class="scroll-container">
         <section class="hero">
             <div class="hero-photo on-photo">
                 <div class="hero-slide"></div>
                 <div class="hero-slide"></div>
-
-                <div class="hero-top">
-                    <img class="hero-logo-img" src="/Assets/Logos/hero-logo.webp" alt="Design Lab — Online Cabinetry. Customer Focused. Best Flippin' Home on the Block.">
-                </div>
 
                 <div class="hero-content">
                     <h1 class="hero-heading">Cabinetry for Every Room of the House</h1>

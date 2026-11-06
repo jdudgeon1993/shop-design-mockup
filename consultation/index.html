@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/Assets/dl-theme.css">
     <script src="/Assets/dl-theme.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>Video Consultation - Design Lab</title>
     <meta name="description" content="Meet your Design Lab designer over video, from anywhere. Enter your private room code to join.">
     <meta name="theme-color" content="#1a1a1a">
@@ -23,7 +25,7 @@
         /* Targets one full viewport, but min-height (not height) + no overflow:hidden
            means it's still scrollable if content ever needs more room than that —
            a mobile keyboard popping up should never be able to trap someone here. */
-        .page { display: flex; flex-direction: column; min-height: 100dvh; width: 100%; }
+        .page { display: flex; flex-direction: column; min-height: calc(100dvh - 68px); width: 100%; } /* 68px = the site header */
 
         .top-bar {
             flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
@@ -129,13 +131,9 @@
     </style>
 </head>
 <body>
+    <script src="/Assets/dl-header.js"></script>
 
     <div class="page">
-        <div class="top-bar">
-            <a class="back-link" href="/home/">&larr; Back to storefront</a>
-            <span class="page-title">Video Consultation</span>
-        </div>
-
         <div class="call-frame" id="call-frame">
             <!-- Step 1: the immersive client-facing intro (the only path clients ever see) -->
             <div class="stage" id="stage-choice">

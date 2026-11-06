@@ -38,7 +38,7 @@ html[data-scheme="gallery"] {
     --ink: 28,25,22; --text: #1c1916;
     --gold: #8a6a1f; --gold-rgb: 138,106,31; --on-gold: #fffdf9;
 }
-html[data-scheme="gallery"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+html[data-scheme="gallery"] :is(.site-header, .top-bar, .navbar, .shop-footer, .site-footer) {
     --bg: #1a1714; --bg-rgb: 26,23,20;
     --surface: #24201c; --surface-2: #2d2823; --sunk: #12100e;
     --ink: 246,241,233; --text: #f6f1e9;
@@ -62,7 +62,7 @@ html[data-scheme="stone"] {
     --ink: 36,32,28; --text: #24201c;
     --gold: #7d5f1e; --gold-rgb: 125,95,30; --on-gold: #f3f0ea;
 }
-html[data-scheme="stone"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+html[data-scheme="stone"] :is(.site-header, .top-bar, .navbar, .shop-footer, .site-footer) {
     --bg: #4f4842; --bg-rgb: 79,72,66;
     --surface: #5a524b; --surface-2: #645b53; --sunk: #433d38;
     --ink: 240,236,229; --text: #f0ece5;
@@ -77,7 +77,7 @@ html[data-scheme="linen"] {
     --ink: 43,33,27; --text: #2b211b;
     --gold: #866224; --gold-rgb: 134,98,36; --on-gold: #fbf8f3;
 }
-html[data-scheme="linen"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+html[data-scheme="linen"] :is(.site-header, .top-bar, .navbar, .shop-footer, .site-footer) {
     --bg: #2b211b; --bg-rgb: 43,33,27;
     --surface: #352a22; --surface-2: #3f322a; --sunk: #211913;
     --ink: 243,237,227; --text: #f3ede3;
@@ -92,7 +92,7 @@ html[data-scheme="marble"] {
     --ink: 17,17,17; --text: #111111;
     --gold: #8a6a1f; --gold-rgb: 138,106,31; --on-gold: #ffffff;
 }
-html[data-scheme="marble"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+html[data-scheme="marble"] :is(.site-header, .top-bar, .navbar, .shop-footer, .site-footer) {
     --bg: #111111; --bg-rgb: 17,17,17;
     --surface: #1b1b1b; --surface-2: #242424; --sunk: #0a0a0a;
     --ink: 255,255,255; --text: #ffffff;
@@ -107,7 +107,7 @@ html[data-scheme="sage"] {
     --ink: 33,38,32; --text: #212620;
     --gold: #7a6224; --gold-rgb: 122,98,36; --on-gold: #fbfbf8;
 }
-html[data-scheme="sage"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+html[data-scheme="sage"] :is(.site-header, .top-bar, .navbar, .shop-footer, .site-footer) {
     --bg: #3f4b3d; --bg-rgb: 63,75,61;
     --surface: #4a5747; --surface-2: #556252; --sunk: #333e31;
     --ink: 240,240,232; --text: #f0f0e8;
@@ -122,7 +122,7 @@ html[data-scheme="clay"] {
     --ink: 46,33,27; --text: #2e211b;
     --gold: #9a4f2a; --gold-rgb: 154,79,42; --on-gold: #fcf8f4;
 }
-html[data-scheme="clay"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+html[data-scheme="clay"] :is(.site-header, .top-bar, .navbar, .shop-footer, .site-footer) {
     --bg: #4a2e24; --bg-rgb: 74,46,36;
     --surface: #56372b; --surface-2: #614033; --sunk: #3d251d;
     --ink: 246,236,228; --text: #f6ece4;
@@ -137,7 +137,7 @@ html[data-scheme="slate"] {
     --ink: 27,34,40; --text: #1b2228;
     --gold: #83662a; --gold-rgb: 131,102,42; --on-gold: #ffffff;
 }
-html[data-scheme="slate"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+html[data-scheme="slate"] :is(.site-header, .top-bar, .navbar, .shop-footer, .site-footer) {
     --bg: #27333d; --bg-rgb: 39,51,61;
     --surface: #313e49; --surface-2: #3a4854; --sunk: #1e2830;
     --ink: 238,241,241; --text: #eef1f1;
@@ -157,7 +157,7 @@ html[data-scheme="champagne"] {
    declared on :root, so they resolve against the root colors. Anywhere the
    tokens are re-scoped (the frame above, text over photos below) they have
    to be re-declared too, or they'd keep the page colors. */
-:is(.top-bar, .navbar, .shop-footer, .site-footer, .on-photo) {
+:is(.site-header, .top-bar, .navbar, .shop-footer, .site-footer, .on-photo) {
     --white: var(--text); --black: var(--bg); --panel: var(--surface);
     --border: rgba(var(--ink), .15); --muted: rgba(var(--ink), .58);
 }
@@ -170,7 +170,7 @@ html[data-scheme="champagne"] {
 
 /* Footers and top bars pick the frame colors up from the rules above;
    make sure they actually paint them (some pages left them transparent). */
-html:is([data-scheme="gallery"], [data-scheme="stone"], [data-scheme="linen"], [data-scheme="marble"], [data-scheme="sage"], [data-scheme="clay"], [data-scheme="slate"]) :is(.shop-footer, .site-footer, .top-bar) { background: var(--bg); }
+html:is([data-scheme="gallery"], [data-scheme="stone"], [data-scheme="linen"], [data-scheme="marble"], [data-scheme="sage"], [data-scheme="clay"], [data-scheme="slate"]) :is(.shop-footer, .site-footer, .top-bar, .site-header:not(.is-overlay)) { background: var(--bg); }
 
 /* ---------- the scheme switcher (centered in the header) ---------- */
 .dl-scheme {

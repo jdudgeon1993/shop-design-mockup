@@ -14,6 +14,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/Assets/dl-theme.css">
     <script src="/Assets/dl-theme.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>DIY Shop - Design Lab</title>
     <meta name="description" content="Shop every cabinet in the line. Filter by room, type, width and door style, and configure size, finish and upgrades with live pricing.">
     <meta name="theme-color" content="#1a1a1a">
@@ -177,7 +179,7 @@
         @media (min-width: 960px) { .shop { grid-template-columns: 250px 1fr; } }
 
         .filters { display: flex; flex-direction: column; gap: 20px; }
-        @media (min-width: 960px) { .filters { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 96px); overflow-y: auto; } }
+        @media (min-width: 960px) { .filters { position: sticky; top: 84px; align-self: start; max-height: calc(100vh - 96px); overflow-y: auto; } }
         .filter-group h3 { margin: 0 0 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(var(--ink),0.5); }
         .chips { display: flex; flex-wrap: wrap; gap: 8px; }
         .chip {
@@ -354,15 +356,7 @@
     </style>
 </head>
 <body>
-    <header class="top-bar">
-        <a class="back-link" href="/home/">&larr; Back to storefront</a>
-        <span class="page-title">DIY Shop</span>
-        <a class="cart-link" href="/cart/" aria-label="View cart">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5L6 7Z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>
-            Cart <span class="cart-count" data-cart-count hidden>0</span>
-        </a>
-    </header>
-
+    <script src="/Assets/dl-header.js"></script>
     <main class="content">
         <ol class="stepper" id="stepper" aria-label="DIY steps">
             <li><button type="button" data-goto="mfr"><span class="num">1</span><span class="label">Manufacturer</span></button></li>
