@@ -66,7 +66,9 @@
     }
 
     function mount() {
-        var host = document.querySelector('.navbar') || document.querySelector('.top-bar');
+        // The shared site header has a slot for it; older bars get it floated in the center.
+        var slot = document.querySelector('[data-scheme-slot]');
+        var host = slot || document.querySelector('.navbar') || document.querySelector('.top-bar');
         if (!host || host.querySelector('.dl-scheme')) return;
         if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
         document.body.classList.add('has-dl-scheme');
@@ -86,7 +88,8 @@
         // The home navbar is full of links, so there the switcher sits in the
         // free space between the logo and the menu instead of floating on top.
         var brand = host.classList.contains('navbar') && host.querySelector('.nav-brand');
-        if (brand) { box.classList.add('in-flow'); brand.insertAdjacentElement('afterend', box); }
+        if (slot) { box.classList.add('in-flow'); slot.replaceWith(box); }
+        else if (brand) { box.classList.add('in-flow'); brand.insertAdjacentElement('afterend', box); }
         else if (host.firstElementChild) host.firstElementChild.insertAdjacentElement('afterend', box);
         else host.appendChild(box);
         nameBtn = box.querySelector('.dl-scheme-open');

@@ -9,6 +9,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/Assets/dl-theme.css">
     <script src="/Assets/dl-theme.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>Your Cart - Design Lab</title>
     <meta name="description" content="Review and submit your Design Lab order.">
     <meta name="theme-color" content="#1a1a1a">
@@ -117,7 +119,7 @@
 
         /* ---------- summary / checkout ---------- */
         .summary { border: 1px solid var(--border); border-radius: 12px; padding: 22px; background: rgba(var(--ink),0.03); }
-        @media (min-width: 980px) { .summary { position: sticky; top: 84px; } }
+        @media (min-width: 980px) { .summary { position: sticky; top: 88px; } }
         .summary h2 { margin: 0 0 14px; font-size: 22px; }
         .sum-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); padding: 4px 0; }
         .sum-total { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0 4px; margin-top: 8px; border-top: 1px solid var(--border); }
@@ -169,11 +171,7 @@
     </style>
 </head>
 <body>
-    <header class="top-bar">
-        <a class="back-link" href="/home/">&larr; Back to storefront</a>
-        <nav class="top-links"><a href="/diy-wizard/">DIY Shop</a><a href="/collections/">Collections</a></nav>
-    </header>
-
+    <script src="/Assets/dl-header.js"></script>
     <main class="content">
         <ol class="stepper" aria-label="DIY steps">
             <li><a class="is-done" href="/diy-wizard/?step=mfr"><span class="num">1</span><span class="label">Manufacturer</span></a></li>

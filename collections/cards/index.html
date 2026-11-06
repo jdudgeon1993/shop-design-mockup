@@ -14,6 +14,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/Assets/dl-theme.css">
     <script src="/Assets/dl-theme.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>Collection Cards (test) - Design Lab</title>
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#1a1a1a">
@@ -40,7 +42,7 @@
         }
         .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
         .back-link:hover { text-decoration: underline; }
-        .test-badge { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--black); background: var(--gold); padding: 4px 10px; border-radius: 999px; }
+        .test-badge { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--black); background: var(--gold); padding: 4px 10px; border-radius: 999px; margin-left: 8px; vertical-align: 1px; }
 
         .content { max-width: 1280px; margin: 0 auto; padding: 32px 5% 100px; }
         .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
@@ -281,13 +283,9 @@
     </style>
 </head>
 <body>
-    <header class="top-bar">
-        <a class="back-link" href="/collections/">&larr; Curated Collections</a>
-        <span class="test-badge">Test page</span>
-    </header>
-
+    <script src="/Assets/dl-header.js"></script>
     <main class="content">
-        <p class="kicker">Curated Collections</p>
+        <p class="kicker">Curated Collections <span class="test-badge">Test page</span></p>
         <h1>Designed together. Priced together.</h1>
         <p class="intro-sub">Tap a card to pick it up, then flip it over to see the plan and every detail of the set.</p>
 
