@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<!-- TEST: Google Meet consultations (2026-11-06). Not linked from anywhere yet.
+     Google blocks Meet from running inside other sites (X-Frame-Options: SAMEORIGIN),
+     so this page is a branded lobby that opens the Meet call in a pop-out window.
+
+     Designer: /consultation/meet/  → start a Meet, paste its link, copy the client link.
+     Client:   /consultation/meet/?m=abc-defg-hij[&n=Name]  → lobby with a Join button.
+
+     No database or sign-in: the Meet code travels in the link. Like everything under
+     /consultation/, it is open without the site access code so clients can reach it. -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Design Lab — Video Consultation</title>
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; line-height: 1.55; }
+        main { width: min(1100px, 90vw); margin: 0 auto; padding: clamp(36px, 6vw, 72px) 0 80px; }
+        .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2.4px; text-transform: uppercase; color: var(--gold); margin: 0 0 12px; }
+        h1 { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: clamp(36px, 5vw, 58px); line-height: 1.08; margin: 0; }
+        .lede { color: rgba(var(--ink), .7); font-size: 17px; max-width: 600px; margin: 16px 0 0; }
+        .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(24px, 4vw, 48px); margin-top: 40px; align-items: start; }
+        .panel { background: var(--surface); border: 1px solid rgba(var(--ink), .12); border-radius: 18px; padding: clamp(22px, 3vw, 34px); }
+        .panel h2 { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 28px; margin: 0 0 6px; }
+        .muted { color: rgba(var(--ink), .65); font-size: 14.5px; margin: 0; }
+        .btn {
+            appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            height: 54px; padding: 0 30px; border-radius: 999px; border: 1px solid transparent; cursor: pointer;
+            font: 700 13px 'Montserrat', sans-serif; letter-spacing: 1.6px; text-transform: uppercase; text-decoration: none;
+            transition: transform .2s, filter .2s;
+        }
+        .btn:hover, .btn:focus-visible { transform: translateY(-2px); filter: brightness(1.06); outline: none; }
+        .btn:focus-visible { box-shadow: 0 0 0 3px rgba(var(--gold-rgb), .45); }
+        .btn-gold { background: var(--gold); color: var(--on-gold); }
+        .btn-line { background: transparent; border-color: rgba(var(--ink), .3); color: var(--text); }
+        .btn-big { height: 62px; font-size: 14px; width: 100%; }
+        .meet-icon { width: 22px; height: 22px; }
+        .status { display: flex; align-items: center; gap: 10px; margin: 18px 0 0; font-size: 14px; color: rgba(var(--ink), .75); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #3fae5b; box-shadow: 0 0 0 4px rgba(63,174,91,.18); flex-shrink: 0; }
+        .tips { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 14px; }
+        .tips li { display: grid; grid-template-columns: 38px 1fr; gap: 12px; align-items: start; font-size: 14.5px; }
+        .tips .ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: rgba(var(--gold-rgb), .14); color: var(--gold); }
+        .tips .ic svg { width: 20px; height: 20px; }
+        .tips b { display: block; font-size: 15px; }
+        .tips span { color: rgba(var(--ink), .68); }
+        .after { display: none; margin-top: 18px; padding: 16px 18px; border-radius: 12px; background: rgba(var(--gold-rgb), .1); border: 1px solid rgba(var(--gold-rgb), .35); font-size: 14.5px; }
+        .after.show { display: block; }
+        .after a { color: var(--gold); font-weight: 700; }
+        .steps { counter-reset: s; list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 22px; }
+        .steps > li { counter-increment: s; display: grid; grid-template-columns: 40px 1fr; gap: 14px; }
+        .steps > li::before { content: counter(s); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--gold); color: var(--on-gold); font-weight: 700; }
+        .steps h3 { margin: 6px 0 8px; font-size: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin: 0 0 6px; }
+        input[type=text] {
+            width: 100%; height: 50px; padding: 0 14px; border-radius: 10px; border: 1px solid rgba(var(--ink), .22);
+            background: var(--sunk); color: var(--text); font: 500 15px 'Montserrat', sans-serif;
+        }
+        input[type=text]:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(var(--gold-rgb), .25); }
+        .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+        .err { color: var(--danger); font-size: 13.5px; margin: 8px 0 0; min-height: 1.2em; }
+        .out { display: none; margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--sunk); border: 1px dashed rgba(var(--ink), .25); word-break: break-all; font-size: 14px; }
+        .out.show { display: block; }
+        .note { margin-top: 26px; font-size: 13px; color: rgba(var(--ink), .6); }
+        @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <script src="/Assets/dl-header.js"></script>
+
+    <main>
+        <!-- CLIENT LOBBY (shown when the link has ?m=) -->
+        <section id="lobby" hidden>
+            <p class="eyebrow">Video Consultation</p>
+            <h1 id="greet">Your designer is ready for you.</h1>
+            <p class="lede">Your call opens in Google Meet, in a window next to this one. No download or Google account needed: just allow your camera and microphone when your browser asks.</p>
+
+            <div class="grid">
+                <div class="panel">
+                    <h2>Join your call</h2>
+                    <p class="muted">Meeting code <b id="code-label"></b></p>
+                    <div class="status"><span class="dot" aria-hidden="true"></span>Private link from your Design Lab designer</div>
+                    <div style="margin-top:24px">
+                        <button class="btn btn-gold btn-big" id="join" type="button">
+                            <svg class="meet-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="13" height="12" rx="2"></rect><path d="m15 10 6-4v12l-6-4"></path></svg>
+                            Join video call
+                        </button>
+                    </div>
+                    <div class="after" id="after" role="status">
+                        Your call opened in a new window. If you don't see it, <a href="#" id="rejoin">open it again</a>.
+                        Keep this page open: it has the tips below.
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>For the best picture</h2>
+                    <ul class="tips">
+                        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></span><div><b>Face the light</b><span>A window or lamp in front of you, not behind you.</span></div></li>
+                        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M2 9a14 14 0 0 1 20 0"></path><circle cx="12" cy="19.5" r="1"></circle></svg></span><div><b>Strong connection</b><span>Sit near your Wi-Fi router, or plug in if you can.</span></div></li>
+                        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg></span><div><b>Phone works great too</b><span>Open this same link on your phone. It's perfect for showing us your space.</span></div></li>
+                        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg></span><div><b>Have your measurements handy</b><span>Wall lengths, ceiling height and window spots help a lot.</span></div></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- DESIGNER TOOL (shown when there is no ?m=) -->
+        <section id="tool" hidden>
+            <p class="eyebrow">Test · For Design Lab designers</p>
+            <h1>Start a Google Meet consultation</h1>
+            <p class="lede">Google doesn't allow Meet to run inside other websites, so your client gets a Design Lab page with a Join button, and the call opens in Meet beside it.</p>
+
+            <div class="grid">
+                <div class="panel">
+                    <ol class="steps">
+                        <li><div><h3>Start a Meet</h3>
+                            <p class="muted">Use your @shopdesignlab.com Google account. Leave the call open; you'll admit your client when they knock.</p>
+                            <div class="row"><a class="btn btn-gold" href="https://meet.google.com/new" target="_blank" rel="noopener">Start a new Meet</a></div></div></li>
+                        <li><div><h3>Paste the Meet link</h3>
+                            <label for="meet-in">Meet link or code</label>
+                            <input type="text" id="meet-in" placeholder="https://meet.google.com/abc-defg-hij" autocomplete="off">
+                            <label for="name-in" style="margin-top:12px">Client first name (optional)</label>
+                            <input type="text" id="name-in" placeholder="e.g. Sarah" autocomplete="off" maxlength="40">
+                            <p class="err" id="err" role="alert"></p></div></li>
+                        <li><div><h3>Send your client this link</h3>
+                            <div class="row">
+                                <button class="btn btn-gold" id="make" type="button">Create client link</button>
+                            </div>
+                            <div class="out" id="out"></div>
+                            <div class="row" id="out-actions" hidden>
+                                <button class="btn btn-line" id="copy" type="button">Copy link</button>
+                                <a class="btn btn-line" id="preview" href="#" target="_blank" rel="noopener">Preview client page</a>
+                            </div></div></li>
+                    </ol>
+                </div>
+                <div class="panel">
+                    <h2>Showing samples on camera</h2>
+                    <ul class="tips">
+                        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect></svg></span><div><b>Join from your phone too</b><span>Open the same Meet on your phone as a second device and point it at the sample. Its camera beats any laptop webcam.</span></div></li>
+                        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2"></path></svg></span><div><b>Soft, even light</b><span>Daylight or a soft lamp facing the sample shows true color and grain.</span></div></li>
+                        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 3v18M16 3v18"></path></svg></span><div><b>Hold it still</b><span>Video blurs moving texture. Pause on each sample for a few seconds.</span></div></li>
+                        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="11" r="2"></circle><path d="m21 17-5-5-8 7"></path></svg></span><div><b>Follow up with a photo</b><span>Video shifts color slightly; send a still photo of the finish after the call.</span></div></li>
+                    </ul>
+                </div>
+            </div>
+            <p class="note">Test page: nothing is saved. The Meet code travels inside the client link.</p>
+        </section>
+    </main>
+
+    <script>
+    (function () {
+        var CODE_RE = /([a-z]{3}-[a-z]{4}-[a-z]{3})/i;
+        function codeFrom(s) { var m = CODE_RE.exec(String(s || '').trim()); return m ? m[1].toLowerCase() : null; }
+        function meetUrl(code) { return 'https://meet.google.com/' + code; }
+        var params = new URLSearchParams(location.search);
+        var code = codeFrom(params.get('m'));
+
+        if (code) {
+            // ----- client lobby -----
+            document.getElementById('lobby').hidden = false;
+            document.getElementById('code-label').textContent = code;
+            var name = (params.get('n') || '').trim().slice(0, 40);
+            if (name) document.getElementById('greet').textContent = 'Welcome, ' + name + '. Your designer is ready.';
+            var win = null;
+            function openCall(e) {
+                if (e) e.preventDefault();
+                // A pop-out window beside our page; phones and blocked pop-ups fall back to a new tab.
+                var w = Math.min(1280, screen.availWidth - 80), h = Math.min(820, screen.availHeight - 80);
+                var small = window.matchMedia('(max-width: 760px)').matches;
+                win = small ? null : window.open(meetUrl(code), 'dl_meet', 'popup=yes,width=' + w + ',height=' + h + ',left=40,top=40');
+                if (!win) win = window.open(meetUrl(code), '_blank');   // ('noopener' would hide whether it opened)
+                if (win) { try { win.opener = null; } catch (x) {} }
+                else location.href = meetUrl(code);                     // pop-ups fully blocked: go there directly
+                document.getElementById('after').classList.add('show');
+            }
+            document.getElementById('join').addEventListener('click', openCall);
+            document.getElementById('rejoin').addEventListener('click', openCall);
+        } else {
+            // ----- designer tool -----
+            document.getElementById('tool').hidden = false;
+            var inp = document.getElementById('meet-in'), nameIn = document.getElementById('name-in');
+            var err = document.getElementById('err'), out = document.getElementById('out'), acts = document.getElementById('out-actions');
+            var link = '';
+            document.getElementById('make').addEventListener('click', function () {
+                var c = codeFrom(inp.value);
+                if (!c) { err.textContent = 'That doesn’t look like a Meet link. It should end in a code like abc-defg-hij.'; inp.focus(); return; }
+                err.textContent = '';
+                var n = nameIn.value.trim();
+                link = location.origin + location.pathname + '?m=' + c + (n ? '&n=' + encodeURIComponent(n) : '');
+                out.textContent = link; out.classList.add('show'); acts.hidden = false;
+                document.getElementById('preview').href = link;
+            });
+            document.getElementById('copy').addEventListener('click', function () {
+                var b = this;
+                (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () {
+                    b.textContent = 'Copied ✓'; setTimeout(function () { b.textContent = 'Copy link'; }, 2000);
+                }, function () {
+                    var r = document.createRange(); r.selectNodeContents(out);
+                    var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+                    b.textContent = 'Press Ctrl+C to copy';
+                });
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
