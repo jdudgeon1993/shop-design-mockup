@@ -259,6 +259,21 @@
             .card { transition: none; }
         }
 
+        /* PDF render (?pdf=<slug>, loaded in a hidden 1400px-wide frame so the sheet always
+           lays out like desktop): the two faces at print size, added below the page.
+           (Hiding the rest of the page made html2canvas draw blank images.) */
+        #pdf-root { width: 1366px; }  /* in normal flow: html2canvas sizes its snapshot from the page */
+        #pdf-root .pdf-front { position: relative; width: 1366px; height: 768px; }
+        #pdf-root .pdf-front .face { border-radius: 0; }
+        #pdf-root .pdf-back { width: 1200px; background: #fff; color: var(--sheet-ink); }
+        #pdf-root .pdf-back .zoom-note, #pdf-root .pdf-back .baked-note { display: none; }
+        #pdf-root .pdf-back .missing { position: static; min-height: 400px; }
+        /* html2canvas squashes list numbers into the text, so the PDF copy spells them out. */
+        #pdf-root ol.notes { list-style: none; padding-left: 0; }
+        #pdf-root ol.notes li { display: flex; gap: 6px; }
+        #pdf-root ol.notes .n { flex: 0 0 22px; text-align: right; }
+        .btn[aria-busy="true"] { opacity: 0.7; cursor: progress; }
+
         .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(var(--ink),0.5); }
         .shop-footer a { color: rgba(var(--ink),0.7); text-decoration: none; }
         .shop-footer a:hover { color: var(--gold); }
@@ -303,6 +318,7 @@
     <button class="close-btn" id="close" type="button" aria-label="Close" hidden>&times;</button>
     <div class="toolbar" id="toolbar" hidden>
         <button type="button" class="btn btn-flip" id="flip"></button>
+        <button type="button" class="btn btn-more" id="pdf">Download PDF</button>
         <a class="btn btn-more" id="more" href="/collections/">See the full collection &rarr;</a>
     </div>
 
@@ -422,6 +438,104 @@
             }
             return '<div class="face back"><div class="back-scroll">' + body + '</div></div>';
         }
+
+        // ---------- PDF ----------
+        // The page builds the PDF inside a hidden frame (?pdf=<slug>) so the back always uses the
+        // desktop layout, then hands the finished file to the parent page to download.
+        var LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+        function loadScript(src) {
+            return new Promise(function (ok, fail) {
+                var el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = fail;
+                document.head.appendChild(el);
+            });
+        }
+        function imagesReady(root) {
+            return Promise.all(Array.prototype.map.call(root.querySelectorAll('img'), function (img) {
+                return img.complete ? Promise.resolve() : new Promise(function (r) { img.onload = img.onerror = r; });
+            }));
+        }
+        function pdfName(c) { return 'Design Lab - Curated Collection ' + c.no + ' - ' + c.name + '.pdf'; }
+        function buildPdf(slug) {
+            var c = COLLECTIONS.filter(function (x) { return x.slug === slug; })[0];
+            function reply(msg) { if (window.parent !== window) window.parent.postMessage(msg, location.origin); }
+            if (!c) { reply({ type: 'dl-pdf', ok: false }); return; }
+            document.body.classList.add('pdf-mode');
+            var back = mode === 'canva'
+                ? (c.canva.back ? '<img src="' + esc(c.canva.back) + '" alt="" style="display:block;width:100%">' : missing('back', c))
+                : sheetHtml(c);
+            var root = document.createElement('div');
+            root.id = 'pdf-root';
+            root.innerHTML = '<div class="pdf-front">' + frontHtml(c) + '</div><div class="pdf-back">' + back + '</div>';
+            document.body.appendChild(root);
+            var front = root.querySelector('.pdf-front'), sheet = root.querySelector('.pdf-back');
+            Array.prototype.forEach.call(root.querySelectorAll('ol.notes li'), function (li, i) {
+                li.innerHTML = '<span class="n">' + (i + 1) + '.</span><span>' + li.innerHTML + '</span>';
+            });
+            // html2canvas fails on the bottom shade's gradient, so the PDF copy gets it as a picture.
+            var band = front.querySelector('.ov-band');
+            if (band) {
+                var cv = document.createElement('canvas'); cv.width = 4; cv.height = 256;
+                var g = cv.getContext('2d'), grad = g.createLinearGradient(0, 256, 0, 0);
+                grad.addColorStop(0, 'rgba(0,0,0,0.55)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+                g.fillStyle = grad; g.fillRect(0, 0, 4, 256);
+                band.innerHTML = '<img src="' + cv.toDataURL() + '" alt="" style="display:block;width:100%;height:100%">';
+                band.style.background = 'none';
+            }
+            Promise.all([LIBS.reduce(function (p, src) { return p.then(function () { return loadScript(src); }); }, Promise.resolve()),
+                         document.fonts ? document.fonts.ready : null, imagesReady(root)])
+                .then(function () {
+                    function shot(el, bg) {
+                        return html2canvas(el, { scale: 2, useCORS: true, logging: false, backgroundColor: bg,
+                            width: el.offsetWidth, height: el.offsetHeight, windowWidth: 1400, scrollX: 0, scrollY: 0 });
+                    }
+                    return shot(front, null).then(function (a) { return shot(sheet, '#ffffff').then(function (b) { return [a, b]; }); });
+                })
+                .then(function (shots) {
+                    var W = 792; // 11 inches wide, in points
+                    var fh = W * shots[0].height / shots[0].width, bh = W * shots[1].height / shots[1].width;
+                    var doc = new window.jspdf.jsPDF({ unit: 'pt', format: [W, fh], orientation: 'landscape' });
+                    doc.setProperties({ title: 'Curated Collection No. ' + c.no + ': ' + c.name, author: 'Design Lab' });
+                    doc.addImage(shots[0].toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, W, fh);
+                    doc.addPage([W, bh], W > bh ? 'landscape' : 'portrait');
+                    doc.addImage(shots[1].toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, W, bh);
+                    reply({ type: 'dl-pdf', ok: true, name: pdfName(c), data: doc.output('arraybuffer') });
+                })
+                .catch(function (err) { if (window.console) console.error('PDF failed:', err); reply({ type: 'dl-pdf', ok: false }); });
+        }
+        if (params.get('pdf')) { buildPdf(params.get('pdf')); return; }
+
+        var pdfBtn = document.getElementById('pdf'), pdfFrame = null, pdfTimer = null;
+        function pdfDone(label) {
+            if (pdfFrame) { pdfFrame.remove(); pdfFrame = null; }
+            clearTimeout(pdfTimer);
+            pdfBtn.removeAttribute('aria-busy');
+            pdfBtn.textContent = label || 'Download PDF';
+            if (label) setTimeout(function () { if (!pdfFrame) pdfBtn.textContent = 'Download PDF'; }, 3000);
+        }
+        function downloadPdf() {
+            if (!open || pdfFrame) return;
+            pdfBtn.setAttribute('aria-busy', 'true');
+            pdfBtn.textContent = 'Making PDF\u2026';
+            pdfFrame = document.createElement('iframe');
+            pdfFrame.setAttribute('aria-hidden', 'true');
+            pdfFrame.tabIndex = -1;
+            pdfFrame.style.cssText = 'position:fixed;left:-10000px;top:0;width:1400px;height:1000px;border:0;visibility:hidden';
+            pdfFrame.src = location.pathname + '?embed=1&pdf=' + encodeURIComponent(open.c.slug) + (mode === 'canva' ? '&mode=canva' : '');
+            document.body.appendChild(pdfFrame);
+            pdfTimer = setTimeout(function () { pdfDone('PDF failed, try again'); }, 60000);
+        }
+        window.addEventListener('message', function (e) {
+            if (e.origin !== location.origin || !e.data || e.data.type !== 'dl-pdf' || !pdfFrame) return;
+            if (!e.data.ok) { pdfDone('PDF failed, try again'); return; }
+            var url = URL.createObjectURL(new Blob([e.data.data], { type: 'application/pdf' }));
+            var a = document.createElement('a');
+            a.href = url; a.download = e.data.name;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+            pdfDone('Downloaded \u2713');
+        });
+        pdfBtn.addEventListener('click', downloadPdf);
 
         // ---------- deck ----------
         function renderDeck() {
