@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="image" href="/Assets/Images/cnc-luxor-espresso.webp">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:wght@600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
     <style>
         :root {
             --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
@@ -62,8 +62,11 @@
             backdrop-filter: blur(10px); color: var(--white); font-weight: 600;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .nav-brand { display: flex; align-items: center; }
-        .nav-logo { display: block; height: 30px; width: auto; }
+        /* Brand lockup: the gold DL mark + "Design Lab" in Libre Caslon Display
+           (a free look-alike of The Seasons, the font on the CEO's cards). */
+        .nav-brand, .footer-brand-mark { display: inline-flex; align-items: center; gap: 12px; color: var(--text, #fff); text-decoration: none; }
+        .nav-logo { display: block; height: 32px; width: auto; }
+        .brand-name { font-family: 'Libre Caslon Display', serif; font-weight: 400; font-size: 24px; line-height: 1; letter-spacing: 0.04em; white-space: nowrap; }
 
         #nav-toggle { display: none; }
         .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; z-index: 1001; }
@@ -220,7 +223,9 @@
         }
         .footer-top { display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; align-items: flex-start; }
         .footer-brand { flex: 1 1 220px; max-width: 340px; }
-        .footer-logo { height: 34px; width: auto; display: block; margin-bottom: 16px; }
+        .footer-brand-mark { margin-bottom: 16px; }
+        .footer-logo { height: 36px; width: auto; display: block; }
+        .footer-brand-mark .brand-name { font-size: 26px; }
         .footer-tagline { color: rgba(var(--ink),0.6); margin: 0 0 20px; line-height: 1.5; }
         .footer-social { display: flex; gap: 16px; }
         .footer-social a { color: var(--text); display: inline-flex; transition: color 0.2s; }
@@ -311,7 +316,7 @@
 
     <nav class="navbar on-photo">
         <input type="checkbox" id="nav-toggle">
-        <div class="nav-brand"><img class="nav-logo" src="/Assets/Logos/dl-logo-white.webp" alt="Design Lab"></div>
+        <a class="nav-brand" href="/home/" aria-label="Design Lab home"><img class="nav-logo" src="/Assets/Logos/dl-mark-gold.svg" alt=""><span class="brand-name">Design Lab</span></a>
         <label for="nav-toggle" class="hamburger"><span></span><span></span><span></span></label>
 
         <div class="nav-menu">
@@ -419,7 +424,7 @@
         <footer class="site-footer">
             <div class="footer-top">
                 <div class="footer-brand">
-                    <img class="footer-logo" src="/Assets/Logos/dl-logo-white.webp" alt="Design Lab">
+                    <span class="footer-brand-mark"><img class="footer-logo" src="/Assets/Logos/dl-mark-gold.svg" alt=""><span class="brand-name">Design Lab</span></span>
                     <p class="footer-tagline">Online cabinetry. Customer focused. Best flippin' home on the block.</p>
                     <div class="footer-social">
                         <a href="#" aria-label="Instagram">
