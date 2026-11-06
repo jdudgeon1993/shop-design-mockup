@@ -8,6 +8,8 @@
     <meta charset="UTF-8">
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
     <title>Curated Collections - Design Lab</title>
     <meta name="description" content="Designer-planned kitchens and baths, ordered as one set. Choose your door style and finish; every piece arrives matched.">
     <meta name="theme-color" content="#1a1a1a">
@@ -20,18 +22,18 @@
     <script src="/Assets/dl-core.js"></script>
     <script src="/Assets/dl-help.js" defer></script>
     <style>
-        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --panel: #222; --border: rgba(255,255,255,0.15); --muted: rgba(255,255,255,0.58); }
+        :root { --white: var(--text); --black: var(--bg); --panel: var(--surface); --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),0.58); }
         *, *::before, *::after { box-sizing: border-box; }
         html, body { min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); }
         button { font-family: inherit; }
 
         .top-bar {
             position: sticky; top: 0; z-index: 15; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            padding: 14px 5%; border-bottom: 1px solid var(--border); background: rgba(26,26,26,0.96); backdrop-filter: blur(6px);
+            padding: 14px 5%; border-bottom: 1px solid var(--border); background: rgba(var(--bg-rgb),0.96); backdrop-filter: blur(6px);
         }
         .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
         .back-link:hover { text-decoration: underline; }
-        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(var(--ink),0.7); }
         @media (max-width: 640px) { .page-title { display: none; } }
         .cart-link {
             display: inline-flex; align-items: center; gap: 8px; color: var(--white); text-decoration: none;
@@ -56,7 +58,7 @@
         @media (min-width: 860px) { .list { grid-template-columns: 1fr 1fr; } }
         .coll-card {
             position: relative; display: block; text-decoration: none; color: var(--white); border-radius: 14px; overflow: hidden;
-            border: 1px solid var(--border); background: #111; transition: 0.2s;
+            border: 1px solid var(--border); background: var(--sunk); transition: 0.2s;
         }
         .coll-card:hover, .coll-card:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
         .coll-card img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; }
@@ -69,17 +71,17 @@
         .coll-card .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 24px; }
         .coll-card .space { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
         .coll-card h2 { margin: 0 0 4px; font-size: 30px; }
-        .coll-card p { margin: 0 0 12px; font-size: 14px; color: rgba(255,255,255,0.8); }
+        .coll-card p { margin: 0 0 12px; font-size: 14px; color: rgba(var(--ink),0.8); }
         .coll-card .price-row { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; font-size: 14px; }
         .coll-card .price-row strong { color: var(--gold); font-size: 20px; }
-        .save-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: rgba(212,175,55,0.18); color: var(--gold); font-size: 12px; font-weight: 700; }
+        .save-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: rgba(var(--gold-rgb),0.18); color: var(--gold); font-size: 12px; font-weight: 700; }
 
         /* ---------- detail ---------- */
         .detail-back { appearance: none; background: none; border: none; color: var(--gold); cursor: pointer; font-size: 14px; padding: 0; margin-bottom: 22px; }
         .detail-back:hover { text-decoration: underline; }
         .detail { display: grid; grid-template-columns: 1fr; gap: 32px; }
         @media (min-width: 960px) { .detail { grid-template-columns: 1.15fr 0.85fr; align-items: start; } }
-        .gallery-main { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; display: block; background: #111; }
+        .gallery-main { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 14px; display: block; background: var(--sunk); }
         .thumbs { display: flex; gap: 10px; margin-top: 10px; }
         .thumbs button { appearance: none; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; width: 92px; background: none; }
         .thumbs button[aria-pressed="true"] { border-color: var(--gold); }
@@ -88,23 +90,23 @@
         .buy .tagline { margin: 0 0 16px; color: var(--gold); font-size: 15px; font-weight: 600; }
         .buy .desc { margin: 0 0 24px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
         .opt { margin-bottom: 22px; }
-        .opt h3 { margin: 0 0 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(255,255,255,0.55); }
+        .opt h3 { margin: 0 0 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(var(--ink),0.55); }
         .opt h3 span { text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--white); margin-left: 6px; }
         .chips { display: flex; flex-wrap: wrap; gap: 8px; }
         .chip {
-            appearance: none; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: rgba(255,255,255,0.85);
+            appearance: none; background: rgba(var(--ink),0.04); border: 1px solid var(--border); color: rgba(var(--ink),0.85);
             font-size: 13px; font-weight: 600; padding: 9px 15px; border-radius: 999px; cursor: pointer;
         }
         .chip:hover, .chip:focus-visible { border-color: var(--gold); outline: none; }
-        .chip[aria-pressed="true"] { background: rgba(212,175,55,0.18); border-color: var(--gold); color: var(--gold); }
+        .chip[aria-pressed="true"] { background: rgba(var(--gold-rgb),0.18); border-color: var(--gold); color: var(--gold); }
         .chip small { opacity: 0.7; font-weight: 600; margin-left: 4px; }
         .style-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
         .style-opt {
             appearance: none; display: flex; align-items: flex-start; gap: 12px; width: 100%; text-align: left; cursor: pointer;
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: var(--white);
+            background: rgba(var(--ink),0.03); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: var(--white);
         }
         .style-opt:hover, .style-opt:focus-visible { border-color: var(--gold); outline: none; }
-        .style-opt[aria-pressed="true"] { background: rgba(212,175,55,0.12); border-color: var(--gold); }
+        .style-opt[aria-pressed="true"] { background: rgba(var(--gold-rgb),0.12); border-color: var(--gold); }
         .style-opt svg { width: 40px; flex-shrink: 0; }
         .style-opt b { display: block; font-size: 14px; }
         .style-opt small { display: block; font-size: 11.5px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
@@ -115,14 +117,14 @@
         .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
         .swatch {
             appearance: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; padding: 0;
-            border: 2px solid rgba(255,255,255,0.25); box-shadow: inset 0 0 0 2px var(--black);
+            border: 2px solid rgba(var(--ink),0.25); box-shadow: inset 0 0 0 2px var(--black);
         }
-        .swatch:hover, .swatch:focus-visible { border-color: rgba(212,175,55,0.7); outline: none; }
-        .swatch[aria-pressed="true"] { border-color: var(--gold); box-shadow: inset 0 0 0 2px var(--black), 0 0 0 2px rgba(212,175,55,0.35); }
-        .price-box { border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin: 6px 0 18px; background: rgba(255,255,255,0.03); }
+        .swatch:hover, .swatch:focus-visible { border-color: rgba(var(--gold-rgb),0.7); outline: none; }
+        .swatch[aria-pressed="true"] { border-color: var(--gold); box-shadow: inset 0 0 0 2px var(--black), 0 0 0 2px rgba(var(--gold-rgb),0.35); }
+        .price-box { border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin: 6px 0 18px; background: rgba(var(--ink),0.03); }
         .price-box .flat { font-size: 32px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
         .price-box .compare { margin-top: 4px; font-size: 13px; color: var(--muted); }
-        .price-box .compare s { color: rgba(255,255,255,0.45); }
+        .price-box .compare s { color: rgba(var(--ink),0.45); }
         .btn-primary {
             appearance: none; width: 100%; background: var(--gold); border: none; color: var(--black); padding: 15px 28px; border-radius: 999px;
             font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
@@ -133,10 +135,10 @@
         .included h2 { margin: 0 0 6px; font-size: 26px; }
         .included p { margin: 0 0 16px; font-size: 14px; color: var(--muted); }
         .inc-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .inc-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); padding: 10px 12px; border-bottom: 1px solid var(--border); }
-        .inc-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); vertical-align: top; }
+        .inc-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(var(--ink),0.5); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        .inc-table td { padding: 12px; border-bottom: 1px solid rgba(var(--ink),0.08); vertical-align: top; }
         .inc-table td.qty { width: 60px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
-        .inc-table td.sku { white-space: nowrap; color: rgba(255,255,255,0.75); font-variant-numeric: tabular-nums; }
+        .inc-table td.sku { white-space: nowrap; color: rgba(var(--ink),0.75); font-variant-numeric: tabular-nums; }
         .inc-table .name { font-weight: 600; }
         .inc-table .desc { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
         .inc-table a { color: inherit; text-decoration: none; }
@@ -150,9 +152,9 @@
         .toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
         .toast a { color: var(--gold); font-weight: 700; text-decoration: none; }
 
-        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.5); }
+        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(var(--ink),0.5); }
         .shop-footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
-        .shop-footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
+        .shop-footer a { color: rgba(var(--ink),0.7); text-decoration: none; }
         .shop-footer a:hover { color: var(--gold); }
 
         [hidden] { display: none !important; }
@@ -310,7 +312,7 @@
                 var pct = o.flat != null && o.individual ? Math.round((1 - o.flat / o.individual) * 100) : null;
                 return '<a class="coll-card" href="?c=' + encodeURIComponent(c.slug) + '" data-slug="' + esc(c.slug) + '">' +
                     (c.hero ? '<img src="' + esc(c.hero) + '" alt="" loading="lazy">' : '<div class="coll-scene">' + sceneSvg(c, defaultHex(c)) + '</div>') + '<div class="shade"></div>' +
-                    '<div class="info"><span class="space">' + esc(c.space) + ' · ' + itemCount(c) + ' pieces</span>' +
+                    '<div class="info on-photo"><span class="space">' + esc(c.space) + ' · ' + itemCount(c) + ' pieces</span>' +
                     '<h2>' + esc(c.name) + '</h2><p>' + esc(c.tagline || '') + '</p>' +
                     (o.flat != null ? '<div class="price-row">From <strong>' + fm(o.flat) + '</strong>' + (pct > 0 ? '<span class="save-pill">Save ' + pct + '% vs. separately</span>' : '') + '</div>'
                         : '<div class="price-row">' + DL.prices.COMING_SOON + '</div>') +

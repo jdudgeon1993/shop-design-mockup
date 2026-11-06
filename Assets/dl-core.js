@@ -319,22 +319,22 @@
             '.dlg-overlay[hidden]{display:none!important}' +
             '.dlg-overlay{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center}' +
             '@media(min-width:760px){.dlg-overlay{align-items:center;padding:24px}}' +
-            '.dlg{position:relative;width:100%;max-width:1040px;max-height:92vh;overflow-y:auto;background:#1a1a1a;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:14px 14px 0 0;padding:28px 24px 32px;font-family:Montserrat,sans-serif}' +
+            '.dlg{position:relative;width:100%;max-width:1040px;max-height:92vh;overflow-y:auto;background:var(--bg,#1a1a1a);color:var(--text,#fff);border:1px solid rgba(var(--ink,255,255,255),.15);border-radius:14px 14px 0 0;padding:28px 24px 32px;font-family:Montserrat,sans-serif}' +
             '@media(min-width:760px){.dlg{border-radius:14px;padding:34px 36px}}' +
             '.dlg h2{margin:0 0 6px;font-family:"Playfair Display",serif;font-weight:600;font-size:30px}' +
-            '.dlg .dlg-sub{margin:0 0 24px;color:rgba(255,255,255,.6);font-size:14px}' +
-            '.dlg-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:#fff;font-size:20px;cursor:pointer}' +
+            '.dlg .dlg-sub{margin:0 0 24px;color:rgba(var(--ink,255,255,255),.6);font-size:14px}' +
+            '.dlg-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(var(--ink,255,255,255),.08);color:var(--text,#fff);font-size:20px;cursor:pointer}' +
             '.dlg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}' +
-            '.dlg-card{border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:18px;background:rgba(255,255,255,.03)}' +
+            '.dlg-card{border:1px solid rgba(var(--ink,255,255,255),.13);border-radius:12px;padding:18px;background:rgba(var(--ink,255,255,255),.03)}' +
             '.dlg-card svg{width:92px;height:auto;display:block;margin:0 auto 14px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}' +
-            '.dlg-card h3{margin:0 0 4px;font-size:17px}.dlg-card .dlg-tag{margin:0 0 10px;color:#d4af37;font-size:12.5px;font-weight:700}' +
-            '.dlg-card p{margin:0 0 12px;font-size:13px;line-height:1.55;color:rgba(255,255,255,.75)}' +
-            '.dlg-fins{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:rgba(255,255,255,.65)}' +
+            '.dlg-card h3{margin:0 0 4px;font-size:17px}.dlg-card .dlg-tag{margin:0 0 10px;color:var(--gold,#d4af37);font-size:12.5px;font-weight:700}' +
+            '.dlg-card p{margin:0 0 12px;font-size:13px;line-height:1.55;color:rgba(var(--ink,255,255,255),.75)}' +
+            '.dlg-fins{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:rgba(var(--ink,255,255,255),.65)}' +
             '.dlg-fins span{display:inline-flex;align-items:center;gap:5px}.dlg-fins i{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.4)}' +
-            '.dlg h4{margin:30px 0 12px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.55)}' +
+            '.dlg h4{margin:30px 0 12px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(var(--ink,255,255,255),.55)}' +
             '.dlg-gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}' +
-            '.dlg-term{display:flex;gap:12px;align-items:flex-start;font-size:13px;line-height:1.5;color:rgba(255,255,255,.75)}' +
-            '.dlg-term svg{width:40px;flex-shrink:0}.dlg-term b{display:block;color:#fff;font-size:14px;margin-bottom:2px}' +
+            '.dlg-term{display:flex;gap:12px;align-items:flex-start;font-size:13px;line-height:1.5;color:rgba(var(--ink,255,255,255),.75)}' +
+            '.dlg-term svg{width:40px;flex-shrink:0}.dlg-term b{display:block;color:var(--text,#fff);font-size:14px;margin-bottom:2px}' +
             '.dlg-term .dlg-nosvg{width:40px;flex-shrink:0}';
         document.head.appendChild(css);
         guideEl = document.createElement('div');

@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
     <title>About Us - Design Lab</title>
     <meta name="description" content="The story behind Design Lab: three industry veterans bringing a retail experience to quality cabinetry.">
     <meta name="theme-color" content="#1a1a1a">
@@ -13,7 +15,7 @@
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --border: rgba(255,255,255,0.15); }
+        :root { --white: var(--text); --black: var(--bg); --border: rgba(var(--ink),0.15); }
         *, *::before, *::after { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         html, body {
@@ -27,7 +29,7 @@
         }
         .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
         .back-link:hover { text-decoration: underline; }
-        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.7); }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(var(--ink),0.7); }
 
         section { padding: 90px 8%; }
         .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 14px; }
@@ -39,23 +41,23 @@
             font-size: clamp(30px, 5.5vw, 52px); font-weight: 700; line-height: 1.15;
         }
         .about-hero h1 em { color: var(--gold); font-style: normal; }
-        .about-hero p { margin: 0 auto; max-width: 560px; color: rgba(255,255,255,0.65); font-size: 16px; line-height: 1.65; }
+        .about-hero p { margin: 0 auto; max-width: 560px; color: rgba(var(--ink),0.65); font-size: 16px; line-height: 1.65; }
 
         /* Story */
         .story { border-top: 1px solid var(--border); }
         .story-inner { max-width: 980px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 60px; align-items: flex-start; }
         .story-text { flex: 1 1 420px; min-width: 0; }
         .story-text h2 { margin: 0 0 22px; font-size: clamp(24px, 3.5vw, 34px); line-height: 1.2; }
-        .story-text p { margin: 0 0 18px; color: rgba(255,255,255,0.7); font-size: 15px; line-height: 1.75; }
+        .story-text p { margin: 0 0 18px; color: rgba(var(--ink),0.7); font-size: 15px; line-height: 1.75; }
         .story-text p:last-child { margin-bottom: 0; }
 
         .story-stats { flex: 0 1 260px; display: flex; flex-direction: column; gap: 18px; }
         .stat-card {
             border: 1px solid var(--border); border-radius: 8px; padding: 26px 24px;
-            background: rgba(255,255,255,0.03); text-align: center;
+            background: rgba(var(--ink),0.03); text-align: center;
         }
         .stat-card strong { display: block; color: var(--gold); font-size: 40px; font-weight: 700; line-height: 1; margin-bottom: 8px; }
-        .stat-card span { color: rgba(255,255,255,0.6); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; line-height: 1.5; }
+        .stat-card span { color: rgba(var(--ink),0.6); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; line-height: 1.5; }
 
         /* Confidence statement */
         .confidence { border-top: 1px solid var(--border); text-align: center; }
@@ -64,27 +66,27 @@
             font-size: clamp(22px, 3.5vw, 32px); font-weight: 300; line-height: 1.45;
         }
         .confidence blockquote strong { color: var(--gold); font-weight: 700; }
-        .confidence figcaption { margin-top: 18px; color: rgba(255,255,255,0.45); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; }
+        .confidence figcaption { margin-top: 18px; color: rgba(var(--ink),0.45); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; }
 
         /* Pillars */
         .pillars { border-top: 1px solid var(--border); }
         .pillars-head { text-align: center; max-width: 640px; margin: 0 auto 56px; }
         .pillars-head h2 { margin: 0 0 14px; font-size: clamp(24px, 3.5vw, 34px); }
-        .pillars-head p { margin: 0; color: rgba(255,255,255,0.6); font-size: 15px; line-height: 1.6; }
+        .pillars-head p { margin: 0; color: rgba(var(--ink),0.6); font-size: 15px; line-height: 1.6; }
         .pillar-grid {
             display: grid; gap: 22px; max-width: 1060px; margin: 0 auto;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         }
         .pillar-card {
             border: 1px solid var(--border); border-radius: 8px; padding: 30px 26px;
-            background: rgba(255,255,255,0.03);
+            background: rgba(var(--ink),0.03);
         }
         .pillar-card h3 {
             margin: 0 0 10px; font-size: 15px; text-transform: uppercase;
             letter-spacing: 1.5px; color: var(--gold);
         }
-        .pillar-card p { margin: 0; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.65; }
-        .pillar-footnote { text-align: center; margin: 48px auto 0; color: rgba(255,255,255,0.45); font-size: 14px; font-style: italic; }
+        .pillar-card p { margin: 0; color: rgba(var(--ink),0.7); font-size: 14px; line-height: 1.65; }
+        .pillar-footnote { text-align: center; margin: 48px auto 0; color: rgba(var(--ink),0.45); font-size: 14px; font-style: italic; }
         .pillar-footnote strong { color: var(--gold); font-style: normal; }
 
         /* Entrance animation — progressive enhancement only, same pattern as the
@@ -106,7 +108,7 @@
         /* Closing CTA */
         .closing { border-top: 1px solid var(--border); text-align: center; }
         .closing h2 { margin: 0 0 14px; font-size: clamp(24px, 3.5vw, 34px); }
-        .closing p { margin: 0 auto 34px; max-width: 520px; color: rgba(255,255,255,0.6); font-size: 15px; line-height: 1.6; }
+        .closing p { margin: 0 auto 34px; max-width: 520px; color: rgba(var(--ink),0.6); font-size: 15px; line-height: 1.6; }
 
         .btn-pill, .btn-secondary {
             appearance: none; -webkit-appearance: none; -moz-appearance: none;
@@ -121,7 +123,7 @@
         .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
         .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
 
-        .page-foot { border-top: 1px solid var(--border); padding: 26px 8%; text-align: center; color: rgba(255,255,255,0.4); font-size: 12px; }
+        .page-foot { border-top: 1px solid var(--border); padding: 26px 8%; text-align: center; color: rgba(var(--ink),0.4); font-size: 12px; }
 
         @media (max-width: 640px) {
             section { padding: 64px 7%; }

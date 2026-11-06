@@ -12,6 +12,8 @@
     <meta charset="UTF-8">
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
     <title>Collection Cards (test) - Design Lab</title>
     <meta name="robots" content="noindex">
     <meta name="theme-color" content="#1a1a1a">
@@ -22,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Oswald:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #d4af37; --white: #ffffff; --black: #1a1a1a; --panel: #222; --border: rgba(255,255,255,0.15); --muted: rgba(255,255,255,0.58);
+            --white: var(--text); --black: var(--bg); --panel: var(--surface); --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),0.58);
             /* spec sheet (matches the CEO's back-of-card template) */
             --sheet-ink: #1f2a5c; --sheet-gold: #e0a43a; --sheet-line: #1f2a5c; --sheet-soft: #5b6385;
             --flip-ms: 700ms; --lift-ms: 420ms;
@@ -34,7 +36,7 @@
 
         .top-bar {
             position: sticky; top: 0; z-index: 15; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            padding: 14px 5%; border-bottom: 1px solid var(--border); background: rgba(26,26,26,0.96); backdrop-filter: blur(6px);
+            padding: 14px 5%; border-bottom: 1px solid var(--border); background: rgba(var(--bg-rgb),0.96); backdrop-filter: blur(6px);
         }
         .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
         .back-link:hover { text-decoration: underline; }
@@ -47,14 +49,14 @@
 
         /* ---------- test controls (text source + desktop/mobile preview) ---------- */
         .controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; margin-bottom: 28px; }
-        .seg { display: inline-flex; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: rgba(255,255,255,0.03); }
+        .seg { display: inline-flex; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: rgba(var(--ink),0.03); }
         .seg button {
-            appearance: none; border: none; background: none; color: rgba(255,255,255,0.75); padding: 9px 16px; border-radius: 999px;
+            appearance: none; border: none; background: none; color: rgba(var(--ink),0.75); padding: 9px 16px; border-radius: 999px;
             font-size: 13px; font-weight: 700; cursor: pointer;
         }
         .seg button[aria-pressed="true"] { background: var(--gold); color: var(--black); }
         .seg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-        .seg-label { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-right: 8px; }
+        .seg-label { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(var(--ink),0.5); margin-right: 8px; }
         /* A real phone is already the mobile view. */
         @media (max-width: 699px) { .view-group { display: none; } }
         body.embed .controls { display: none; }
@@ -92,7 +94,7 @@
         /* Live front: the CEO's Canva layout, rebuilt as text over his blank photo. Sizes follow the card
            width (cqw) like a printed card, with a floor so captions stay readable on phones. */
         .ov { position: absolute; color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,0.35); }
-        .ov-title { left: 3.4%; top: 4.2%; font-family: 'Playfair Display', serif; font-weight: 400; font-size: max(17px, 3.6cqw); letter-spacing: 0.02em; color: #111; text-shadow: 0 0 14px rgba(255,255,255,0.7); }
+        .ov-title { left: 3.4%; top: 4.2%; font-family: 'Playfair Display', serif; font-weight: 400; font-size: max(17px, 3.6cqw); letter-spacing: 0.02em; color: #111; text-shadow: 0 0 14px rgba(var(--ink),0.7); }
         .ov-mark { right: 2.7%; top: 4.3%; width: 9.2%; aspect-ratio: 125 / 143; background: #fff; display: flex; align-items: center; justify-content: center; padding: 1.2%; }
         .ov-mark img { width: 82%; height: auto; display: block; }
         .ov-band { left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0)); }
@@ -112,7 +114,7 @@
 
         .missing {
             position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 18px; text-align: center;
-            background: repeating-linear-gradient(45deg, #1d1d1d, #1d1d1d 12px, #222 12px, #222 24px); border: 2px dashed rgba(212,175,55,0.45); border-radius: 12px;
+            background: repeating-linear-gradient(45deg, var(--surface-2), var(--surface-2) 12px, var(--surface) 12px, var(--surface) 24px); border: 2px dashed rgba(var(--gold-rgb),0.45); border-radius: 12px;
         }
         .missing b { font-size: 15px; color: var(--gold); }
         .missing span { font-size: 12.5px; color: var(--muted); }
@@ -138,7 +140,7 @@
 
         .close-btn {
             position: fixed; z-index: 52; top: 12px; right: 12px; width: 42px; height: 42px; border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.35); background: rgba(20,20,20,0.85); color: #fff; font-size: 22px; line-height: 1; cursor: pointer;
+            border: 1px solid rgba(var(--ink),0.35); background: rgba(var(--bg-rgb),0.85); color: var(--text); font-size: 22px; line-height: 1; cursor: pointer;
         }
         .close-btn:hover, .close-btn:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
         .toolbar {
@@ -158,7 +160,7 @@
         .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
         .btn-flip { background: var(--gold); border: 1px solid var(--gold); color: var(--black); }
         .btn-flip:hover, .btn-flip:focus-visible { filter: brightness(1.08); outline: none; }
-        .btn-more { background: rgba(20,20,20,0.9); border: 1px solid rgba(255,255,255,0.35); color: var(--white); }
+        .btn-more { background: rgba(var(--bg-rgb),0.9); border: 1px solid rgba(var(--ink),0.35); color: var(--white); }
         .btn-more:hover, .btn-more:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
 
         .back-scroll { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
@@ -257,8 +259,8 @@
             .card { transition: none; }
         }
 
-        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.5); }
-        .shop-footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
+        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(var(--ink),0.5); }
+        .shop-footer a { color: rgba(var(--ink),0.7); text-decoration: none; }
         .shop-footer a:hover { color: var(--gold); }
         [hidden] { display: none !important; }
     </style>
