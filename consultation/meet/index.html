@@ -5,8 +5,11 @@
 
      Designer: /consultation/meet/  → start a Meet, paste its link, copy the client link.
      Client:   /consultation/meet/?m=abc-defg-hij[&n=Name]  → lobby with a Join button.
+               /consultation/meet/?d=jordan[&n=Name]        → a designer's permanent room,
+               looked up through public.consultation_room() (migration 0028; rooms are
+               managed in the dashboard's Google Meet section).
 
-     No database or sign-in: the Meet code travels in the link. Like everything under
+     One-off ?m= links need no database: the Meet code travels in the link. Like everything under
      /consultation/, it is open without the site access code so clients can reach it. -->
 <html lang="en">
 <head>
@@ -41,6 +44,7 @@
         .btn:hover, .btn:focus-visible { transform: translateY(-2px); filter: brightness(1.06); outline: none; }
         .btn:focus-visible { box-shadow: 0 0 0 3px rgba(var(--gold-rgb), .45); }
         .btn-gold { background: var(--gold); color: var(--on-gold); }
+        .btn:disabled { opacity: .55; cursor: progress; transform: none; }
         .btn-line { background: transparent; border-color: rgba(var(--ink), .3); color: var(--text); }
         .btn-big { height: 62px; font-size: 14px; width: 100%; }
         .meet-icon { width: 22px; height: 22px; }
@@ -81,6 +85,7 @@
         <section id="lobby" hidden>
             <p class="eyebrow">Video Consultation</p>
             <h1 id="greet">Your designer is ready for you.</h1>
+            <p class="lede" id="room-missing" hidden>This consultation link isn't active. Please check with your Design Lab designer for a new one.</p>
             <p class="lede">Your call opens in Google Meet, in a window next to this one. No download or Google account needed: just allow your camera and microphone when your browser asks.</p>
 
             <div class="grid">
@@ -166,13 +171,45 @@
         function meetUrl(code) { return 'https://meet.google.com/' + code; }
         var params = new URLSearchParams(location.search);
         var code = codeFrom(params.get('m'));
+        var designer = (params.get('d') || '').trim().toLowerCase();
+        // Public (anon) key, same one the storefront uses; it can only call consultation_room().
+        var SB_URL = 'https://nutgbxgnkvvruaoloqch.supabase.co';
+        var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51dGdieGdua3Z2cnVhb2xvcWNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NDEzNDgsImV4cCI6MjEwMDIxNzM0OH0.v9hXYtxOslhyXOu-mZVjm_EFaUIdTqTWKn9P3B7BY64';
 
-        if (code) {
+        if (code || designer) {
             // ----- client lobby -----
             document.getElementById('lobby').hidden = false;
-            document.getElementById('code-label').textContent = code;
             var name = (params.get('n') || '').trim().slice(0, 40);
-            if (name) document.getElementById('greet').textContent = 'Welcome, ' + name + '. Your designer is ready.';
+            var joinBtn = document.getElementById('join');
+            function greet(who) {
+                document.getElementById('greet').textContent = (name ? 'Welcome, ' + name + '. ' : '') +
+                    (who ? who + ' is ready for you.' : 'Your designer is ready for you.');
+            }
+            greet('');
+            if (code) document.getElementById('code-label').textContent = code;
+            else {
+                // A designer's permanent room: look its Meet code up by name.
+                joinBtn.disabled = true;
+                document.getElementById('code-label').textContent = '\u2026';
+                fetch(SB_URL + '/rest/v1/rpc/consultation_room', {
+                    method: 'POST',
+                    headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ p_slug: designer })
+                }).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }).then(function (rows) {
+                    var room = rows && rows[0];
+                    if (!room || !codeFrom(room.meet_code)) {
+                        document.getElementById('greet').textContent = 'Hmm, we couldn\u2019t find that room.';
+                        document.getElementById('room-missing').hidden = false;
+                        document.querySelector('#lobby .grid').hidden = true;
+                        document.querySelectorAll('#lobby > .lede:not(#room-missing)').forEach(function (p) { p.hidden = true; });
+                        return;
+                    }
+                    code = codeFrom(room.meet_code);
+                    document.getElementById('code-label').textContent = code;
+                    greet(room.label);
+                    joinBtn.disabled = false;
+                });
+            }
             var win = null;
             function openCall(e) {
                 if (e) e.preventDefault();
