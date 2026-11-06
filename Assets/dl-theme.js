@@ -12,12 +12,16 @@
 (function () {
     var KEY = 'dl_scheme_v1';
     var SCHEMES = [
-        { id: 'original', name: 'Original',      note: 'Today’s black and gold',          a: '#1a1a1a', b: '#d4af37', meta: '#1a1a1a' },
-        { id: 'walnut',   name: 'Walnut Night',  note: 'Espresso black, warm cream text',      a: '#1c1714', b: '#d4af37', meta: '#1c1714' },
-        { id: 'gallery',  name: 'Gallery',       note: 'Dark frame, ivory pages',              a: '#1a1714', b: '#f6f1e9', meta: '#1a1714' },
-        { id: 'ivory',    name: 'Ivory & Gold',  note: 'Fully light, deep gold',               a: '#faf7f2', b: '#8a6a1f', meta: '#faf7f2' },
-        { id: 'stone',    name: 'Stone & Brass', note: 'Greige pages, taupe frame',            a: '#e6e2da', b: '#4f4842', meta: '#4f4842' },
-        { id: 'navy',     name: 'Midnight Navy', note: 'Deep navy, gold accents',              a: '#0f1e2e', b: '#d4af37', meta: '#0f1e2e' }
+        { id: 'original', name: 'Original', note: 'Today\u2019s black and gold', a: '#1a1a1a', b: '#d4af37', meta: '#1a1a1a' },
+        { id: 'gallery', name: 'Gallery', note: 'Dark frame, ivory pages', a: '#1a1714', b: '#f6f1e9', meta: '#1a1714' },
+        { id: 'ivory', name: 'Ivory & Gold', note: 'Fully light, deep gold', a: '#faf7f2', b: '#8a6a1f', meta: '#faf7f2' },
+        { id: 'stone', name: 'Stone & Brass', note: 'Greige pages, taupe frame', a: '#e6e2da', b: '#4f4842', meta: '#4f4842' },
+        { id: 'linen', name: 'Linen & Espresso', note: 'Linen pages, espresso frame', a: '#f3ede3', b: '#2b211b', meta: '#2b211b' },
+        { id: 'marble', name: 'Marble & Gold', note: 'Crisp white, black frame, gold', a: '#fbfbf9', b: '#111111', meta: '#111111' },
+        { id: 'sage', name: 'Sage & Brass', note: 'Soft white, sage frame, brass', a: '#f4f3ee', b: '#3f4b3d', meta: '#3f4b3d' },
+        { id: 'clay', name: 'Clay & Copper', note: 'Warm sand, terracotta frame', a: '#f4ece4', b: '#4a2e24', meta: '#4a2e24' },
+        { id: 'slate', name: 'Slate & Brass', note: 'Coastal grey, slate-blue frame', a: '#eef1f1', b: '#27333d', meta: '#27333d' },
+        { id: 'champagne', name: 'Champagne', note: 'Fully light, rich champagne', a: '#f1e6d6', b: '#7a5a1c', meta: '#f1e6d6' }
     ];
     var root = document.documentElement;
 
