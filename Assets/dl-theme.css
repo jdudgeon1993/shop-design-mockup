@@ -27,14 +27,6 @@
     --danger: #ffaaaa;
 }
 
-/* 1. Walnut Night: our black and gold, warmed with an espresso undertone. */
-html[data-scheme="walnut"] {
-    --bg: #1c1714; --bg-rgb: 28,23,20;
-    --surface: #27201b; --surface-2: #312821; --sunk: #14100d;
-    --ink: 243,236,226; --text: #f3ece2;
-    --gold: #d4af37; --gold-rgb: 212,175,55; --on-gold: #1c1714;
-}
-
 /* 2. Gallery: dark frame (top bar, footer, hero photos) around ivory pages. */
 html[data-scheme="gallery"] {
     --danger: #b42318;
@@ -74,12 +66,88 @@ html[data-scheme="stone"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
     --gold: #d2b47a; --gold-rgb: 210,180,122; --on-gold: #2a2622;
 }
 
-/* 5. Midnight Navy: still dark and powerful, with depth instead of a void. */
-html[data-scheme="navy"] {
-    --bg: #0f1e2e; --bg-rgb: 15,30,46;
-    --surface: #172a3e; --surface-2: #1f354c; --sunk: #0a1622;
-    --ink: 244,239,230; --text: #f4efe6;
-    --gold: #d4af37; --gold-rgb: 212,175,55; --on-gold: #0f1e2e;
+/* 5. Linen & Espresso: creamy linen pages framed in deep espresso brown. */
+html[data-scheme="linen"] {
+    --danger: #b42318;
+    --bg: #f3ede3; --bg-rgb: 243,237,227;
+    --surface: #fbf8f3; --surface-2: #e9e0d2; --sunk: #e6dccd;
+    --ink: 43,33,27; --text: #2b211b;
+    --gold: #866224; --gold-rgb: 134,98,36; --on-gold: #fbf8f3;
+}
+html[data-scheme="linen"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+    --bg: #2b211b; --bg-rgb: 43,33,27;
+    --surface: #352a22; --surface-2: #3f322a; --sunk: #211913;
+    --ink: 243,237,227; --text: #f3ede3;
+    --gold: #d9b56a; --gold-rgb: 217,181,106; --on-gold: #2b211b;
+}
+
+/* 6. Marble & Gold: crisp white marble, a jet-black frame and bright gold. */
+html[data-scheme="marble"] {
+    --danger: #b42318;
+    --bg: #fbfbf9; --bg-rgb: 251,251,249;
+    --surface: #ffffff; --surface-2: #f0efeb; --sunk: #ecebe6;
+    --ink: 17,17,17; --text: #111111;
+    --gold: #8a6a1f; --gold-rgb: 138,106,31; --on-gold: #ffffff;
+}
+html[data-scheme="marble"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+    --bg: #111111; --bg-rgb: 17,17,17;
+    --surface: #1b1b1b; --surface-2: #242424; --sunk: #0a0a0a;
+    --ink: 255,255,255; --text: #ffffff;
+    --gold: #d4af37; --gold-rgb: 212,175,55; --on-gold: #111111;
+}
+
+/* 7. Sage & Brass: soft white pages, a muted sage frame and aged brass. */
+html[data-scheme="sage"] {
+    --danger: #b42318;
+    --bg: #f4f3ee; --bg-rgb: 244,243,238;
+    --surface: #fbfbf8; --surface-2: #e4e8dd; --sunk: #e0e4d8;
+    --ink: 33,38,32; --text: #212620;
+    --gold: #7a6224; --gold-rgb: 122,98,36; --on-gold: #fbfbf8;
+}
+html[data-scheme="sage"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+    --bg: #3f4b3d; --bg-rgb: 63,75,61;
+    --surface: #4a5747; --surface-2: #556252; --sunk: #333e31;
+    --ink: 240,240,232; --text: #f0f0e8;
+    --gold: #d8c08a; --gold-rgb: 216,192,138; --on-gold: #2a3229;
+}
+
+/* 8. Clay & Copper: warm sand pages, a terracotta-brown frame and copper accent. */
+html[data-scheme="clay"] {
+    --danger: #b42318;
+    --bg: #f4ece4; --bg-rgb: 244,236,228;
+    --surface: #fcf8f4; --surface-2: #ebdfd3; --sunk: #e7d9cc;
+    --ink: 46,33,27; --text: #2e211b;
+    --gold: #9a4f2a; --gold-rgb: 154,79,42; --on-gold: #fcf8f4;
+}
+html[data-scheme="clay"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+    --bg: #4a2e24; --bg-rgb: 74,46,36;
+    --surface: #56372b; --surface-2: #614033; --sunk: #3d251d;
+    --ink: 246,236,228; --text: #f6ece4;
+    --gold: #e3a77c; --gold-rgb: 227,167,124; --on-gold: #3d251d;
+}
+
+/* 9. Slate & Brass: cool coastal grey pages, a deep slate-blue frame and brass. */
+html[data-scheme="slate"] {
+    --danger: #b42318;
+    --bg: #eef1f1; --bg-rgb: 238,241,241;
+    --surface: #ffffff; --surface-2: #e1e6e8; --sunk: #dce2e4;
+    --ink: 27,34,40; --text: #1b2228;
+    --gold: #83662a; --gold-rgb: 131,102,42; --on-gold: #ffffff;
+}
+html[data-scheme="slate"] :is(.top-bar, .navbar, .shop-footer, .site-footer) {
+    --bg: #27333d; --bg-rgb: 39,51,61;
+    --surface: #313e49; --surface-2: #3a4854; --sunk: #1e2830;
+    --ink: 238,241,241; --text: #eef1f1;
+    --gold: #d2b47a; --gold-rgb: 210,180,122; --on-gold: #1e2830;
+}
+
+/* 10. Champagne: fully light, rich champagne beige with deep gold. */
+html[data-scheme="champagne"] {
+    --danger: #b42318;
+    --bg: #f1e6d6; --bg-rgb: 241,230,214;
+    --surface: #fbf6ee; --surface-2: #e8dbc7; --sunk: #e4d6c0;
+    --ink: 42,33,24; --text: #2a2118;
+    --gold: #7a5a1c; --gold-rgb: 122,90,28; --on-gold: #fbf6ee;
 }
 
 /* Older page aliases (--white, --black, --panel, --border, --muted) are
@@ -99,8 +167,7 @@ html[data-scheme="navy"] {
 
 /* Footers and top bars pick the frame colors up from the rules above;
    make sure they actually paint them (some pages left them transparent). */
-html[data-scheme="gallery"] :is(.shop-footer, .site-footer, .top-bar),
-html[data-scheme="stone"] :is(.shop-footer, .site-footer, .top-bar) { background: var(--bg); }
+html:is([data-scheme="gallery"], [data-scheme="stone"], [data-scheme="linen"], [data-scheme="marble"], [data-scheme="sage"], [data-scheme="clay"], [data-scheme="slate"]) :is(.shop-footer, .site-footer, .top-bar) { background: var(--bg); }
 
 /* ---------- the scheme switcher (centered in the header) ---------- */
 .dl-scheme {
@@ -153,4 +220,4 @@ html[data-scheme="stone"] :is(.shop-footer, .site-footer, .top-bar) { background
 }
 
 /* The white logo turns charcoal where the footer goes light. */
-html[data-scheme="ivory"] .footer-logo { filter: brightness(0) opacity(.85); }
+html:is([data-scheme="ivory"], [data-scheme="champagne"]) .footer-logo { filter: brightness(0) opacity(.85); }
