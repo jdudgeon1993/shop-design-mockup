@@ -222,5 +222,3 @@ html:is([data-scheme="gallery"], [data-scheme="stone"], [data-scheme="linen"], [
     .dl-scheme .dl-scheme-open { padding: 0 8px; }
 }
 
-/* The white logo turns charcoal where the footer goes light. */
-html:is([data-scheme="ivory"], [data-scheme="champagne"]) .footer-logo { filter: brightness(0) opacity(.85); }
