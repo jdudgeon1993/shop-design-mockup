@@ -25,7 +25,10 @@
     --ink: 255,255,255; --text: #ffffff;
     --gold: #d4af37; --gold-rgb: 212,175,55; --on-gold: #1a1a1a;
     --danger: #ffaaaa;
+    --line-art: #e9e4da;   /* DIY catalog line drawings (light lines on dark cards) */
 }
+/* Every test scheme has light pages, so the drawings go dark to stay visible. */
+html[data-scheme] { --line-art: rgba(var(--ink), .7); }
 
 /* 2. Gallery: dark frame (top bar, footer, hero photos) around ivory pages. */
 html[data-scheme="gallery"] {
