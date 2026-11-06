@@ -122,8 +122,12 @@
                 <div class="panel">
                     <ol class="steps">
                         <li><div><h3>Start a Meet</h3>
-                            <p class="muted">Use your @shopdesignlab.com Google account. Leave the call open; you'll admit your client when they knock.</p>
-                            <div class="row"><a class="btn btn-gold" href="https://meet.google.com/new" target="_blank" rel="noopener">Start a new Meet</a></div></div></li>
+                            <p class="muted">It opens with your work Google account, even if your personal Gmail is signed in too. Leave the call open; you'll admit your client when they knock.</p>
+                            <label for="work-email" style="margin-top:14px">Your work email</label>
+                            <input type="text" id="work-email" inputmode="email" autocomplete="email" placeholder="you@shopdesignlab.com">
+                            <p class="err" id="email-err" role="alert"></p>
+                            <div class="row"><a class="btn btn-gold" id="start-meet" href="https://meet.google.com/new" target="_blank" rel="noopener">Start a new Meet</a></div>
+                            <p class="muted" style="margin-top:10px;font-size:13px">Wrong account? <a id="choose-acct" href="https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Fmeet.google.com%2Fnew" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600">Choose a different Google account</a></p></div></li>
                         <li><div><h3>Paste the Meet link</h3>
                             <label for="meet-in">Meet link or code</label>
                             <input type="text" id="meet-in" placeholder="https://meet.google.com/abc-defg-hij" autocomplete="off">
@@ -189,6 +193,28 @@
             var inp = document.getElementById('meet-in'), nameIn = document.getElementById('name-in');
             var err = document.getElementById('err'), out = document.getElementById('out'), acts = document.getElementById('out-actions');
             var link = '';
+            // Start the Meet on the designer's WORK account: Google links accept ?authuser=<email>,
+            // which picks that signed-in account (or asks to sign into it). Remembered per browser.
+            var EMAIL_KEY = 'dl_meet_work_email', emailIn = document.getElementById('work-email');
+            var emailErr = document.getElementById('email-err'), startBtn = document.getElementById('start-meet');
+            try { emailIn.value = localStorage.getItem(EMAIL_KEY) || ''; } catch (x) {}
+            function workEmail() {
+                var v = emailIn.value.trim().toLowerCase();
+                return /^[^\s@]+@shopdesignlab\.com$/.test(v) ? v : null;
+            }
+            function syncStart() {
+                var e = workEmail();
+                startBtn.href = 'https://meet.google.com/new' + (e ? '?authuser=' + encodeURIComponent(e) : '');
+                if (e) { emailErr.textContent = ''; try { localStorage.setItem(EMAIL_KEY, e); } catch (x) {} }
+            }
+            emailIn.addEventListener('input', syncStart);
+            emailIn.addEventListener('blur', function () {
+                if (emailIn.value.trim() && !workEmail()) emailErr.textContent = 'Use your @shopdesignlab.com address.';
+            });
+            startBtn.addEventListener('click', function (e) {
+                if (!workEmail()) { e.preventDefault(); emailErr.textContent = 'Enter your @shopdesignlab.com email first, so the Meet starts on your work account.'; emailIn.focus(); }
+            });
+            syncStart();
             document.getElementById('make').addEventListener('click', function () {
                 var c = codeFrom(inp.value);
                 if (!c) { err.textContent = 'That doesn’t look like a Meet link. It should end in a code like abc-defg-hij.'; inp.focus(); return; }
