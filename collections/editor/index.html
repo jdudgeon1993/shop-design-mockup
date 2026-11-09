@@ -1,0 +1,863 @@
+<!-- MOCKUP (not linked from the site): the Curated card editor.
+     One simple page where the CEO makes and changes collection cards by typing straight onto the card.
+     The real version will read and save the cards in Supabase, and the cards page will show what's saved there,
+     so the database is the one source of truth. This mockup saves nothing to the database: edits are kept in
+     this browser only (localStorage), so it's safe to click everything.
+     Front: upload a text-free picture, click the words on it to change them.
+     Back: click any words on the spec sheet; notes are one per line; cabinets have an Add button and a SKU check.
+     "Paste from ChatGPT": copy our instructions into ChatGPT with the front picture, paste its answer back,
+     and the card fills itself in. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/Assets/site-gate.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
+    <title>Card Editor (mockup) - Design Lab</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Oswald:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --muted: rgba(var(--ink),0.62); --border: rgba(var(--ink),0.16);
+            --sheet-ink: #1f2a5c; --sheet-gold: #e0a43a; --sheet-line: #1f2a5c; --sheet-soft: #5b6385;
+            --ok: #2e8b57; --warn: #c0392b;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); }
+        button, input, select, textarea { font-family: inherit; }
+
+        /* ---------- top bar ---------- */
+        .top-bar {
+            position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(var(--bg-rgb),0.97);
+        }
+        .top-bar h1 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; }
+        .badge { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--on-gold); background: var(--gold); padding: 4px 10px; border-radius: 999px; }
+        .status { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+        .status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+        .status.published .dot { background: var(--ok); }
+        .status.draft .dot { background: var(--gold); }
+        .status b { color: var(--text); }
+
+        .mock-note { margin: 0; padding: 9px 16px; font-size: 13px; background: rgba(var(--gold-rgb),0.12); border-bottom: 1px solid rgba(var(--gold-rgb),0.3); }
+
+        .wrap { max-width: 1240px; margin: 0 auto; padding: 18px 16px 120px; }
+
+        /* ---------- the row of cards ---------- */
+        .picker { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 18px; }
+        .pick {
+            flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 12px; cursor: pointer;
+            border: 1.5px solid var(--border); background: var(--surface); color: var(--text); font-size: 14px; text-align: left;
+        }
+        .pick img, .pick .ph { width: 64px; height: 36px; object-fit: cover; border-radius: 6px; background: var(--surface-2); display: block; }
+        .pick small { display: block; font-size: 11px; color: var(--muted); }
+        .pick[aria-current="true"] { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(var(--gold-rgb),0.25); }
+        .pick.new { padding: 8px 18px; font-weight: 700; color: var(--gold); border-style: dashed; }
+
+        /* ---------- big friendly buttons ---------- */
+        .tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+        .seg { display: inline-flex; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
+        .seg button { border: none; background: none; color: var(--text); padding: 11px 22px; border-radius: 999px; font-size: 15px; font-weight: 700; cursor: pointer; }
+        .seg button[aria-pressed="true"] { background: var(--gold); color: var(--on-gold); }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 999px; font-size: 15px; font-weight: 700; cursor: pointer;
+            border: 1.5px solid var(--border); background: var(--surface); color: var(--text);
+        }
+        .btn:hover, .btn:focus-visible { border-color: var(--gold); outline: none; }
+        .btn.gold { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+        .btn.gpt { border-color: #10a37f; }
+        .btn.small { padding: 8px 14px; font-size: 13px; }
+        .btn.danger { color: var(--warn); }
+        .hint { margin: 0 0 14px; font-size: 15px; color: var(--muted); }
+        .hint b { color: var(--text); }
+
+        /* Anything the CEO can type on: dotted outline on hover, solid when typing. */
+        [contenteditable="true"] { outline: 1.5px dashed transparent; outline-offset: 2px; border-radius: 3px; cursor: text; min-width: 1ch; }
+        [contenteditable="true"]:hover { outline-color: rgba(224,164,58,0.9); }
+        [contenteditable="true"]:focus { outline: 2px solid #e0a43a; background: rgba(224,164,58,0.10); }
+        [contenteditable="true"]:empty::before { content: attr(data-ph); opacity: 0.45; font-style: italic; }
+
+        /* ---------- front ---------- */
+        .front-wrap { max-width: 960px; }
+        .face { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #111; container-type: inline-size; box-shadow: 0 14px 34px rgba(0,0,0,0.35); }
+        .face img.photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .face .empty-photo {
+            position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; text-align: center; padding: 20px;
+            background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 14px, #222 14px, #222 28px); color: #ddd; font-size: 15px;
+        }
+        .ov { position: absolute; color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,0.35); }
+        .ov-title { left: 3.4%; top: 4.2%; font-family: 'Playfair Display', serif; font-weight: 400; font-size: max(17px, 3.6cqw); letter-spacing: 0.02em; color: #111; text-shadow: 0 0 14px rgba(var(--ink),0.7); }
+        .ov-mark { right: 2.7%; top: 4.3%; width: 9.2%; aspect-ratio: 125 / 143; background: #fff; display: flex; align-items: center; justify-content: center; padding: 1.2%; }
+        .ov-mark img { width: 82%; height: auto; display: block; }
+        .ov-band { left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0)); }
+        .ov-caption { left: 5.6%; bottom: 3.6%; font-weight: 400; font-size: max(10.5px, 1.75cqw); }
+        .ov-tag { right: 5.6%; bottom: 3.6%; font-weight: 400; font-size: max(10.5px, 1.75cqw); text-align: right; }
+        .ov-tag::before {
+            content: ''; position: absolute; right: 3%; bottom: calc(100% + 0.6cqw); width: 0; height: 0;
+            border-left: 1.5cqw solid transparent; border-right: 1.5cqw solid transparent; border-top: 2.4cqw solid #1f9a4a;
+        }
+
+        /* Small cards (phones): the captions wrap instead of running into each other. */
+        @container (max-width: 560px) {
+            .ov-band { height: 30%; }
+            .ov-caption { max-width: 56%; line-height: 1.3; }
+            .ov-tag { max-width: 34%; line-height: 1.3; }
+        }
+        .ov-band { pointer-events: none; }
+        .front-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+        /* ---------- back (the spec sheet, same look as the cards page) ---------- */
+        .back-wrap { background: #fff; color: var(--sheet-ink); border-radius: 12px; overflow: hidden; box-shadow: 0 14px 34px rgba(0,0,0,0.35); }
+        .sheet { margin: 12px; border: 2px solid var(--sheet-line); font-size: 13px; }
+        .sheet-head { display: grid; grid-template-columns: 1.35fr 1.6fr 1fr 0.95fr; border-bottom: 2px solid var(--sheet-line); }
+        .sheet-head > div { padding: 10px 14px; border-right: 1px solid var(--sheet-line); display: flex; flex-direction: column; justify-content: center; }
+        .sheet-head > div:last-child { border-right: none; padding: 0; }
+        .brand { flex-direction: row !important; justify-content: flex-start !important; align-items: center; gap: 12px; }
+        .brand img { height: 58px; width: auto; }
+        .brand .rule { width: 1px; align-self: stretch; background: var(--sheet-gold); }
+        .brand b { display: block; font-family: 'Oswald', sans-serif; font-weight: 300; font-size: 21px; letter-spacing: 4px; color: var(--sheet-ink); }
+        .brand small { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: 0.4px; line-height: 1.45; color: var(--sheet-ink); }
+        .brand small.tag { color: var(--sheet-gold); }
+        .title-cell { text-align: center; align-items: center; }
+        .title-cell .no { font-size: 10.5px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
+        .title-cell h2 { margin: 3px 0; padding-bottom: 4px; border-bottom: 1px solid var(--sheet-line); font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 25px; line-height: 1.15; letter-spacing: 1px; text-transform: uppercase; color: var(--sheet-ink); }
+        .title-cell .space { font-size: 11.5px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+        .drawing-cell { text-align: center; align-items: center; }
+        .drawing-cell small { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
+        .drawing-cell b { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 18px; text-transform: uppercase; margin-top: 3px; }
+        .meta { width: 100%; height: 100%; border-collapse: collapse; font-size: 11px; }
+        .meta th, .meta td { border-bottom: 1px solid var(--sheet-line); padding: 4px 10px; text-align: left; }
+        .meta tr:last-child th, .meta tr:last-child td { border-bottom: none; }
+        .meta th { font-weight: 600; text-transform: uppercase; border-right: 1px solid var(--sheet-line); width: 46%; }
+        .meta td { text-align: right; font-weight: 600; }
+
+        .sheet-body { display: grid; grid-template-columns: 1fr 320px; border-bottom: 2px solid var(--sheet-line); }
+        .sheet-drawing { padding: 14px; border-right: 1px solid var(--sheet-line); display: flex; flex-direction: column; justify-content: center; }
+        .sheet-drawing a { display: block; cursor: zoom-in; }
+        .sheet-drawing img { width: 100%; height: auto; display: block; }
+        .zoom-note { margin-top: 6px; font-size: 11px; color: var(--sheet-soft); text-align: center; }
+        .sheet-side { padding: 14px 16px; }
+        .sheet-side h3 { margin: 0 0 8px; font-family: 'Oswald', sans-serif; font-weight: 500; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
+        .specs { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0 0 14px; padding-bottom: 14px; border-bottom: 1px solid var(--sheet-line); font-size: 12px; }
+        .specs dt { color: var(--sheet-soft); }
+        .specs dd { margin: 0; }
+        .notes { margin: 0; padding-left: 24px; font-size: 12px; line-height: 1.45; text-transform: uppercase; letter-spacing: 0.2px; }
+        .notes li { margin-bottom: 5px; padding-left: 4px; }
+
+        .schedule-wrap { padding: 14px; border-bottom: 2px solid var(--sheet-line); }
+        .schedule-wrap h3 { margin: 0 0 8px; font-family: 'Oswald', sans-serif; font-weight: 500; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
+        .schedule { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .schedule th { text-align: left; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 6px 8px; border-bottom: 1.5px solid var(--sheet-line); }
+        .schedule td { padding: 7px 8px; border-bottom: 1px solid rgba(31,42,92,0.18); vertical-align: top; }
+        .schedule td.qty { font-weight: 700; width: 44px; }
+        .schedule td.sku { font-weight: 700; white-space: nowrap; }
+
+        .sheet-foot { display: grid; grid-template-columns: 1.3fr 1.2fr 1fr 1.3fr; }
+        .sheet-foot > div { padding: 8px 14px; border-right: 1px solid var(--sheet-line); }
+        .sheet-foot > div:last-child { border-right: none; text-align: center; }
+        .sheet-foot small { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
+        .sheet-foot b { display: block; margin-top: 3px; font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 17px; text-transform: uppercase; }
+        .sheet-foot .accent { color: #2848a8; }
+        .sheet-foot .maker b { font-size: 19px; letter-spacing: 0.5px; }
+
+        /* Phones and narrow windows: the sheet stacks instead of shrinking. */
+        @media (max-width: 860px) {
+            .sheet { margin: 8px; }
+            .sheet-head { grid-template-columns: 1fr 1fr; }
+            .sheet-head > div { border-bottom: 1px solid var(--sheet-line); }
+            .sheet-head .brand { grid-column: 1 / -1; border-right: none; }
+            .sheet-head .title-cell { grid-column: 1 / -1; border-right: none; }
+            .sheet-head > div:nth-last-child(-n+2) { border-bottom: none; }
+            .brand img { height: 46px; }
+            .title-cell h2 { font-size: 24px; }
+            .sheet-body { grid-template-columns: 1fr; }
+            .sheet-drawing { border-right: none; border-bottom: 1px solid var(--sheet-line); padding: 10px; }
+            .notes { font-size: 13px; }
+            .schedule thead { display: none; }
+            .schedule, .schedule tbody, .schedule tr, .schedule td { display: block; width: 100%; }
+            .schedule tr { padding: 8px 0; border-bottom: 1px solid rgba(31,42,92,0.18); }
+            .schedule td { border: none; padding: 2px 0; }
+            .schedule td.qty, .schedule td.sku { display: inline; width: auto; font-size: 13.5px; }
+            .schedule td.qty::after { content: ' \00d7  '; }
+            .schedule td[data-label]::before { content: attr(data-label) ': '; color: var(--sheet-soft); }
+            .schedule td.empty { display: none; }
+            .sheet-foot { grid-template-columns: 1fr 1fr; }
+            .sheet-foot > div { border-bottom: 1px solid var(--sheet-line); }
+            .sheet-foot > div:nth-child(2) { border-right: none; }
+            .sheet-foot > div:nth-last-child(-n+2) { border-bottom: none; }
+            /* room for the toolbar that floats over the bottom of the card */
+            .sheet { margin-bottom: 74px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            :root { --flip-ms: 1ms; --lift-ms: 1ms; }
+            .card { transition: none; }
+        }
+        .sheet-drawing .drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 220px; border: 2px dashed #b9bfd6; border-radius: 8px; color: var(--sheet-soft); font-size: 14px; text-align: center; padding: 16px; }
+        .sheet-drawing .swap { margin-top: 8px; align-self: center; }
+        .notes li { min-height: 1.4em; }
+        .add-note { margin-top: 6px; }
+        .sheet .btn { color: var(--sheet-ink); background: #fff; border-color: #b9bfd6; }
+        .sheet .btn:hover { border-color: var(--sheet-gold); }
+
+        /* cabinet rows: a form, laid out like the schedule */
+        .cab-head, .cab { display: grid; grid-template-columns: 62px 1.6fr 1.1fr 92px 104px 1fr 1fr 36px; gap: 6px; align-items: center; }
+        .cab-head { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 0 0 6px; border-bottom: 1.5px solid var(--sheet-line); }
+        .cab-head .staff, .cab .staff-cell { background: #fff6e3; }
+        .cab-head .staff { padding: 2px 6px; border-radius: 4px; }
+        .cab { padding: 7px 0; border-bottom: 1px solid rgba(31,42,92,0.18); }
+        .cab input, .cab select { width: 100%; padding: 8px; border: 1px solid #c9cde0; border-radius: 6px; font-size: 13.5px; color: var(--sheet-ink); background: #fff; }
+        .cab input:focus, .cab select:focus { outline: 2px solid #e0a43a; border-color: #e0a43a; }
+        .cab .staff-cell { position: relative; border-radius: 6px; padding: 3px; }
+        .sku-msg { display: block; font-size: 11px; margin-top: 3px; line-height: 1.3; }
+        .sku-msg.ok { color: var(--ok); }
+        .sku-msg.bad { color: var(--warn); font-weight: 600; }
+        .cab .del { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #c9cde0; background: #fff; color: var(--sheet-soft); font-size: 18px; cursor: pointer; }
+        .cab .del:hover { color: var(--warn); border-color: var(--warn); }
+        .cab-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; font-size: 12px; color: var(--sheet-soft); }
+        .cab-label { display: none; }
+        @media (max-width: 860px) {
+            .cab-head { display: none; }
+            .cab { grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 0; }
+            .cab > div { min-width: 0; }
+            .cab .wide { grid-column: 1 / -1; }
+            .cab-label { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--sheet-soft); margin-bottom: 3px; }
+            .cab .del { grid-column: 1 / -1; width: auto; height: auto; border-radius: 999px; padding: 6px; font-size: 13px; }
+            .cab .del::after { content: ' Remove this cabinet'; }
+        }
+
+        /* ---------- bottom bar: save / publish ---------- */
+        .bottom-bar {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: flex-end;
+            padding: 12px 16px; border-top: 1px solid var(--border); background: rgba(var(--bg-rgb),0.97);
+        }
+        .bottom-bar .saved { margin-right: auto; font-size: 13px; color: var(--muted); }
+        @media (max-width: 600px) {
+            .bottom-bar .btn { flex: 1 1 0; justify-content: center; padding: 12px 8px; font-size: 14px; }
+            .bottom-bar .saved { flex: 1 1 100%; text-align: center; }
+        }
+
+        /* ---------- dialogs ---------- */
+        dialog { border: none; border-radius: 16px; padding: 0; width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 32px); background: var(--surface); color: var(--text); box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+        dialog::backdrop { background: rgba(0,0,0,0.6); }
+        .dlg { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
+        .dlg h2 { margin: 0; font-family: 'Playfair Display', serif; font-size: 24px; }
+        .dlg p { margin: 0; line-height: 1.5; color: rgba(var(--ink),0.8); }
+        .step { display: flex; gap: 12px; align-items: flex-start; }
+        .step .n { flex: 0 0 30px; height: 30px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .step > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+        .prompt-box { max-height: 130px; overflow: auto; white-space: pre-wrap; font-size: 12px; padding: 10px; border-radius: 8px; background: var(--sunk); border: 1px solid var(--border); }
+        textarea { width: 100%; min-height: 180px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--sunk); color: var(--text); font-size: 14px; resize: vertical; }
+        .found { font-size: 14px; color: var(--ok); font-weight: 600; min-height: 1.2em; }
+        .found.bad { color: var(--warn); }
+        .dlg-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+        .linkish { background: none; border: none; color: var(--gold); text-decoration: underline; cursor: pointer; padding: 0; font-size: 13px; align-self: flex-start; }
+        .hist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+        .hist li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; }
+        .hist li span { flex: 1; }
+        .hist small { color: var(--muted); display: block; }
+        .problems { margin: 0; padding-left: 20px; line-height: 1.6; }
+
+        .toast {
+            position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(20px); z-index: 60; opacity: 0; pointer-events: none;
+            display: flex; gap: 14px; align-items: center; padding: 12px 18px; border-radius: 12px; background: #222; color: #fff; font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity .2s, transform .2s; max-width: calc(100vw - 24px);
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
+        .toast button { background: none; border: none; color: #e0a43a; font-weight: 700; cursor: pointer; font-size: 14px; }
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <h1>Curated cards</h1>
+        <span class="badge">Mockup</span>
+        <span class="status" id="status"><span class="dot"></span><span id="status-text"></span></span>
+    </header>
+    <p class="mock-note">Mockup: nothing here reaches the website or the database. Your changes stay in this browser so you can try everything.
+        <button class="linkish" id="reset" type="button">Start the mockup over</button></p>
+
+    <main class="wrap">
+        <div class="picker" id="picker" aria-label="Cards"></div>
+
+        <div class="tools">
+            <div class="seg" role="group" aria-label="Side of the card">
+                <button type="button" data-side="front" aria-pressed="true">Front</button>
+                <button type="button" data-side="back" aria-pressed="false">Back</button>
+            </div>
+            <button class="btn gpt" type="button" id="open-gpt">Paste from ChatGPT</button>
+            <button class="btn" type="button" id="open-hist">Earlier versions</button>
+        </div>
+        <p class="hint" id="hint"></p>
+
+        <section id="front-side" class="front-wrap"></section>
+        <section id="back-side" hidden></section>
+    </main>
+
+    <div class="bottom-bar">
+        <span class="saved" id="saved">All changes saved</span>
+        <button class="btn danger" type="button" id="unpublish" hidden>Take off the site</button>
+        <button class="btn" type="button" id="save-draft">Save draft</button>
+        <button class="btn gold" type="button" id="publish">Publish to site</button>
+    </div>
+
+    <input type="file" id="file-front" accept="image/*" hidden>
+    <input type="file" id="file-drawing" accept="image/*" hidden>
+    <datalist id="skus"></datalist>
+
+    <!-- Paste from ChatGPT -->
+    <dialog id="gpt-dlg">
+        <form method="dialog" class="dlg">
+            <h2>Fill in the card from ChatGPT</h2>
+            <div class="step"><span class="n">1</span><div>
+                <p>Copy these instructions. In ChatGPT, attach the front picture and paste them in.</p>
+                <button class="btn gold small" type="button" id="copy-prompt" style="align-self:flex-start">Copy instructions for ChatGPT</button>
+                <div class="prompt-box" id="prompt-box"></div>
+            </div></div>
+            <div class="step"><span class="n">2</span><div>
+                <p>Copy ChatGPT's whole answer and paste it here.</p>
+                <textarea id="gpt-text" placeholder="Paste ChatGPT's answer here"></textarea>
+                <button class="linkish" type="button" id="sample">Try it with a sample answer</button>
+                <div class="found" id="found"></div>
+            </div></div>
+            <div class="dlg-actions">
+                <button class="btn" value="cancel">Cancel</button>
+                <button class="btn gold" type="button" id="apply-gpt" disabled>Fill in the card</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Earlier versions -->
+    <dialog id="hist-dlg">
+        <form method="dialog" class="dlg">
+            <h2>Earlier versions</h2>
+            <p>Every save keeps a copy. Bring back any of them; the version you have now is kept too.</p>
+            <ul class="hist" id="hist-list"></ul>
+            <div class="dlg-actions"><button class="btn" value="close">Close</button></div>
+        </form>
+    </dialog>
+
+    <!-- Publish check -->
+    <dialog id="pub-dlg">
+        <form method="dialog" class="dlg">
+            <h2 id="pub-title">Before this goes live</h2>
+            <ul class="problems" id="pub-list"></ul>
+            <div class="dlg-actions">
+                <button class="btn" value="cancel">Go back and fix</button>
+                <button class="btn gold" value="go" id="pub-anyway">Publish anyway</button>
+            </div>
+        </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status"><span id="toast-text"></span><button type="button" id="toast-undo" hidden>Undo</button></div>
+
+<script>
+(function () {
+    var IMG = '/Assets/Images/curated/';
+    var KEY = 'dl_card_editor_mock_v1';
+
+    // In the real version this list comes from the catalog in Supabase. A few sample SKUs for the mockup.
+    var CATALOG = {
+        'B09': 'Base 9" one door', 'B12': 'Base 12" one door', 'B15': 'Base 15" one door', 'B18': 'Base 18" one door',
+        'B24': 'Base 24" two doors', 'B30': 'Base 30" two doors', 'DB18-3': 'Drawer base 18" three drawers', 'DB24-3': 'Drawer base 24" three drawers',
+        'W1830': 'Wall 18" × 30"', 'W3030': 'Wall 30" × 30"', 'W3630': 'Wall 36" × 30"', 'T1884': 'Tall pantry 18" × 84"',
+        'CT-EXD-W': 'Countertop extension (wood)', 'F696': 'Filler 6" × 96"', 'ROT-B18': 'Rollout tray for B18', 'TK8': 'Toe kick 8 ft'
+    };
+
+    function blankCard(no) {
+        return {
+            id: 'c' + Date.now(), no: no, name: '', subtitle: '', status: 'draft', published: null,
+            front: '', drawing: '', drawingTitle: 'Front Elevation',
+            card: { title: '', caption: '', tag: 'Designed in the Lab' },
+            sheet: { sheet: 'A1', scale: 'NTS', date: today(), rev: 'A' },
+            maker: '', notes: [''], cabinets: []
+        };
+    }
+    function studyTime() {
+        return {
+            id: 'study-time', no: '001', name: 'Study Time', subtitle: 'Built-In Desk System', status: 'published', published: Date.now() - 864e5 * 20,
+            front: IMG + 'study-time-front.webp', drawing: IMG + 'study-time-drawing.webp', drawingTitle: 'Front Elevation',
+            card: { title: 'STUDY TIME?', caption: 'CNC Classic Series Curated Collection 001', tag: 'Designed in the Lab' },
+            sheet: { sheet: 'A1', scale: 'NTS', date: '09/18/2026', rev: 'A' },
+            maker: 'CNC Cabinetry: Classic Series',
+            notes: ['Overall width = 99".', 'Cabinetry height = 90".', 'Tower widths = 18" each.', 'Tower depth = 15".',
+                'Desk height = 28.5" (top included).', 'Countertop included (1 1/2" thick).', 'Cabinet depth = 24".',
+                'Knee space width = 39" with 3" skirt.', 'Flush toe kick with molding (as shown).', 'Includes base molding along back.',
+                'Base cabinets include 1 rollout each (as shown).', 'Manufacturer: CNC Cabinetry Classic Series.', '0.75" frameless construction.',
+                'Finish: White paint.', 'Door style: Woodbourne (extended lead time).', 'See Design Lab for alternative sizes, colors, and door style options.'],
+            // From the CEO's "General back template.xlsx". CT1860 isn't in the catalog: the warning shows how the check works.
+            cabinets: [
+                { qty: '2', desc: 'Open tower 18" × 60" (doors removed)', sku: 'CT1860', hinge: 'NA', fin: 'Both', mods: 'CT-EXD-W 15"', extra: 'Remove door' },
+                { qty: '2', desc: 'Custom base', sku: '', hinge: 'L/R', fin: 'Both', mods: 'Custom', extra: 'Requires factory quote' },
+                { qty: '6', desc: 'Filler 6" × 96"', sku: 'F696', hinge: '', fin: '', mods: '', extra: '' }
+            ]
+        };
+    }
+    function today() { var d = new Date(); return ('0' + (d.getMonth() + 1)).slice(-2) + '/' + ('0' + d.getDate()).slice(-2) + '/' + d.getFullYear(); }
+    function clone(o) { return JSON.parse(JSON.stringify(o)); }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+    // ---------- state (kept in this browser only) ----------
+    var db = load() || { cards: [studyTime()], history: {} };
+    var cur = db.cards[0];
+    var side = 'front';
+    var dirty = false;
+
+    function load() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } }
+    function persist() {
+        try { localStorage.setItem(KEY, JSON.stringify(db)); }
+        catch (e) { /* a big uploaded picture can be too large for the browser's store; it still works until reload */ }
+    }
+    var saveTimer = null;
+    function changed() {
+        dirty = true;
+        if (cur.status === 'published') cur.status = 'changed';
+        $('saved').textContent = 'Saving…';
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(function () { persist(); $('saved').textContent = 'All changes saved (autosave)'; }, 600);
+        renderStatus(); renderPicker();
+    }
+    function snapshot(label) {
+        var h = db.history[cur.id] = db.history[cur.id] || [];
+        var copy = clone(cur); delete copy.status;
+        h.unshift({ t: Date.now(), label: label, data: copy });
+        if (h.length > 30) h.length = 30;
+    }
+
+    function $(id) { return document.getElementById(id); }
+
+    // ---------- top: status + card picker ----------
+    function renderStatus() {
+        var s = $('status'), t;
+        s.className = 'status ' + (cur.status === 'published' ? 'published' : 'draft');
+        if (cur.status === 'published') t = '<b>On the site</b>';
+        else if (cur.status === 'changed') t = '<b>On the site</b> · your changes aren\'t published yet';
+        else t = '<b>Draft</b> · only staff can see it';
+        $('status-text').innerHTML = t;
+        $('unpublish').hidden = cur.status === 'draft';
+        $('publish').textContent = cur.status === 'changed' ? 'Publish changes' : 'Publish to site';
+    }
+    function renderPicker() {
+        $('picker').innerHTML = db.cards.map(function (c) {
+            var pic = c.front ? '<img src="' + esc(c.front) + '" alt="">' : '<span class="ph"></span>';
+            var st = c.status === 'draft' ? 'Draft' : c.status === 'changed' ? 'Unpublished changes' : 'On the site';
+            return '<button type="button" class="pick" data-id="' + esc(c.id) + '" aria-current="' + (c === cur) + '">' + pic +
+                '<span>No. ' + esc(c.no) + ' · ' + esc(c.name || 'New card') + '<small>' + st + '</small></span></button>';
+        }).join('') + '<button type="button" class="pick new" id="new-card">+ New card</button>';
+    }
+    $('picker').addEventListener('click', function (e) {
+        if (e.target.closest('#new-card')) {
+            var nums = db.cards.map(function (c) { return parseInt(c.no, 10) || 0; });
+            var c = blankCard(('00' + (Math.max.apply(null, nums.concat(0)) + 1)).slice(-3));
+            db.cards.push(c); cur = c; persist(); setSide('front'); renderAll();
+            toast('New card No. ' + c.no + ' started. Add the front picture first.');
+            return;
+        }
+        var b = e.target.closest('.pick'); if (!b) return;
+        cur = db.cards.filter(function (c) { return c.id === b.dataset.id; })[0]; renderAll();
+    });
+
+    // ---------- front ----------
+    function ed(path, val, ph, tag) {
+        return '<' + (tag || 'span') + ' contenteditable="true" spellcheck="true" data-path="' + path + '" data-ph="' + esc(ph) + '">' + esc(val) + '</' + (tag || 'span') + '>';
+    }
+    function renderFront() {
+        var c = cur;
+        var pic = c.front
+            ? '<img class="photo" src="' + esc(c.front) + '" alt="">'
+            : '<div class="empty-photo"><b>No front picture yet</b><span>Use the button below to add his text-free picture.</span></div>';
+        $('front-side').innerHTML =
+            '<div class="face">' + pic +
+                '<div class="ov ov-band"></div>' +
+                '<div class="ov ov-title">' + ed('card.title', c.card.title, 'Big title') + '</div>' +
+                '<div class="ov ov-mark"><img src="' + IMG + 'dl-mark-gold.webp" alt="Design Lab"></div>' +
+                '<div class="ov ov-caption">' + ed('card.caption', c.card.caption, 'Caption, e.g. CNC Classic Series Curated Collection ' + c.no) + '</div>' +
+                '<div class="ov ov-tag">' + ed('card.tag', c.card.tag, 'Tag line') + '</div>' +
+            '</div>' +
+            '<div class="front-actions"><button class="btn gold" type="button" data-pick="front">' + (c.front ? 'Change the picture' : 'Add the front picture') + '</button></div>';
+    }
+
+    // ---------- back ----------
+    function skuMsg(sku) {
+        sku = (sku || '').trim().toUpperCase();
+        if (!sku) return '';
+        return CATALOG[sku] ? '<span class="sku-msg ok">✓ ' + esc(CATALOG[sku]) + '</span>' : '<span class="sku-msg bad">Not in our catalog</span>';
+    }
+    function opts(list, v) {
+        if (v && list.indexOf(v) < 0) list = list.concat([v]);
+        return list.map(function (o) { return '<option' + (o === v ? ' selected' : '') + ' value="' + esc(o) + '">' + esc(o || '—') + '</option>'; }).join('');
+    }
+    function cabRow(r, i) {
+        function inp(k, ph, cls) {
+            return '<div class="' + (cls || '') + '"><span class="cab-label">' + ph + '</span><input data-cab="' + i + '" data-k="' + k + '" value="' + esc(r[k]) + '" placeholder="' + ph + '"' + (k === 'sku' ? ' list="skus" autocomplete="off"' : '') + '></div>';
+        }
+        return '<div class="cab">' +
+            inp('qty', 'Qty') +
+            inp('desc', 'What it is', 'wide') +
+            '<div class="staff-cell"><span class="cab-label">SKU (staff only)</span><input data-cab="' + i + '" data-k="sku" value="' + esc(r.sku) + '" placeholder="SKU" list="skus" autocomplete="off">' + '<span class="sku-slot">' + skuMsg(r.sku) + '</span></div>' +
+            '<div><span class="cab-label">Hinge</span><select data-cab="' + i + '" data-k="hinge">' + opts(['', 'L', 'R', 'L/R', 'NA'], r.hinge) + '</select></div>' +
+            '<div><span class="cab-label">Finished ends</span><select data-cab="' + i + '" data-k="fin">' + opts(['', 'Left', 'Right', 'Both', 'None'], r.fin) + '</select></div>' +
+            inp('mods', 'Mods') + inp('extra', 'Additional') +
+            '<button type="button" class="del" data-del="' + i + '" aria-label="Remove this cabinet">×</button></div>';
+    }
+    function renderBack() {
+        var c = cur, s = c.sheet;
+        var notes = (c.notes.length ? c.notes : ['']).map(function (n, i) {
+            return '<li contenteditable="true" data-note="' + i + '" data-ph="Type a note">' + esc(n) + '</li>';
+        }).join('');
+        var drawing = c.drawing
+            ? '<img src="' + esc(c.drawing) + '" alt="Drawing"><button class="btn small swap" type="button" data-pick="drawing">Change the drawing</button>'
+            : '<div class="drop"><b>No drawing yet</b><span>Add the technical drawing (a picture or a screenshot is fine).</span><button class="btn small" type="button" data-pick="drawing">Add the drawing</button></div>';
+        $('back-side').innerHTML = '<div class="back-wrap"><div class="sheet">' +
+            '<div class="sheet-head">' +
+                '<div class="brand"><img src="' + IMG + 'dl-mark-gold.webp" alt="DL"><span class="rule"></span><div><b>DESIGN LAB</b>' +
+                    '<small>ONLINE CABINETRY.</small><small>CUSTOMER FOCUSED.</small><small class="tag">BEST FLIPPIN’ HOME ON THE BLOCK.</small></div></div>' +
+                '<div class="title-cell"><span class="no">Curated Collection No. ' + ed('no', c.no, '000') + '</span>' + ed('name', c.name, 'Collection name', 'h2') +
+                    '<span class="space">' + ed('subtitle', c.subtitle, 'What it is, e.g. Built-In Desk System') + '</span></div>' +
+                '<div class="drawing-cell"><small>Technical Drawing</small><b>' + ed('drawingTitle', c.drawingTitle, 'Front Elevation') + '</b></div>' +
+                '<div><table class="meta"><tr><th>Sheet</th><td>' + ed('sheet.sheet', s.sheet, 'A1') + '</td></tr><tr><th>Scale</th><td>' + ed('sheet.scale', s.scale, 'NTS') + '</td></tr>' +
+                    '<tr><th>Date</th><td>' + ed('sheet.date', s.date, today()) + '</td></tr><tr><th>Rev.</th><td>' + ed('sheet.rev', s.rev, 'A') + '</td></tr></table></div>' +
+            '</div>' +
+            '<div class="sheet-body">' +
+                '<div class="sheet-drawing">' + drawing + '</div>' +
+                '<div class="sheet-side"><h3>Notes:</h3><ol class="notes" id="notes">' + notes + '</ol>' +
+                    '<button class="btn small add-note" type="button" id="add-note">+ Add a note</button></div>' +
+            '</div>' +
+            '<div class="schedule-wrap"><h3>Cabinet schedule:</h3>' +
+                '<div class="cab-head"><span>Qty</span><span>What it is</span><span class="staff">SKU · staff only</span><span>Hinge</span><span>Finished ends</span><span>Mods</span><span>Additional</span><span></span></div>' +
+                '<div id="cabs">' + c.cabinets.map(cabRow).join('') + '</div>' +
+                '<div class="cab-foot"><button class="btn small" type="button" id="add-cab">+ Add a cabinet</button>' +
+                    '<span>Customers see "What it is". The SKU column is for staff and never shows on the site.</span></div>' +
+            '</div>' +
+            '<div class="sheet-foot">' +
+                '<div><small>Project</small><b>' + esc(c.name || '—') + '<br>' + esc(c.subtitle) + '</b></div>' +
+                '<div><small>Collection</small><b class="accent">Curated Collection No. ' + esc(c.no) + '</b></div>' +
+                '<div><small>Drawing</small><b class="accent">' + esc(c.drawingTitle) + '</b></div>' +
+                '<div class="maker"><small>Manufacturer / Cabinet Brand</small><b>' + ed('maker', c.maker, 'e.g. CNC Cabinetry: Classic Series') + '</b></div>' +
+            '</div>' +
+        '</div></div>';
+    }
+
+    // ---------- typing on the card ----------
+    function setPath(path, v) {
+        var parts = path.split('.'), o = cur;
+        while (parts.length > 1) o = o[parts.shift()];
+        o[parts[0]] = v;
+    }
+    document.addEventListener('input', function (e) {
+        var t = e.target;
+        if (t.dataset && t.dataset.path) { setPath(t.dataset.path, t.innerText.replace(/\n+/g, ' ').trim()); changed(); }
+        else if (t.dataset && t.dataset.note != null) { cur.notes[+t.dataset.note] = t.innerText.trim(); changed(); }
+        else if (t.dataset && t.dataset.cab != null) {
+            cur.cabinets[+t.dataset.cab][t.dataset.k] = t.value; changed();
+            if (t.dataset.k === 'sku') t.parentNode.querySelector('.sku-slot').innerHTML = skuMsg(t.value);
+        }
+    });
+    document.addEventListener('change', function (e) {
+        var t = e.target;
+        if (t.dataset && t.dataset.cab != null) { cur.cabinets[+t.dataset.cab][t.dataset.k] = t.value; changed(); }
+    });
+    // Single-line fields: Enter finishes. Notes: Enter starts the next note, Backspace on an empty note removes it.
+    document.addEventListener('keydown', function (e) {
+        var t = e.target;
+        if (t.dataset && t.dataset.path && e.key === 'Enter') { e.preventDefault(); t.blur(); }
+        if (t.dataset && t.dataset.note != null) {
+            var i = +t.dataset.note;
+            if (e.key === 'Enter') { e.preventDefault(); cur.notes.splice(i + 1, 0, ''); changed(); renderBack(); focusNote(i + 1); }
+            if (e.key === 'Backspace' && !t.innerText.trim() && cur.notes.length > 1) { e.preventDefault(); cur.notes.splice(i, 1); changed(); renderBack(); focusNote(Math.max(0, i - 1), true); }
+        }
+    });
+    // Pasting onto the card keeps the words, not ChatGPT's or Word's formatting.
+    document.addEventListener('paste', function (e) {
+        var t = e.target.closest && e.target.closest('[contenteditable="true"]');
+        if (!t) return;
+        e.preventDefault();
+        var text = (e.clipboardData || window.clipboardData).getData('text');
+        if (t.dataset.note != null && /\n/.test(text.trim())) {
+            // several lines pasted into a note = several notes
+            var lines = splitNotes(text), i = +t.dataset.note;
+            if (!t.innerText.trim()) cur.notes.splice(i, 1);
+            else i++;
+            Array.prototype.splice.apply(cur.notes, [i, 0].concat(lines));
+            changed(); renderBack(); return;
+        }
+        document.execCommand('insertText', false, text.replace(/\s*\n\s*/g, ' '));
+    });
+    function focusNote(i, end) {
+        var li = document.querySelector('[data-note="' + i + '"]'); if (!li) return;
+        li.focus();
+        var r = document.createRange(); r.selectNodeContents(li); r.collapse(!end ? true : false);
+        if (end) r.collapse(false);
+        var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    }
+    // The footer repeats the name/subtitle/drawing title: refresh it when those fields lose focus.
+    document.addEventListener('focusout', function (e) {
+        var p = e.target.dataset && e.target.dataset.path;
+        if (p && side === 'back' && /^(name|subtitle|no|drawingTitle)$/.test(p)) {
+            var a = document.activeElement && document.activeElement.dataset;
+            renderBack();
+            if (a && a.path) { var el = document.querySelector('[data-path="' + a.path + '"]'); if (el) el.focus(); }
+        }
+    });
+
+    document.addEventListener('click', function (e) {
+        var t = e.target;
+        if (t.closest('#add-note')) { cur.notes.push(''); changed(); renderBack(); focusNote(cur.notes.length - 1); }
+        else if (t.closest('#add-cab')) {
+            cur.cabinets.push({ qty: '1', desc: '', sku: '', hinge: '', fin: '', mods: '', extra: '' }); changed(); renderBack();
+            var ins = document.querySelectorAll('[data-k="desc"]'); ins[ins.length - 1].focus();
+        }
+        else if (t.closest('[data-del]')) {
+            var i = +t.closest('[data-del]').dataset.del, gone = cur.cabinets.splice(i, 1)[0];
+            changed(); renderBack();
+            toast('Cabinet removed.', function () { cur.cabinets.splice(i, 0, gone); changed(); renderBack(); });
+        }
+        else if (t.closest('[data-pick]')) { $(t.closest('[data-pick]').dataset.pick === 'front' ? 'file-front' : 'file-drawing').click(); }
+    });
+
+    // Pictures: in the mockup they stay in this browser. The real version uploads them to Supabase Storage.
+    function readPic(input, key) {
+        input.addEventListener('change', function () {
+            var f = input.files[0]; if (!f) return;
+            var r = new FileReader();
+            r.onload = function () {
+                var img = new Image();
+                img.onload = function () {
+                    // shrink big photos so the mockup can keep them
+                    var w = Math.min(1600, img.width), h = Math.round(img.height * w / img.width);
+                    var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+                    cv.getContext('2d').drawImage(img, 0, 0, w, h);
+                    cur[key] = cv.toDataURL('image/webp', 0.82);
+                    changed(); renderSide();
+                    toast(key === 'front' ? 'Front picture added.' : 'Drawing added.');
+                };
+                img.src = r.result;
+            };
+            r.readAsDataURL(f);
+            input.value = '';
+        });
+    }
+    readPic($('file-front'), 'front');
+    readPic($('file-drawing'), 'drawing');
+
+    // ---------- front / back switch ----------
+    function setSide(s) {
+        side = s;
+        document.querySelectorAll('[data-side]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.side === s)); });
+        $('front-side').hidden = s !== 'front';
+        $('back-side').hidden = s !== 'back';
+        $('hint').innerHTML = s === 'front'
+            ? '<b>Click any words on the card to change them.</b> The picture should have no words on it; the site adds them.'
+            : '<b>Click any words on the sheet to change them.</b> Press Enter in the notes to start the next note.';
+        renderSide();
+    }
+    function renderSide() { if (side === 'front') renderFront(); else renderBack(); }
+    document.querySelectorAll('[data-side]').forEach(function (b) { b.addEventListener('click', function () { setSide(b.dataset.side); }); });
+
+    function renderAll() { renderStatus(); renderPicker(); renderSide(); }
+
+    // ---------- save / publish / history ----------
+    $('save-draft').addEventListener('click', function () {
+        snapshot('Saved draft'); persist(); dirty = false;
+        $('saved').textContent = 'Draft saved ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        toast(cur.status === 'draft' ? 'Draft saved. Only staff can see it.' : 'Saved. The site still shows the last published version.');
+    });
+    function problems() {
+        var p = [];
+        if (!cur.name.trim()) p.push('The card has no <b>name</b> (back, middle of the top).');
+        if (!cur.front) p.push('There\'s no <b>front picture</b>.');
+        if (!cur.drawing) p.push('There\'s no <b>drawing</b> on the back.');
+        if (!cur.maker.trim()) p.push('The <b>manufacturer</b> is empty (back, bottom right).');
+        cur.cabinets.forEach(function (r, i) {
+            if (r.sku && !CATALOG[r.sku.trim().toUpperCase()]) p.push('Cabinet ' + (i + 1) + ': SKU <b>' + esc(r.sku) + '</b> isn\'t in our catalog, so staff can\'t price it.');
+            if (!r.desc.trim()) p.push('Cabinet ' + (i + 1) + ' has no description for customers.');
+        });
+        return p;
+    }
+    function doPublish() {
+        snapshot('Published'); cur.status = 'published'; cur.published = Date.now(); persist(); renderAll();
+        toast('Published. In the real version it\'s on the site right away.');
+    }
+    $('publish').addEventListener('click', function () {
+        var p = problems();
+        if (!p.length) return doPublish();
+        $('pub-title').textContent = p.length === 1 ? 'One thing to check before this goes live' : p.length + ' things to check before this goes live';
+        $('pub-list').innerHTML = p.map(function (x) { return '<li>' + x + '</li>'; }).join('');
+        $('pub-dlg').showModal();
+    });
+    $('pub-dlg').addEventListener('close', function () { if ($('pub-dlg').returnValue === 'go') doPublish(); });
+    $('unpublish').addEventListener('click', function () {
+        if (!confirm('Take "' + (cur.name || 'this card') + '" off the site? Nothing is deleted; you can publish it again any time.')) return;
+        snapshot('Taken off the site'); cur.status = 'draft'; persist(); renderAll(); toast('Taken off the site. It\'s a draft again.');
+    });
+    $('open-hist').addEventListener('click', function () {
+        var h = db.history[cur.id] || [];
+        $('hist-list').innerHTML = h.length ? h.map(function (v, i) {
+            return '<li><span>' + esc(v.label) + '<small>' + new Date(v.t).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) +
+                ' · ' + esc(v.data.name || 'untitled') + ', ' + v.data.notes.filter(Boolean).length + ' notes, ' + v.data.cabinets.length + ' cabinets</small></span>' +
+                '<button class="btn small" type="button" data-restore="' + i + '">Bring back</button></li>';
+        }).join('') : '<li><span>No saved versions yet. Each "Save draft" or "Publish" adds one.</span></li>';
+        $('hist-dlg').showModal();
+    });
+    $('hist-list').addEventListener('click', function (e) {
+        var b = e.target.closest('[data-restore]'); if (!b) return;
+        var v = db.history[cur.id][+b.dataset.restore];
+        snapshot('Before bringing back an earlier version');
+        var st = cur.status;
+        Object.assign(cur, clone(v.data)); cur.status = st === 'draft' ? 'draft' : 'changed';
+        changed(); renderAll(); $('hist-dlg').close();
+        toast('Earlier version brought back. Publish to put it on the site.');
+    });
+    $('reset').addEventListener('click', function () {
+        if (!confirm('Start the mockup over? This clears your test changes in this browser.')) return;
+        try { localStorage.removeItem(KEY); } catch (e) {}
+        db = { cards: [studyTime()], history: {} }; cur = db.cards[0]; setSide('front'); renderAll();
+    });
+
+    // ---------- Paste from ChatGPT ----------
+    var PROMPT = [
+        'I\'m attaching the front picture of a Design Lab curated cabinet collection. Write the back of the card.',
+        'Reply in exactly this format, with nothing before or after it:',
+        '',
+        'NAME: (2 or 3 words)',
+        'SUBTITLE: (what it is, e.g. Built-In Desk System)',
+        'CARD TITLE: (the big words on the front)',
+        'CAPTION: (e.g. CNC Classic Series Curated Collection 001)',
+        'MAKER: (cabinet brand and series)',
+        'DRAWING: Front Elevation',
+        'NOTES:',
+        '- one short note per line: sizes, finish, door style, what\'s included',
+        'CABINETS:',
+        '- qty | plain description | SKU if known | hinge | finished ends | mods | additional',
+        '',
+        'Only give sizes you can see in the picture or that I tell you. If you\'re not sure, write TBD. Don\'t make up SKUs.'
+    ].join('\n');
+    var SAMPLE = [
+        'Sure! Here\'s the back of the card:',
+        '',
+        '**NAME:** Morning Coffee',
+        '**SUBTITLE:** Built-In Coffee Bar',
+        '**CARD TITLE:** COFFEE FIRST',
+        '**CAPTION:** CNC Classic Series Curated Collection 002',
+        '**MAKER:** CNC Cabinetry: Classic Series',
+        '**DRAWING:** Front Elevation',
+        '',
+        '**NOTES:**',
+        '1. Overall width = 72".',
+        '2. Cabinetry height = 84".',
+        '3. Open shelving above the counter (as shown).',
+        '4. Countertop included (1 1/4" quartz).',
+        '5. Finish: Sage green paint.',
+        '6. Door style: Shaker.',
+        '7. See Design Lab for alternative sizes, colors, and door style options.',
+        '',
+        '**CABINETS:**',
+        '| Qty | Description | SKU | Hinge | Finished ends | Mods | Additional |',
+        '|---|---|---|---|---|---|---|',
+        '| 2 | Drawer base 24" with three drawers | DB24-3 | NA | Left | — | — |',
+        '| 1 | Base 24" two doors | B24 | L/R | Right | — | Rollout tray |',
+        '| 2 | Wall 18" x 30" | W1830 | L | Both | — | TBD |',
+        '| 1 | Coffee machine tower | TBD | — | Both | Custom | Requires factory quote |'
+    ].join('\n');
+    $('prompt-box').textContent = PROMPT;
+
+    function splitNotes(text) {
+        return text.split(/\n+/).map(function (l) { return l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').replace(/\*\*/g, '').trim(); }).filter(Boolean);
+    }
+    var KEYS = { 'name': 'name', 'collection name': 'name', 'subtitle': 'subtitle', 'card title': 'title', 'front title': 'title', 'title': 'title',
+        'caption': 'caption', 'maker': 'maker', 'manufacturer': 'maker', 'drawing': 'drawingTitle', 'tag': 'tag',
+        'notes': 'notes', 'cabinets': 'cabinets', 'cabinet schedule': 'cabinets' };
+    // Reads ChatGPT's answer. Tolerates **bold**, # headings, numbered or bulleted lists and markdown tables.
+    function parse(text) {
+        var out = { notes: [], cabinets: [] }, section = null;
+        text.split(/\r?\n/).forEach(function (raw) {
+            var line = raw.replace(/\*\*/g, '').replace(/^\s*#+\s*/, '').trim();
+            if (!line) return;
+            var m = line.match(/^(?:[-*]\s*)?([A-Za-z ]{3,20}?)\s*:\s*(.*)$/);
+            var k = m && KEYS[m[1].trim().toLowerCase()];
+            if (k) {
+                if (k === 'notes' || k === 'cabinets') { section = k; if (m[2].trim()) handle(m[2]); }
+                else { section = null; out[k] = m[2].trim(); }
+                return;
+            }
+            handle(line);
+        });
+        function handle(line) {
+            if (section === 'notes') { var n = splitNotes(line)[0]; if (n) out.notes.push(n); }
+            else if (section === 'cabinets') {
+                if (/^[\s|:\-]+$/.test(line)) return;                 // table divider
+                var body = line.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').replace(/^\||\|$/g, '');
+                var p = body.split('|').map(function (x) { x = x.trim(); return /^[—–-]+$/.test(x) ? '' : x; });
+                if (/^qty$/i.test(p[0])) return;                        // table header
+                if (p.length === 1) { var q = p[0].match(/^(\d+)\s*[x×]?\s+(.*)$/i); p = q ? [q[1], q[2]] : ['1', p[0]]; }
+                var sku = p[2] || ''; if (/^tbd$/i.test(sku)) sku = '';
+                out.cabinets.push({ qty: p[0] || '1', desc: p[1] || '', sku: sku, hinge: p[3] || '', fin: cap(p[4] || ''), mods: p[5] || '', extra: p[6] || '' });
+            }
+        }
+        function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : ''; }
+        return out;
+    }
+    function summary(r) {
+        var bits = [];
+        ['name', 'subtitle', 'title', 'caption', 'maker'].forEach(function (k) { if (r[k]) bits.push({ name: 'name', subtitle: 'subtitle', title: 'front title', caption: 'caption', maker: 'maker' }[k]); });
+        if (r.notes.length) bits.push(r.notes.length + ' notes');
+        if (r.cabinets.length) bits.push(r.cabinets.length + ' cabinets');
+        return bits;
+    }
+    var parsed = null;
+    $('open-gpt').addEventListener('click', function () { $('gpt-text').value = ''; $('found').textContent = ''; $('apply-gpt').disabled = true; $('gpt-dlg').showModal(); });
+    $('copy-prompt').addEventListener('click', function () {
+        var done = function () { $('copy-prompt').textContent = 'Copied ✓'; setTimeout(function () { $('copy-prompt').textContent = 'Copy instructions for ChatGPT'; }, 2000); };
+        if (navigator.clipboard) navigator.clipboard.writeText(PROMPT).then(done, function () { selectPrompt(); });
+        else selectPrompt();
+    });
+    function selectPrompt() { var r = document.createRange(); r.selectNodeContents($('prompt-box')); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+    $('sample').addEventListener('click', function () { $('gpt-text').value = SAMPLE; check(); });
+    $('gpt-text').addEventListener('input', check);
+    function check() {
+        parsed = parse($('gpt-text').value);
+        var bits = summary(parsed);
+        $('found').className = 'found' + (bits.length ? '' : ' bad');
+        $('found').textContent = $('gpt-text').value.trim()
+            ? (bits.length ? 'Found: ' + bits.join(', ') + '.' : 'Couldn\'t find anything to fill in. Did ChatGPT use the format from step 1?')
+            : '';
+        $('apply-gpt').disabled = !bits.length;
+    }
+    $('apply-gpt').addEventListener('click', function () {
+        var before = clone(cur), r = parsed;
+        snapshot('Before pasting from ChatGPT');
+        if (r.name) cur.name = r.name;
+        if (r.subtitle) cur.subtitle = r.subtitle;
+        if (r.maker) cur.maker = r.maker;
+        if (r.drawingTitle) cur.drawingTitle = r.drawingTitle;
+        if (r.title) cur.card.title = r.title;
+        if (r.caption) cur.card.caption = r.caption;
+        if (r.tag) cur.card.tag = r.tag;
+        if (r.notes.length) cur.notes = r.notes;
+        if (r.cabinets.length) cur.cabinets = r.cabinets;
+        $('gpt-dlg').close(); changed(); setSide('back'); renderAll();
+        toast('Card filled in from ChatGPT. Check it over.', function () { var st = cur.status; Object.assign(cur, before); cur.status = st; changed(); renderAll(); });
+    });
+
+    // ---------- toast ----------
+    var toastTimer;
+    function toast(msg, undo) {
+        $('toast-text').textContent = msg;
+        $('toast-undo').hidden = !undo;
+        $('toast-undo').onclick = function () { undo(); $('toast').classList.remove('show'); };
+        $('toast').classList.add('show');
+        clearTimeout(toastTimer); toastTimer = setTimeout(function () { $('toast').classList.remove('show'); }, undo ? 7000 : 3500);
+    }
+
+    $('skus').innerHTML = Object.keys(CATALOG).map(function (k) { return '<option value="' + k + '">' + esc(CATALOG[k]) + '</option>'; }).join('');
+    setSide('front'); renderAll();
+    window.addEventListener('beforeunload', function () { persist(); });
+})();
+</script>
+</body>
+</html>
