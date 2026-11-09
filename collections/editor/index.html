@@ -200,6 +200,8 @@
         }
         .sheet-drawing .drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 220px; border: 2px dashed #b9bfd6; border-radius: 8px; color: var(--sheet-soft); font-size: 14px; text-align: center; padding: 16px; }
         .sheet-drawing .swap { margin-top: 8px; align-self: center; }
+        .sheet-drawing .swap-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 8px; }
+        .bp-on-sheet svg { display: block; width: 100%; height: auto; }
         .notes li { min-height: 1.4em; }
         .add-note { margin-top: 6px; }
         .sheet .btn { color: var(--sheet-ink); background: #fff; border-color: #b9bfd6; }
@@ -356,6 +358,7 @@
 
     <div class="toast" id="toast" role="status"><span id="toast-text"></span><button type="button" id="toast-undo" hidden>Undo</button></div>
 
+<script src="blueprint.js"></script>
 <script>
 (function () {
     var IMG = '/Assets/Images/curated/';
@@ -510,9 +513,12 @@
         var notes = (c.notes.length ? c.notes : ['']).map(function (n, i) {
             return '<li contenteditable="true" data-note="' + i + '" data-ph="Type a note">' + esc(n) + '</li>';
         }).join('');
-        var drawing = c.drawing
-            ? '<img src="' + esc(c.drawing) + '" alt="Drawing"><button class="btn small swap" type="button" data-pick="drawing">Change the drawing</button>'
-            : '<div class="drop"><b>No drawing yet</b><span>Add the technical drawing (a picture or a screenshot is fine).</span><button class="btn small" type="button" data-pick="drawing">Add the drawing</button></div>';
+        var drawing = c.blueprint && c.blueprint.length && window.DLBlueprint
+            ? '<div class="bp-on-sheet">' + DLBlueprint.svg(c.blueprint) + '</div><div class="swap-row"><button class="btn small" type="button" data-build="1">Edit the drawing</button><button class="btn small" type="button" data-unbuild="1">Use a picture instead</button></div>'
+            : c.drawing
+            ? '<img src="' + esc(c.drawing) + '" alt="Drawing"><div class="swap-row"><button class="btn small" type="button" data-pick="drawing">Change the picture</button><button class="btn small" type="button" data-build="1">Build a drawing instead</button></div>'
+            : '<div class="drop"><b>No drawing yet</b><span>Build one here (from the front picture with ChatGPT, or by hand), or add a picture of a drawing from SketchUp.</span>' +
+                '<div class="swap-row"><button class="btn small" type="button" data-build="1">Build the drawing</button><button class="btn small" type="button" data-pick="drawing">Add a picture</button></div></div>';
         $('back-side').innerHTML = '<div class="back-wrap"><div class="sheet">' +
             '<div class="sheet-head">' +
                 '<div class="brand"><img src="' + IMG + 'dl-mark-gold.webp" alt="DL"><span class="rule"></span><div><b>DESIGN LAB</b>' +
@@ -532,6 +538,7 @@
                 '<div class="cab-head"><span>Qty</span><span>What it is</span><span class="staff">SKU · staff only</span><span>Hinge</span><span>Finished ends</span><span>Mods</span><span>Additional</span><span></span></div>' +
                 '<div id="cabs">' + c.cabinets.map(cabRow).join('') + '</div>' +
                 '<div class="cab-foot"><button class="btn small" type="button" id="add-cab">+ Add a cabinet</button>' +
+                    (c.blueprint && c.blueprint.length ? '<button class="btn small" type="button" id="cabs-from-bp">Fill in from the drawing</button>' : '') +
                     '<span>Customers see "What it is". The SKU column is for staff and never shows on the site.</span></div>' +
             '</div>' +
             '<div class="sheet-foot">' +
@@ -617,6 +624,22 @@
             changed(); renderBack();
             toast('Cabinet removed.', function () { cur.cabinets.splice(i, 0, gone); changed(); renderBack(); });
         }
+        else if (t.closest('[data-build]')) {
+            DLBlueprint.open(cur.blueprint, function (pieces, notes) {
+                snapshot('Before changing the drawing');
+                cur.blueprint = pieces; cur.bpNotes = notes; changed(); renderBack();
+                toast('Drawing added to the back.');
+            }, cur.bpNotes);
+        }
+        else if (t.closest('[data-unbuild]')) {
+            var keep = cur.blueprint; cur.blueprint = null; changed(); renderBack();
+            toast('Drawing removed. Add a picture instead.', function () { cur.blueprint = keep; changed(); renderBack(); });
+        }
+        else if (t.closest('#cabs-from-bp')) {
+            var before = clone(cur.cabinets);
+            cur.cabinets = DLBlueprint.cabinets(cur.blueprint); changed(); renderBack();
+            toast('Cabinet list filled in from the drawing. Add SKUs and hinges.', function () { cur.cabinets = before; changed(); renderBack(); });
+        }
         else if (t.closest('[data-pick]')) { $(t.closest('[data-pick]').dataset.pick === 'front' ? 'file-front' : 'file-drawing').click(); }
     });
 
@@ -671,7 +694,7 @@
         var p = [];
         if (!cur.name.trim()) p.push('The card has no <b>name</b> (back, middle of the top).');
         if (!cur.front) p.push('There\'s no <b>front picture</b>.');
-        if (!cur.drawing) p.push('There\'s no <b>drawing</b> on the back.');
+        if (!cur.drawing && !(cur.blueprint && cur.blueprint.length)) p.push('There\'s no <b>drawing</b> on the back.');
         if (!cur.maker.trim()) p.push('The <b>manufacturer</b> is empty (back, bottom right).');
         cur.cabinets.forEach(function (r, i) {
             if (r.sku && !CATALOG[r.sku.trim().toUpperCase()]) p.push('Cabinet ' + (i + 1) + ': SKU <b>' + esc(r.sku) + '</b> isn\'t in our catalog, so staff can\'t price it.');
