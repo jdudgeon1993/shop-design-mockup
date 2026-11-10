@@ -55,6 +55,36 @@
         .intro-sub { margin: 0 0 32px; color: var(--muted); font-size: 15px; max-width: 640px; line-height: 1.55; }
         .loading { padding: 60px 0; text-align: center; color: var(--muted); }
 
+        /* ---------- explainer (CEO's wording, 11/2026) ---------- */
+        .cc-hero { padding: 24px 0 8px; max-width: 940px; }
+        .cc-hero .intro-sub { max-width: 640px; }
+        .cc-headline { margin: 0 0 14px; font-size: clamp(32px, 5.2vw, 54px); line-height: 1.08; }
+        .cc-headline em { color: var(--gold); font-style: italic; }
+        .cc-hero .intro-sub { margin-bottom: 24px; font-size: 16px; }
+        .cc-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+        .cc-btn {
+            display: inline-flex; align-items: center; padding: 13px 24px; border-radius: 999px; border: 1px solid var(--border);
+            color: var(--white); text-decoration: none; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .cc-btn:hover, .cc-btn:focus-visible { border-color: var(--gold); color: var(--gold); }
+        .cc-btn-gold { background: var(--gold); border-color: var(--gold); color: var(--on-gold, #1a1a1a); }
+        .cc-btn-gold:hover, .cc-btn-gold:focus-visible { color: var(--on-gold, #1a1a1a); filter: brightness(1.08); }
+        .cc-how { margin: 48px 0 56px; }
+        .cc-how-title, .cc-list-title { margin: 0 0 20px; font-size: 26px; }
+        .cc-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: 1fr; }
+        @media (min-width: 640px) { .cc-steps { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 1040px) { .cc-steps { grid-template-columns: repeat(4, 1fr); } }
+        .cc-step { position: relative; padding: 22px 20px 20px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
+        .cc-num {
+            position: absolute; top: 18px; right: 18px; font-family: 'Playfair Display', serif; font-size: 34px; line-height: 1;
+            color: rgba(var(--gold-rgb),0.35);
+        }
+        .cc-step svg { width: 38px; height: 38px; fill: none; stroke: var(--gold); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; margin-bottom: 12px; }
+        .cc-step h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; padding-right: 30px; }
+        .cc-step p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--muted); }
+        .cc-step a { color: var(--gold); }
+        #collections { scroll-margin-top: 90px; }
+
         /* ---------- list ---------- */
         .list { display: grid; grid-template-columns: 1fr; gap: 24px; }
         @media (min-width: 860px) { .list { grid-template-columns: 1fr 1fr; } }
@@ -168,9 +198,47 @@
         <div class="loading" id="loading">Loading collections&hellip;</div>
 
         <section id="list-view" hidden>
-            <p class="kicker">Curated Collections</p>
-            <h1 class="intro-heading">Designed together. Priced together.</h1>
-            <p class="intro-sub">Complete, pre-planned sets built from the same cabinets as our DIY Shop. Choose your door style and finish, and every piece arrives matched.</p>
+            <header class="cc-hero">
+                <p class="kicker">Curated Collections</p>
+                <h1 class="cc-headline">Professionally designed in the Lab.<br><em>Make it yours.</em></h1>
+                <p class="intro-sub">Complete, pre-designed mini-projects for the simple spaces in your home. Pick a card, see every detail, and buy it as is or have us adjust it for you.</p>
+                <div class="cc-actions">
+                    <a class="cc-btn cc-btn-gold" href="#collections">Explore the Design Cards</a>
+                    <a class="cc-btn" href="/consultation/">Schedule a free meeting</a>
+                </div>
+            </header>
+
+            <section class="cc-how" aria-labelledby="cc-how-title">
+                <h2 class="cc-how-title" id="cc-how-title">How it works</h2>
+                <ol class="cc-steps">
+                    <li class="cc-step">
+                        <span class="cc-num" aria-hidden="true">1</span>
+                        <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="9" width="20" height="26" rx="2"/><rect x="14" y="5" width="20" height="26" rx="2"/></svg>
+                        <h3>Explore the Design Cards</h3>
+                        <p>Intended for simple spaces found in many existing homes, with optional sizing and looks to make it yours.</p>
+                    </li>
+                    <li class="cc-step">
+                        <span class="cc-num" aria-hidden="true">2</span>
+                        <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 34h28M9 34V18h22v16M9 18l11-10 11 10M17 34v-8h6v8"/></svg>
+                        <h3>Purchase a pre-designed mini-project</h3>
+                        <p>Professionally designed to greatly reduce the time, stress, and cost of the process. From galley kitchens and baths to closets, laundry rooms, and beyond.</p>
+                    </li>
+                    <li class="cc-step">
+                        <span class="cc-num" aria-hidden="true">3</span>
+                        <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="8" y="6" width="24" height="30" rx="2"/><path d="M13 13h14M13 19h14M13 25h9"/><path d="M30 2l6 6-4 1z"/></svg>
+                        <h3>Flip to the back</h3>
+                        <p>See the design details that represent our decades of industry experience.</p>
+                    </li>
+                    <li class="cc-step">
+                        <span class="cc-num" aria-hidden="true">4</span>
+                        <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="4" y="10" width="22" height="18" rx="2"/><path d="M26 16l10-5v16l-10-5z"/></svg>
+                        <h3>Make it yours</h3>
+                        <p>Purchase as is, or <a href="/consultation/">schedule a free, convenient online meeting</a> to adjust the dimensions, color, or style.</p>
+                    </li>
+                </ol>
+            </section>
+
+            <h2 class="cc-list-title" id="collections">The collections</h2>
             <div class="list" id="list"></div>
         </section>
 
