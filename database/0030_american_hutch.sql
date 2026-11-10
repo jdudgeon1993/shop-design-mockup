@@ -1,10 +1,12 @@
 -- 0030: The American Hutch (Curated No. 008): Structure | 3 American Shaker (2026-11-10).
 --
--- Nextar's American (framed shaker) series, sold as Structure | 3. Prices come from the
+-- Nextar's American (framed shaker) series, sold as Structure | 3. Spec + colours from the
+-- CEO's "DIY LINE UP - FIRST RELEASE" (10-21-2026): 3" shaker, 5-pc drawer front, HDF,
+-- framed 1/4" reveal (full overlay), 1/2" plywood box, white melamine interior; drawer
+-- box / guides / hinges "confirm with Ed". Prices come from the
 -- CEO's Nextar American price list and live in the private seed (this repo is public),
 -- Design Labs/database/seed/0002_nextar_american.sql: run it right after this file. Framed spec from Nextar's
--- 2024 catalog; door name (Loveland) from the CEO. Finishes: Modern White + Light Grey
--- (Nextar catalog) and Sage Green (CEO's rendering, to confirm).
+-- Door name (Loveland) from the CEO's email. Colours D.L. will offer: White, Green, Blue paint.
 --
 -- Only the Hutch's 4 pieces are loaded for now; they stay is_active = false so the DIY
 -- Shop doesn't show a 4-piece line (the collections page reads them by id). The full
@@ -30,21 +32,21 @@ begin
 end $$;
 
 insert into public.product_lines (id, vendor_id, code, name, description, sort_order, is_active)
-values (5, 2, 'S3A', 'Structure | 3 American Shaker', 'Framed shaker: 3/4" x 1-3/4" maple plywood face frame, solid maple door frame with HDF center, full overlay, 1/2" plywood box with full back, 3/4" plywood shelves, dovetailed maple drawers on full-extension soft-close undermount glides, soft-close hinges.', 1, true);
+values (5, 2, 'S3A', 'Structure | 3 American Shaker', 'Framed shaker: 3" shaker door and 5-piece drawer fronts in HDF, framed full overlay (1/4" reveal), 1/2" plywood box, white melamine interior. Painted white, green or blue.', 1, true);
 
 insert into public.price_codes (code, line_id, description)
 values ('NAS', 5, 'Structure | 3 American Shaker (MSRP)');
 
 insert into public.door_styles (id, line_id, code, name, price_code, overlay, door_design, drawer_front, door_profile, drawer_profile,
                                 tagline, customer_description, sort_order, is_active)
-values (15, 5, 'S3A-LOVELAND', 'Loveland', 'NAS', 'Full overlay', '3" wide shaker, solid maple frame, HDF center panel', 'Shaker',
-        'shaker', 'shaker', 'Framed shaker · Maple face frame',
-        'A classic 3" shaker door on a framed plywood cabinet: maple face frame, full overlay, soft-close throughout.', 16, true);
+values (15, 5, 'S3A-LOVELAND', 'Loveland', 'NAS', 'Framed, full overlay (1/4" reveal)', '3" wide shaker, HDF', '5-piece',
+        'shaker', 'shaker', 'Framed 3" shaker · Painted',
+        'A classic 3" shaker door with 5-piece drawer fronts on a framed, full-overlay plywood cabinet. Painted white, green or blue.', 16, true);
 
 insert into public.finishes (id, door_style_id, code, name, swatch_hex, sort_order, is_active)
-values (42, 15, 'MW', 'Modern White', '#F2F0EB', 10, true),
-       (43, 15, 'LG', 'Light Grey', '#C9CAC6', 20, true),
-       (44, 15, 'SG', 'Sage Green', '#8A9A8A', 30, true);
+values (42, 15, 'WP', 'White Paint', '#F2F0EB', 10, true),
+       (43, 15, 'GP', 'Green Paint', '#7E8F7E', 20, true),
+       (44, 15, 'BP', 'Blue Paint', '#3E5573', 30, true);
 
 insert into public.product_families (id, slug, name, description, room_type, kind, sort_order, is_active)
 values (131, 's3a-base-drawer-2-door', 'American Shaker Base Cabinet', '1 drawer over 2 doors', 'Base', 'cabinet', 9000, false),
@@ -69,7 +71,7 @@ insert into public.curated_collections (slug, name, tagline, description, space,
 values ('american-hutch', 'The American Hutch', 'A framed shaker hutch and buffet with glass-door uppers.',
   'A 60" hutch: two shaker base cabinets with a drawer over two doors, a countertop, and two glass-door wall cabinets with crown molding and an under-cabinet light rail. Framed, full-overlay plywood construction. Countertop and backsplash through Design Lab.',
   'Dining', '/Assets/Images/curated/american-hutch-front.webp', true, 4,
-  '{"no": "008", "subtitle": "Hutch & Buffet", "title": "THE AMERICAN HUTCH", "caption": "Structure|3 Curated Collection 008", "tag": "Designed in the Lab", "maker": "STRUCTURE|3 Cabinetry & Closets", "drawing_title": "Front Elevation", "finish": "Sage Green", "sheet": {"sheet": "A1", "scale": "NTS", "date": "11/10/2026", "rev": "A"}, "specs": [["Construction", "Framed full overlay, plywood"], ["Face frame", "3/4\" x 1-3/4\" maple plywood"], ["Door style", "Loveland (3\" wide shaker)"], ["Upper doors", "Glass (W3036GD)"], ["Drawer box", "To be confirmed"]], "notes": ["Overall width = 60\" (approx.).", "Base cabinets: two 30\" wide, each with 1 drawer over 2 doors.", "Base height = 34.5\"; countertop 1.5\" (36\" to top).", "Wall cabinets: two 30\" wide x 36\" high, glass doors.", "Wall cabinets mount 18\" above the countertop.", "Crown molding on top (approx. 93\" overall).", "Under-cabinet light rail.", "Countertop and backsplash: see Design Lab.", "See Design Lab for alternative sizes, colors, and door style options."], "mods": {}, "blueprint": [{"id": "left-base", "kind": "base", "name": "Left base", "x": 0, "y": 0, "w": 30, "h": 34.5, "d": 24, "doors": 2, "drawers": 1, "shelves": 0, "toe": 4.5, "crown": 0}, {"id": "right-base", "kind": "base", "name": "Right base", "x": 30, "y": 0, "w": 30, "h": 34.5, "d": 24, "doors": 2, "drawers": 1, "shelves": 0, "toe": 4.5, "crown": 0}, {"id": "countertop", "kind": "counter", "name": "Countertop", "x": 0, "y": 34.5, "w": 60, "h": 1.5, "d": 24, "doors": 0, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "left-glass-wall-cabinet", "kind": "wall", "name": "Left glass wall cabinet", "x": 0, "y": 54, "w": 30, "h": 36, "d": 12, "doors": 2, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "right-glass-wall-cabinet", "kind": "wall", "name": "Right glass wall cabinet", "x": 30, "y": 54, "w": 30, "h": 36, "d": 12, "doors": 2, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "crown-molding", "kind": "filler", "name": "Crown molding", "x": -1, "y": 90, "w": 62, "h": 3, "d": 24, "doors": 0, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}]}'::jsonb);
+  '{"no": "008", "subtitle": "Hutch & Buffet", "title": "THE AMERICAN HUTCH", "caption": "Structure|3 Curated Collection 008", "tag": "Designed in the Lab", "maker": "STRUCTURE|3 Cabinetry & Closets", "drawing_title": "Front Elevation", "finish": "Green Paint", "sheet": {"sheet": "A1", "scale": "NTS", "date": "11/10/2026", "rev": "A"}, "specs": [["Construction", "Framed full overlay (1/4\" reveal), 1/2\" plywood"], ["Interior", "White melamine"], ["Door style", "Loveland (3\" wide shaker, HDF)"], ["Drawer front", "5-piece"], ["Upper doors", "Glass (W3036GD)"], ["Finish", "Green paint"], ["Drawer box", "To be confirmed"]], "notes": ["Overall width = 60\" (approx.).", "Base cabinets: two 30\" wide, each with 1 drawer over 2 doors.", "Base height = 34.5\"; countertop 1.5\" (36\" to top).", "Wall cabinets: two 30\" wide x 36\" high, glass doors.", "Wall cabinets mount 18\" above the countertop.", "Crown molding on top (approx. 93\" overall).", "Under-cabinet light rail.", "Countertop and backsplash: see Design Lab.", "See Design Lab for alternative sizes, colors, and door style options."], "mods": {}, "blueprint": [{"id": "left-base", "kind": "base", "name": "Left base", "x": 0, "y": 0, "w": 30, "h": 34.5, "d": 24, "doors": 2, "drawers": 1, "shelves": 0, "toe": 4.5, "crown": 0}, {"id": "right-base", "kind": "base", "name": "Right base", "x": 30, "y": 0, "w": 30, "h": 34.5, "d": 24, "doors": 2, "drawers": 1, "shelves": 0, "toe": 4.5, "crown": 0}, {"id": "countertop", "kind": "counter", "name": "Countertop", "x": 0, "y": 34.5, "w": 60, "h": 1.5, "d": 24, "doors": 0, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "left-glass-wall-cabinet", "kind": "wall", "name": "Left glass wall cabinet", "x": 0, "y": 54, "w": 30, "h": 36, "d": 12, "doors": 2, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "right-glass-wall-cabinet", "kind": "wall", "name": "Right glass wall cabinet", "x": 30, "y": 54, "w": 30, "h": 36, "d": 12, "doors": 2, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "crown-molding", "kind": "filler", "name": "Crown molding", "x": -1, "y": 90, "w": 62, "h": 3, "d": 24, "doors": 0, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}]}'::jsonb);
 
 insert into public.curated_collection_items (collection_id, product_id, quantity, sort_order)
 select c.id, p.id, x.qty, x.ord
