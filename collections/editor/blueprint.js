@@ -198,7 +198,7 @@
 
         var css = '.ln{fill:none;stroke:' + INK + ';stroke-width:1.5}.thin{fill:none;stroke:' + INK + ';stroke-width:.7}.fillw{fill:#fff}' +
             '.wood{fill:' + WOOD + ';stroke:' + INK + ';stroke-width:1.5}.opn{fill:' + OPEN + ';stroke:' + INK + ';stroke-width:.9}' +
-            '.floor{stroke:' + INK + ';stroke-width:2.5}.dm{stroke:' + DIM + ';stroke-width:1}.dt,.nt{fill:' + DIM + ";font-family:Oswald,'Arial Narrow',sans-serif}" +
+            '.floor{stroke:' + INK + ';stroke-width:2.5}.dm{stroke:' + DIM + ';stroke-width:1}.dt,.nt{fill:' + DIM + ";font-family:Montserrat,Arial,sans-serif}" +
             (opts.interactive ? '.pc{cursor:pointer}.pc:hover .ln,.pc:hover .wood{stroke:' + HI + '}.pc.sel .ln,.pc.sel .wood{stroke:' + HI + ';stroke-width:2.5}' : '');
         return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vx + ' 0 ' + vw + ' ' + vh + '" role="img" aria-label="Front elevation drawing"><style>' + css + '</style>' +
             '<rect x="' + vx + '" y="0" width="' + vw + '" height="' + vh + '" fill="#fff"/>' + out.join('') + '</svg>';
@@ -315,7 +315,7 @@
 .bp-dlg::backdrop{background:rgba(0,0,0,.65)}\
 .bp{display:flex;flex-direction:column;height:100%}\
 .bp-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(var(--ink,255,255,255),.15)}\
-.bp-head h2{margin:0 auto 0 0;font-family:"Playfair Display",serif;font-size:22px}\
+.bp-head h2{margin:0 auto 0 0;font-family:"Libre Caslon Display",Georgia,serif;font-size:22px}\
 .bp-main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 380px}\
 .bp-left{min-width:0;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}\
 .bp-right{min-width:0;overflow:auto;padding:14px;border-left:1px solid rgba(var(--ink,255,255,255),.15);display:flex;flex-direction:column;gap:14px}\
