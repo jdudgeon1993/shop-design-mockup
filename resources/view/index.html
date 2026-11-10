@@ -53,7 +53,7 @@
 <body>
     <script src="/Assets/dl-header.js"></script>
     <main class="viewer">
-        <a class="back" href="/resources/">&larr; All resources</a>
+        <a class="back" href="/resources/">&larr; Resource Library</a>
         <div class="bar">
             <div class="title"><small id="kind"></small><h1 id="doc-title">Loading&hellip;</h1></div>
             <div class="tools">
@@ -79,9 +79,10 @@
             document.querySelector('.tools').hidden = true; document.getElementById('hint').hidden = true;
             return;
         }
-        document.title = d.title + ' - Design Lab';
+        if (d.kind === 'link') { location.replace(d.href); return; }
+        document.title = R.label(d) + ': ' + d.title + ' - Design Lab';
         titleEl.textContent = d.title;
-        document.getElementById('kind').textContent = d.kind + ' · ' + d.pages + ' pages';
+        document.getElementById('kind').textContent = R.label(d) + ' · ' + d.pages + ' pages';
         document.getElementById('download').href = R.pdf(d.slug);
         var urls = []; for (var i = 1; i <= d.pages; i++) urls.push(R.page(d.slug, i));
         var count = document.getElementById('count'), prev = document.getElementById('prev'), next = document.getElementById('next');

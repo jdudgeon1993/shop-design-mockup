@@ -1,5 +1,6 @@
-<!-- Resources: every customer-facing PDF (lookbooks, catalogs, guides), to flip through on the
-     site (/resources/view/?doc=<slug>) or download. The list lives in resources/resources.js. -->
+<!-- The Resource Library: every Design Lab book, card and guide for homeowners, designers and
+     contractors, to flip through on the site or download. Search, audience switch and category
+     filters are all on the page; the list lives in resources/resources.js. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,12 +10,12 @@
     <link rel="stylesheet" href="/Assets/dl-theme.css">
     <script src="/Assets/dl-theme.js"></script>
     <link rel="stylesheet" href="/Assets/dl-header.css">
-    <title>Resources - Design Lab</title>
-    <meta name="description" content="Design Lab lookbooks, catalogs and guides. Flip through them online or download the PDF.">
+    <title>Resource Library - Design Lab</title>
+    <meta name="description" content="The Design Lab Resource Library: Field Guides, Lab Books and Lab Notes for homeowners, designers and contractors. Flip through online or download.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Design Lab">
-    <meta property="og:title" content="Resources | Design Lab">
-    <meta property="og:description" content="Design Lab lookbooks, catalogs and guides. Flip through them online or download the PDF.">
+    <meta property="og:title" content="Resource Library | Design Lab">
+    <meta property="og:description" content="Field Guides, Lab Books and Lab Notes for homeowners, designers and contractors.">
     <meta property="og:url" content="https://shopdesignlab.com/resources/">
     <meta property="og:image" content="https://shopdesignlab.com/resources/docs/closet-structure/cover.webp">
     <meta name="twitter:card" content="summary_large_image">
@@ -24,48 +25,154 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
     <script src="/resources/resources.js"></script>
     <style>
-        :root { --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),0.6); }
+        :root { --border: rgba(var(--ink),0.14); --muted: rgba(var(--ink),0.62); --soft: rgba(var(--ink),0.04); }
         *, *::before, *::after { box-sizing: border-box; }
         html, body { margin: 0; min-height: 100%; font-family: var(--font-body); background: var(--bg); color: var(--text); }
-        .content { max-width: 1200px; margin: 0 auto; padding: 40px 5% 100px; }
-        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
-        h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(36px, 5.5vw, 56px); line-height: 1.08; margin: 0 0 14px; }
-        .intro { margin: 0 0 48px; color: var(--muted); font-size: 16px; line-height: 1.6; max-width: 620px; }
-        .group { margin-bottom: 56px; }
-        .group h2 { font-family: var(--font-display); font-weight: 400; font-size: 28px; margin: 0 0 4px; }
-        .group > p { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
-        .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 28px; }
-        .doc { display: flex; flex-direction: column; gap: 12px; }
-        .doc-cover {
-            display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 5; padding: 18px;
-            background: var(--sunk); border: 1px solid var(--border); border-radius: 14px; transition: 0.2s;
+        .wrap { max-width: 1240px; margin: 0 auto; padding: 0 5%; }
+        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2.5px; font-weight: 700; font-size: 12px; margin: 0 0 12px; }
+
+        /* ---------- hero ---------- */
+        .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--border);
+            background: radial-gradient(1100px 420px at 85% 0%, rgba(var(--gold-rgb),0.14), transparent 60%), var(--bg); }
+        .hero .wrap { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 48px; align-items: center; padding-top: 64px; padding-bottom: 56px; }
+        .hero h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(38px, 5.6vw, 64px); line-height: 1.04; margin: 0 0 18px; }
+        .hero h1 em { font-style: normal; color: var(--gold); }
+        .hero p.lead { margin: 0 0 28px; color: var(--muted); font-size: 17px; line-height: 1.6; max-width: 560px; }
+        .search { position: relative; max-width: 560px; }
+        .search svg { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--muted); pointer-events: none; }
+        .search input {
+            width: 100%; height: 56px; padding: 0 20px 0 52px; border-radius: 999px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--text); font: inherit; font-size: 16px;
         }
-        .doc-cover:hover, .doc-cover:focus-visible { border-color: var(--gold); transform: translateY(-3px); outline: none; }
-        .doc-cover img { max-width: 100%; max-height: 100%; display: block; box-shadow: 0 12px 28px rgba(0,0,0,0.45); border-radius: 2px; }
-        .doc .kind { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); }
-        .doc h3 { margin: 0; font-size: 17px; font-weight: 700; }
-        .doc p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
-        .doc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-        .btn {
-            display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border);
-            color: var(--text); text-decoration: none; font-size: 12px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
-        }
+        .search input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 4px rgba(var(--gold-rgb),0.15); }
+        .stack { position: relative; height: 380px; }
+        .stack img { position: absolute; width: 240px; height: auto; border-radius: 4px; box-shadow: 0 24px 50px rgba(0,0,0,0.5); }
+        .stack img:nth-child(1) { right: 150px; top: 40px; transform: rotate(-8deg); opacity: 0.85; }
+        .stack img:nth-child(2) { right: 20px; top: 0; transform: rotate(5deg); }
+        @media (max-width: 900px) { .hero .wrap { grid-template-columns: 1fr; padding-top: 40px; } .stack { display: none; } }
+
+        /* ---------- filters ---------- */
+        .filters { position: sticky; top: 0; z-index: 5; background: rgba(var(--bg-rgb),0.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+        .filters .wrap { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; padding-top: 14px; padding-bottom: 14px; }
+        .seg { display: inline-flex; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--soft); }
+        .seg button { appearance: none; border: none; background: none; color: rgba(var(--ink),0.75); padding: 9px 16px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .seg button[aria-pressed="true"] { background: var(--gold); color: var(--on-gold, #1a1a1a); }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip { appearance: none; border: 1px solid var(--border); background: none; color: rgba(var(--ink),0.85); padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .chip small { opacity: 0.6; margin-left: 4px; }
+        .chip:hover, .chip:focus-visible { border-color: var(--gold); outline: none; }
+        .chip[aria-pressed="true"] { border-color: var(--gold); color: var(--gold); background: rgba(var(--gold-rgb),0.12); }
+        .seg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+        /* ---------- featured ---------- */
+        main { padding: 40px 0 80px; }
+        .featured { display: grid; grid-template-columns: 300px 1fr; gap: 44px; align-items: center; padding: 36px; margin-bottom: 64px;
+            border: 1px solid var(--border); border-radius: 20px; background: linear-gradient(135deg, rgba(var(--gold-rgb),0.10), transparent 55%), var(--surface); }
+        .featured img { width: 100%; height: auto; display: block; border-radius: 4px; box-shadow: 0 20px 44px rgba(0,0,0,0.45); }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; background: var(--gold); color: var(--on-gold, #1a1a1a); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
+        .featured .label { display: block; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+        .featured h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(32px, 4vw, 46px); margin: 0 0 12px; line-height: 1.05; }
+        .featured p { margin: 0 0 22px; color: var(--muted); font-size: 16px; line-height: 1.6; max-width: 560px; }
+        @media (max-width: 760px) { .featured { grid-template-columns: 1fr; padding: 24px; gap: 24px; } .featured img { max-width: 240px; margin: 0 auto; } }
+
+        /* ---------- shelves ---------- */
+        .shelf { margin-bottom: 60px; }
+        .shelf-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 24px; }
+        .shelf-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 30px; margin: 0; }
+        .shelf-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+        .shelf-head .n { color: var(--muted); font-size: 13px; white-space: nowrap; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 30px 26px; }
+        .item { display: flex; flex-direction: column; gap: 10px; }
+        .cover { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 5; padding: 18px; border-radius: 14px;
+            border: 1px solid var(--border); background: var(--sunk); overflow: hidden; transition: 0.2s; }
+        .cover.photo { padding: 0; }
+        .cover.photo img { width: 100%; height: 100%; object-fit: cover; box-shadow: none; border-radius: 0; }
+        .cover img { max-width: 100%; max-height: 100%; display: block; border-radius: 3px; box-shadow: 0 12px 26px rgba(0,0,0,0.45); transition: transform 0.25s; }
+        .cover:hover, .cover:focus-visible { border-color: var(--gold); outline: none; }
+        .cover:hover img { transform: translateY(-4px) scale(1.02); }
+        .item .label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); }
+        .item h3 { margin: 0; font-size: 17px; font-weight: 700; }
+        .item p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+        .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--soft); border: 1px solid var(--border); color: rgba(var(--ink),0.7); }
+        .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border);
+            color: var(--text); text-decoration: none; font-size: 12px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
         .btn:hover, .btn:focus-visible { border-color: var(--gold); color: var(--gold); }
         .btn-gold { background: var(--gold); border-color: var(--gold); color: var(--on-gold, #1a1a1a); }
         .btn-gold:hover, .btn-gold:focus-visible { color: var(--on-gold, #1a1a1a); filter: brightness(1.08); }
+        /* Phones: two across, so a big library stays scannable. */
+        @media (max-width: 560px) {
+            .grid { grid-template-columns: 1fr 1fr; gap: 24px 14px; }
+            .cover { padding: 10px; border-radius: 10px; }
+            .item h3 { font-size: 15px; }
+            .item p, .item .tags { display: none; }
+            .item .label { font-size: 10px; letter-spacing: 1px; }
+            .actions .btn { padding: 8px 12px; font-size: 11px; }
+        }
+        .empty { text-align: center; padding: 60px 0; color: var(--muted); }
+        .empty b { display: block; color: var(--text); font-size: 18px; margin-bottom: 6px; }
+
+        /* ---------- on the way + help ---------- */
+        .soon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+        .soon { padding: 22px; border: 1px dashed var(--border); border-radius: 14px; }
+        .soon h3 { margin: 0 0 6px; font-size: 16px; }
+        .soon p { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+        .help { margin-top: 64px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; padding: 32px 36px;
+            border-radius: 20px; background: var(--surface); border: 1px solid var(--border); }
+        .help h2 { font-family: var(--font-display); font-weight: 400; font-size: 30px; margin: 0 0 6px; }
+        .help p { margin: 0; color: var(--muted); font-size: 15px; }
+
         .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(var(--ink),0.5); }
         .shop-footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
         .shop-footer a { color: rgba(var(--ink),0.7); text-decoration: none; }
         .shop-footer a:hover { color: var(--gold); }
+        [hidden] { display: none !important; }
     </style>
 </head>
 <body>
     <script src="/Assets/dl-header.js"></script>
-    <main class="content">
-        <p class="kicker">Resources</p>
-        <h1>Lookbooks, catalogs &amp; guides</h1>
-        <p class="intro">Flip through them right here, or download the PDF to keep.</p>
-        <div id="groups"></div>
+
+    <section class="hero">
+        <div class="wrap">
+            <div>
+                <p class="kicker">The Resource Library</p>
+                <h1>Everything you need to <em>plan, choose and build.</em></h1>
+                <p class="lead">Our Field Guides, Lab Books and Lab Notes, for homeowners, designers and contractors. Flip through them here or download them to keep.</p>
+                <label class="search"><span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Search the library</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                    <input id="q" type="search" placeholder="Search: closets, laundry, shaker…" autocomplete="off">
+                </label>
+            </div>
+            <div class="stack" id="stack" aria-hidden="true"></div>
+        </div>
+    </section>
+
+    <div class="filters">
+        <div class="wrap">
+            <div class="seg" role="group" aria-label="Show resources for">
+                <button type="button" data-aud="all" aria-pressed="true">Everyone</button>
+                <button type="button" data-aud="homeowners" aria-pressed="false">Homeowners</button>
+                <button type="button" data-aud="pros" aria-pressed="false">Designers &amp; Pros</button>
+            </div>
+            <div class="chips" id="chips" role="group" aria-label="Category"></div>
+        </div>
+    </div>
+
+    <main class="wrap">
+        <div id="featured"></div>
+        <div id="shelves"></div>
+        <p class="empty" id="empty" hidden><b>Nothing matches that yet.</b>Try another word, or ask a designer: we’re adding to the library all the time.</p>
+
+        <section class="shelf" id="soon-wrap" aria-labelledby="soon-title">
+            <div class="shelf-head"><div><h2 id="soon-title">On the way</h2><p>Lab Notes, the practical side, is coming next.</p></div></div>
+            <div class="soon-grid" id="soon"></div>
+        </section>
+
+        <div class="help">
+            <div><h2>Can’t find what you need?</h2><p>Tell us what you’re working on and a designer will send it over.</p></div>
+            <a class="btn btn-gold" href="mailto:hello@shopdesignlab.com?subject=Resource%20request">Ask a designer</a>
+        </div>
     </main>
 
     <footer class="shop-footer">
@@ -84,21 +191,82 @@
     <script>
     (function () {
         var R = window.DL_RESOURCES;
+        var state = { q: '', aud: 'all', cat: 'all' };
         function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-        document.getElementById('groups').innerHTML = R.groups.map(function (g) {
-            var docs = R.docs.filter(function (d) { return d.group === g.id; });
-            if (!docs.length) return '';
-            return '<section class="group" aria-labelledby="g-' + g.id + '"><h2 id="g-' + g.id + '">' + esc(g.title) + '</h2><p>' + esc(g.blurb) + '</p><div class="shelf">' +
-                docs.map(function (d) {
-                    var view = '/resources/view/?doc=' + encodeURIComponent(d.slug);
-                    return '<article class="doc">' +
-                        '<a class="doc-cover" href="' + view + '" aria-label="Flip through ' + esc(d.title) + '"><img src="' + R.dir(d.slug) + 'cover.webp" alt="" loading="lazy"></a>' +
-                        '<span class="kind">' + esc(d.kind) + ' · ' + d.pages + ' page' + (d.pages === 1 ? '' : 's') + '</span>' +
-                        '<h3>' + esc(d.title) + '</h3><p>' + esc(d.blurb) + '</p>' +
-                        '<div class="doc-actions"><a class="btn btn-gold" href="' + view + '">Flip through</a>' +
-                        '<a class="btn" href="' + R.pdf(d.slug) + '" download>Download PDF</a></div></article>';
-                }).join('') + '</div></section>';
-        }).join('');
+        var AUD = { homeowners: 'Homeowners', pros: 'Designers & Pros' };
+
+        function open(it) { return it.kind === 'pdf' ? '/resources/view/?doc=' + encodeURIComponent(it.slug) : it.href; }
+        function actions(it) {
+            return it.kind === 'pdf'
+                ? '<a class="btn btn-gold" href="' + open(it) + '">Flip through</a><a class="btn" href="' + R.pdf(it.slug) + '" download>Download</a>'
+                : '<a class="btn btn-gold" href="' + esc(it.href) + '">Open the card</a>';
+        }
+        function meta(it) { return R.label(it) + (it.pages ? ' · ' + it.pages + ' pages' : ''); }
+
+        function matches(it) {
+            if (state.aud !== 'all' && (it.audience || []).indexOf(state.aud) < 0) return false;
+            if (state.cat !== 'all' && it.category !== state.cat) return false;
+            if (!state.q) return true;
+            var hay = [it.title, it.blurb, R.label(it), (it.tags || []).join(' ')].join(' ').toLowerCase();
+            return state.q.toLowerCase().split(/\s+/).every(function (w) { return hay.indexOf(w) >= 0; });
+        }
+
+        // Hero: the newest covers, stacked.
+        var book = R.items.filter(function (i) { return i.kind === 'pdf'; })[0], card = R.items.filter(function (i) { return i.kind === 'link'; })[0];
+        document.getElementById('stack').innerHTML = [card, book].filter(Boolean)
+            .map(function (i) { return '<img src="' + R.cover(i) + '" alt="">'; }).join('');
+
+        function paintChips() {
+            var cats = R.categories.filter(function (c) { return R.items.some(function (i) { return i.category === c.id; }); });
+            document.getElementById('chips').innerHTML = [{ id: 'all', title: 'All' }].concat(cats).map(function (c) {
+                var n = c.id === 'all' ? R.items.length : R.items.filter(function (i) { return i.category === c.id; }).length;
+                return '<button type="button" class="chip" data-cat="' + c.id + '" aria-pressed="' + (state.cat === c.id) + '">' + esc(c.title) + '<small>' + n + '</small></button>';
+            }).join('');
+        }
+
+        function paint() {
+            var shown = R.items.filter(matches);
+            var filtering = state.q || state.aud !== 'all' || state.cat !== 'all';
+            var feat = !filtering && R.items.filter(function (i) { return i.featured; })[0];
+            document.getElementById('featured').innerHTML = feat ?
+                '<article class="featured"><a href="' + open(feat) + '"><img src="' + R.cover(feat) + '" alt="Cover of ' + esc(R.label(feat)) + ': ' + esc(feat.title) + '"></a><div>' +
+                '<span class="badge">New</span><span class="label">' + esc(R.label(feat)) + '</span><h2>' + esc(feat.title) + '</h2><p>' + esc(feat.blurb) + '</p>' +
+                '<div class="actions">' + actions(feat) + '</div></div></article>' : '';
+            var html = R.categories.map(function (c) {
+                // The featured item is already shown big at the top.
+                var its = shown.filter(function (i) { return i.category === c.id && i !== feat; });
+                if (!its.length) return '';
+                return '<section class="shelf" aria-labelledby="s-' + c.id + '"><div class="shelf-head"><div><h2 id="s-' + c.id + '">' + esc(c.title) + '</h2><p>' + esc(c.blurb) + '</p></div>' +
+                    '<span class="n">' + its.length + ' item' + (its.length === 1 ? '' : 's') + '</span></div><div class="grid">' +
+                    its.map(function (it) {
+                        return '<article class="item"><a class="cover' + (it.kind === 'link' ? ' photo' : '') + '" href="' + open(it) + '" aria-label="' + esc(it.title) + '"><img src="' + R.cover(it) + '" alt="" loading="lazy"></a>' +
+                            '<span class="label">' + esc(meta(it)) + '</span><h3>' + esc(it.title) + '</h3><p>' + esc(it.blurb) + '</p>' +
+                            '<div class="tags">' + (it.audience || []).map(function (a) { return '<span class="tag">' + esc(AUD[a]) + '</span>'; }).join('') + '</div>' +
+                            '<div class="actions">' + actions(it) + '</div></article>';
+                    }).join('') + '</div></section>';
+            }).join('');
+            document.getElementById('shelves').innerHTML = html;
+            document.getElementById('empty').hidden = !!shown.length;
+            var soon = R.categories.filter(function (c) { return c.soon && !R.items.some(function (i) { return i.category === c.id; }); });
+            document.getElementById('soon-wrap').hidden = filtering || !soon.length;
+            document.getElementById('soon').innerHTML = soon.map(function (c) {
+                return (c.topics || [c]).map(function (t) { return '<div class="soon"><span class="label" style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)">' + esc(c.title) + '</span><h3>' + esc(t.title) + '</h3><p>' + esc(t.blurb) + '</p></div>'; }).join('');
+            }).join('');
+            paintChips();
+        }
+
+        document.getElementById('q').addEventListener('input', function () { state.q = this.value.trim(); paint(); });
+        document.querySelector('.seg').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-aud]'); if (!b) return;
+            state.aud = b.dataset.aud;
+            this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+            paint();
+        });
+        document.getElementById('chips').addEventListener('click', function (e) {
+            var b = e.target.closest('[data-cat]'); if (!b) return;
+            state.cat = b.dataset.cat; paint();
+        });
+        paint();
     })();
     </script>
 </body>
