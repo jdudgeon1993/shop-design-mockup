@@ -12,6 +12,7 @@
         { href: '/home/', label: 'Home' },
         { href: '/diy-wizard/', label: 'DIY Shop' },
         { href: '/collections/', label: 'Curated Collections' },
+        { href: '/resources/', label: 'Resources' },
         { href: '/about/', label: 'About Us' }
     ];
     // CONNECT goes to email until the contact form exists.

@@ -1,0 +1,105 @@
+<!-- Resources: every customer-facing PDF (lookbooks, catalogs, guides), to flip through on the
+     site (/resources/view/?doc=<slug>) or download. The list lives in resources/resources.js. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/Assets/site-gate.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
+    <link rel="stylesheet" href="/Assets/dl-header.css">
+    <title>Resources - Design Lab</title>
+    <meta name="description" content="Design Lab lookbooks, catalogs and guides. Flip through them online or download the PDF.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Design Lab">
+    <meta property="og:title" content="Resources | Design Lab">
+    <meta property="og:description" content="Design Lab lookbooks, catalogs and guides. Flip through them online or download the PDF.">
+    <meta property="og:url" content="https://shopdesignlab.com/resources/">
+    <meta property="og:image" content="https://shopdesignlab.com/resources/docs/closet-structure/cover.webp">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
+    <script src="/resources/resources.js"></script>
+    <style>
+        :root { --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),0.6); }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; font-family: var(--font-body); background: var(--bg); color: var(--text); }
+        .content { max-width: 1200px; margin: 0 auto; padding: 40px 5% 100px; }
+        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
+        h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(36px, 5.5vw, 56px); line-height: 1.08; margin: 0 0 14px; }
+        .intro { margin: 0 0 48px; color: var(--muted); font-size: 16px; line-height: 1.6; max-width: 620px; }
+        .group { margin-bottom: 56px; }
+        .group h2 { font-family: var(--font-display); font-weight: 400; font-size: 28px; margin: 0 0 4px; }
+        .group > p { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+        .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 28px; }
+        .doc { display: flex; flex-direction: column; gap: 12px; }
+        .doc-cover {
+            display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 5; padding: 18px;
+            background: var(--sunk); border: 1px solid var(--border); border-radius: 14px; transition: 0.2s;
+        }
+        .doc-cover:hover, .doc-cover:focus-visible { border-color: var(--gold); transform: translateY(-3px); outline: none; }
+        .doc-cover img { max-width: 100%; max-height: 100%; display: block; box-shadow: 0 12px 28px rgba(0,0,0,0.45); border-radius: 2px; }
+        .doc .kind { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); }
+        .doc h3 { margin: 0; font-size: 17px; font-weight: 700; }
+        .doc p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+        .doc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border);
+            color: var(--text); text-decoration: none; font-size: 12px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+        }
+        .btn:hover, .btn:focus-visible { border-color: var(--gold); color: var(--gold); }
+        .btn-gold { background: var(--gold); border-color: var(--gold); color: var(--on-gold, #1a1a1a); }
+        .btn-gold:hover, .btn-gold:focus-visible { color: var(--on-gold, #1a1a1a); filter: brightness(1.08); }
+        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(var(--ink),0.5); }
+        .shop-footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+        .shop-footer a { color: rgba(var(--ink),0.7); text-decoration: none; }
+        .shop-footer a:hover { color: var(--gold); }
+    </style>
+</head>
+<body>
+    <script src="/Assets/dl-header.js"></script>
+    <main class="content">
+        <p class="kicker">Resources</p>
+        <h1>Lookbooks, catalogs &amp; guides</h1>
+        <p class="intro">Flip through them right here, or download the PDF to keep.</p>
+        <div id="groups"></div>
+    </main>
+
+    <footer class="shop-footer">
+        <nav aria-label="Site">
+            <a href="/home/">Home</a>
+            <a href="/diy-wizard/">DIY Shop</a>
+            <a href="/collections/">Curated Collections</a>
+            <a href="/resources/">Resources</a>
+            <a href="/about/">About Us</a>
+            <a href="/consultation/">Join a Video Call</a>
+            <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
+        </nav>
+        <span>&copy; 2026 Design Lab</span>
+    </footer>
+
+    <script>
+    (function () {
+        var R = window.DL_RESOURCES;
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+        document.getElementById('groups').innerHTML = R.groups.map(function (g) {
+            var docs = R.docs.filter(function (d) { return d.group === g.id; });
+            if (!docs.length) return '';
+            return '<section class="group" aria-labelledby="g-' + g.id + '"><h2 id="g-' + g.id + '">' + esc(g.title) + '</h2><p>' + esc(g.blurb) + '</p><div class="shelf">' +
+                docs.map(function (d) {
+                    var view = '/resources/view/?doc=' + encodeURIComponent(d.slug);
+                    return '<article class="doc">' +
+                        '<a class="doc-cover" href="' + view + '" aria-label="Flip through ' + esc(d.title) + '"><img src="' + R.dir(d.slug) + 'cover.webp" alt="" loading="lazy"></a>' +
+                        '<span class="kind">' + esc(d.kind) + ' · ' + d.pages + ' page' + (d.pages === 1 ? '' : 's') + '</span>' +
+                        '<h3>' + esc(d.title) + '</h3><p>' + esc(d.blurb) + '</p>' +
+                        '<div class="doc-actions"><a class="btn btn-gold" href="' + view + '">Flip through</a>' +
+                        '<a class="btn" href="' + R.pdf(d.slug) + '" download>Download PDF</a></div></article>';
+                }).join('') + '</div></section>';
+        }).join('');
+    })();
+    </script>
+</body>
+</html>
