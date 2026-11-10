@@ -31,40 +31,40 @@ begin
   execute d;
 end $$;
 
-insert into public.product_lines (id, vendor_id, code, name, description, sort_order, is_active)
-values (5, 2, 'S3A', 'Structure | 3 American Shaker', 'Framed shaker: 3" shaker door and 5-piece drawer fronts in HDF, framed full overlay (1/4" reveal), 1/2" plywood box, white melamine interior. Painted white, green or blue.', 1, true);
+insert into public.product_lines (vendor_id, code, name, description, sort_order, is_active)
+values (2, 'S3A', 'Structure | 3 American Shaker', 'Framed shaker: 3" shaker door and 5-piece drawer fronts in HDF, framed full overlay (1/4" reveal), 1/2" plywood box, white melamine interior. Painted white, green or blue.', 1, true);
 
 insert into public.price_codes (code, line_id, description)
-values ('NAS', 5, 'Structure | 3 American Shaker (MSRP)');
+select 'NAS', id, 'Structure | 3 American Shaker (MSRP)' from public.product_lines where code = 'S3A';
 
-insert into public.door_styles (id, line_id, code, name, price_code, overlay, door_design, drawer_front, door_profile, drawer_profile,
+insert into public.door_styles (line_id, code, name, price_code, overlay, door_design, drawer_front, door_profile, drawer_profile,
                                 tagline, customer_description, sort_order, is_active)
-values (15, 5, 'S3A-LOVELAND', 'Loveland', 'NAS', 'Framed, full overlay (1/4" reveal)', '3" wide shaker, HDF', '5-piece',
+select (select id from public.product_lines where code = 'S3A'), 'S3A-LOVELAND', 'Loveland', 'NAS', 'Framed, full overlay (1/4" reveal)', '3" wide shaker, HDF', '5-piece',
         'shaker', 'shaker', 'Framed 3" shaker · Painted',
-        'A classic 3" shaker door with 5-piece drawer fronts on a framed, full-overlay plywood cabinet. Painted white, green or blue.', 16, true);
+        'A classic 3" shaker door with 5-piece drawer fronts on a framed, full-overlay plywood cabinet. Painted white, green or blue.', 16, true;
 
-insert into public.finishes (id, door_style_id, code, name, swatch_hex, sort_order, is_active)
-values (42, 15, 'WP', 'White Paint', '#F2F0EB', 10, true),
-       (43, 15, 'GP', 'Green Paint', '#7E8F7E', 20, true),
-       (44, 15, 'BP', 'Blue Paint', '#3E5573', 30, true);
+insert into public.finishes (door_style_id, code, name, swatch_hex, sort_order, is_active)
+select ds.id, x.code, x.name, x.hex, x.ord, true
+from (values ('WP', 'White Paint', '#F2F0EB', 10), ('GP', 'Green Paint', '#7E8F7E', 20), ('BP', 'Blue Paint', '#3E5573', 30)) as x (code, name, hex, ord)
+join public.door_styles ds on ds.code = 'S3A-LOVELAND';
 
-insert into public.product_families (id, slug, name, description, room_type, kind, sort_order, is_active)
-values (131, 's3a-base-drawer-2-door', 'American Shaker Base Cabinet', '1 drawer over 2 doors', 'Base', 'cabinet', 9000, false),
-       (132, 's3a-wall-glass', 'American Shaker Glass Wall Cabinet', '2 glass doors', 'Wall', 'cabinet', 9001, false),
-       (133, 's3a-crown', 'American Shaker Large Crown Molding', null, null, 'molding', 9002, false),
-       (134, 's3a-light-rail', 'American Shaker Light Rail', null, null, 'molding', 9003, false);
+insert into public.product_families (slug, name, description, room_type, kind, sort_order, is_active)
+values ('s3a-base-drawer-2-door', 'American Shaker Base Cabinet', '1 drawer over 2 doors', 'Base', 'cabinet', 9000, false),
+       ('s3a-wall-glass', 'American Shaker Glass Wall Cabinet', '2 glass doors', 'Wall', 'cabinet', 9001, false),
+       ('s3a-crown', 'American Shaker Large Crown Molding', null, null, 'molding', 9002, false),
+       ('s3a-light-rail', 'American Shaker Light Rail', null, null, 'molding', 9003, false);
 
-insert into public.products (vendor_id, sku, mfg_sku, kind, room_type, space, family, family_id, subtype, description,
+insert into public.products (vendor_id, sku, mfg_sku, kind, room_type, family, family_id, subtype, description,
                              width, height, depth, doors, drawers, pullout_shelves, hinge, has_drawer, finish_applies,
                              review_note, sort_order, is_active)
 values
- (2, 'AS-B30', 'B30', 'cabinet', 'Base', 'Kitchen', 'American Shaker Base Cabinet', 131, 'Standard', '1 drawer over 2 doors',
+ (2, 'AS-B30', 'B30', 'cabinet', 'Base', 'American Shaker Base Cabinet', (select id from public.product_families where slug = 's3a-base-drawer-2-door'), 'Standard', '1 drawer over 2 doors',
   30, 34.5, 24, 2, 1, 0, 'N/A', true, true, 'Price list says "double door base"; drawer over doors per the rendering, confirm', 9000, false),
- (2, 'AS-W3036GD', 'W3036GD', 'cabinet', 'Wall', 'Kitchen', 'American Shaker Glass Wall Cabinet', 132, 'Glass', '2 glass doors, 36" high',
+ (2, 'AS-W3036GD', 'W3036GD', 'cabinet', 'Wall', 'American Shaker Glass Wall Cabinet', (select id from public.product_families where slug = 's3a-wall-glass'), 'Glass', '2 glass doors, 36" high',
   30, 36, 12, 2, 0, 0, 'N/A', false, true, null, 9001, false),
- (2, 'AS-ACM8', 'ACM8', 'molding', null, 'Kitchen', 'American Shaker Large Crown Molding', 133, null, 'Large crown molding, 3-1/4" x 96"',
+ (2, 'AS-ACM8', 'ACM8', 'molding', null, 'American Shaker Large Crown Molding', (select id from public.product_families where slug = 's3a-crown'), null, 'Large crown molding, 3-1/4" x 96"',
   null, null, null, 0, 0, 0, null, false, true, null, 9002, false),
- (2, 'AS-LRM8', 'LRM8', 'molding', null, 'Kitchen', 'American Shaker Light Rail', 134, null, 'Light rail molding, 2" x 96"',
+ (2, 'AS-LRM8', 'LRM8', 'molding', null, 'American Shaker Light Rail', (select id from public.product_families where slug = 's3a-light-rail'), null, 'Light rail molding, 2" x 96"',
   null, null, null, 0, 0, 0, null, false, true, null, 9003, false);
 
 insert into public.curated_collections (slug, name, tagline, description, space, hero_image_url, is_published, sort_order, card)
