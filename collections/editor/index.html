@@ -194,6 +194,32 @@
             .sheet { margin-bottom: 74px; }
         }
 
+        /* Card-back readability (CEO, 11/10): The Seasons look-alike only where text is big (the title,
+           the project name); everything small in Montserrat. Notes and specs in his blue, 14px+.
+           Applies to every card back, the PDF and the editor. */
+        .title-cell h2 { text-transform: none; font-size: 30px; letter-spacing: 0.2px; }
+        .drawing-cell b { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 1px; }
+        .sheet-side h3, .schedule-wrap h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1px; }
+        .specs { font-size: 14px; gap: 6px 14px; }
+        .specs dt { font-weight: 600; }
+        .notes { font-size: 14px; line-height: 1.5; }
+        .notes li { margin-bottom: 6px; }
+        .schedule { font-size: 13px; }
+        .sheet-foot small { font-size: 10px; white-space: nowrap; }
+        .sheet-foot b { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.2px; text-transform: none; }
+        .sheet-foot b.proj { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 24px; line-height: 1.1; }
+        .sheet-foot .sub { display: block; margin-top: 3px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        .sheet-foot .maker .brand-name { display: block; margin-top: 2px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 26px; line-height: 1.1; letter-spacing: 1px; color: #b07a12; white-space: nowrap; }
+        .sheet-foot .maker .brand-sub { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; }
+        @media (max-width: 860px) {
+            .specs, .notes { font-size: 15px; }
+            .title-cell h2 { font-size: 28px; }
+            /* Footer: one item per row on phones, so nothing wraps. */
+            .sheet-foot { grid-template-columns: 1fr; }
+            .sheet-foot > div, .sheet-foot > div:nth-child(2), .sheet-foot > div:nth-last-child(-n+2) { border-right: none; border-bottom: 1px solid var(--sheet-line); }
+            .sheet-foot > div:last-child { border-bottom: none; text-align: left; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             :root { --flip-ms: 1ms; --lift-ms: 1ms; }
             .card { transition: none; }
@@ -542,7 +568,7 @@
                     '<span>Customers see "What it is". The SKU column is for staff and never shows on the site.</span></div>' +
             '</div>' +
             '<div class="sheet-foot">' +
-                '<div><small>Project</small><b>' + esc(c.name || '—') + '<br>' + esc(c.subtitle) + '</b></div>' +
+                '<div><small>Project</small><b class="proj">' + esc(c.name || '—') + '</b><span class="sub">' + esc(c.subtitle) + '</span></div>' +
                 '<div><small>Collection</small><b class="accent">Curated Collection No. ' + esc(c.no) + '</b></div>' +
                 '<div><small>Drawing</small><b class="accent">' + esc(c.drawingTitle) + '</b></div>' +
                 '<div class="maker"><small>Manufacturer / Cabinet Brand</small><b>' + ed('maker', c.maker, 'e.g. CNC Cabinetry: Classic Series') + '</b></div>' +
