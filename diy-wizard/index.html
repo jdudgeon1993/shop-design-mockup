@@ -687,8 +687,12 @@
                     if (o.upgrade_id == null) { s.ok = true; s.base = DL.prices.read(o.retail_price); }
                     else s.upgrades[o.upgrade_id] = DL.prices.read(o.retail_price);
                 });
-                data.styles = r[3].data;
-                data.styles.forEach(function (s) { data.styleById[s.id] = s; });
+                // Only door styles with something for sale (a style added for a Curated Collection
+                // before its prices arrive stays out of the shop).
+                var sold = {};
+                r[2].forEach(function (o) { if (o.upgrade_id == null) sold[o.door_style_id] = true; });
+                data.styles = r[3].data.filter(function (s) { return sold[s.id]; });
+                r[3].data.forEach(function (s) { data.styleById[s.id] = s; });
                 r[4].data.forEach(function (f) { (data.finishesByStyle[f.door_style_id] = data.finishesByStyle[f.door_style_id] || []).push(f); });
                 r[5].data.forEach(function (l) { data.lines[l.id] = l; });
                 data.upgrades = r[6].data;
