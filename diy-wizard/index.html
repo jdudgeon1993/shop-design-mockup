@@ -23,7 +23,7 @@
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/Assets/dl-core.js"></script>
     <script src="/Assets/dl-help.js" defer></script>
@@ -55,7 +55,7 @@
 
         .content { max-width: 1200px; margin: 0 auto; padding: 32px 5% 120px; }
         .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
-        .intro-heading { margin: 0 0 8px; font-family: 'Playfair Display', serif; font-weight: 600; font-size: clamp(28px, 4.5vw, 40px); }
+        .intro-heading { margin: 0 0 8px; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: clamp(28px, 4.5vw, 40px); }
         .intro-sub { margin: 0 0 28px; color: var(--muted); font-size: 15px; max-width: 640px; line-height: 1.5; }
 
         /* ---------- guided steps ---------- */
@@ -86,7 +86,7 @@
         .pick-card[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; background: rgba(var(--gold-rgb),0.08); }
         .pick-card:disabled { cursor: default; opacity: 0.55; }
         .pick-card .pc-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .pick-card h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; }
+        .pick-card h2 { margin: 0; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 22px; }
         .pick-card p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
         .pick-card .pc-meta { font-size: 12px; font-weight: 700; letter-spacing: 0.4px; color: rgba(var(--ink),0.75); }
         .pick-card .pc-cta { margin-top: auto; padding-top: 8px; color: var(--gold); font-weight: 700; font-size: 13px; }
@@ -97,7 +97,7 @@
         .mfr-art .door { height: 100%; aspect-ratio: 3 / 4.2; border-radius: 4px; background: #fff center / contain no-repeat; }
         .mfr-art .door.dl-photo { background-repeat: no-repeat; background-position: center; background-size: contain; }
         .mfr-art svg { height: 100%; width: auto; }
-        .mfr-art .wordmark { font-family: 'Playfair Display', serif; font-size: 26px; color: rgba(var(--ink),0.35); letter-spacing: 1px; }
+        .mfr-art .wordmark { font-family: 'Libre Caslon Display', Georgia, serif; font-size: 26px; color: rgba(var(--ink),0.35); letter-spacing: 1px; }
         .style-art { height: 210px; display: flex; align-items: center; justify-content: center; background: #fff; }
         .style-art.dl-photo { background-size: contain; background-repeat: no-repeat; background-position: center; background-origin: content-box; padding: 14px; }
         .style-art svg { height: 150px; width: auto; }
@@ -114,7 +114,7 @@
         .s3-body { padding: 28px 28px 30px; display: flex; flex-direction: column; gap: 12px; }
         @media (min-width: 860px) { .s3-body { padding: 40px 40px 36px; justify-content: center; } }
         .s3-badge { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
-        .s3-name { margin: 0; display: flex; align-items: center; gap: 14px; font-family: 'Playfair Display', serif; font-weight: 600;
+        .s3-name { margin: 0; display: flex; align-items: center; gap: 14px; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400;
                    font-size: clamp(30px, 4.4vw, 46px); letter-spacing: 6px; line-height: 1; }
         .s3-bar { width: 3px; align-self: stretch; background: var(--gold); border-radius: 2px; }
         .s3-tag { margin: 0; font-size: 15px; letter-spacing: 1px; color: rgba(var(--ink),0.85); }
@@ -132,7 +132,7 @@
         .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
         .finish-pick { margin-top: 26px; padding: 22px; border: 1px solid var(--gold); border-radius: 14px; background: rgba(var(--gold-rgb),0.05); scroll-margin-top: 90px; }
-        .finish-pick h2 { margin: 0 0 4px; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; }
+        .finish-pick h2 { margin: 0 0 4px; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 22px; }
         .finish-pick > p { margin: 0 0 16px; color: var(--muted); font-size: 13.5px; }
         .finish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
         .finish-tile {
@@ -302,7 +302,7 @@
             width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.6); color: var(--white); font-size: 20px; line-height: 1;
         }
         .panel-close:hover, .panel-close:focus-visible { background: rgba(0,0,0,0.85); }
-        .panel h2 { margin: 0 0 4px; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 26px; padding-right: 30px; }
+        .panel h2 { margin: 0 0 4px; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 26px; padding-right: 30px; }
         .panel .sub { margin: 0 0 18px; font-size: 13px; color: var(--muted); }
         .opt { margin-bottom: 20px; }
         .opt h3 { margin: 0 0 9px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(var(--ink),0.55); }

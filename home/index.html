@@ -17,11 +17,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="image" href="/Assets/Images/cnc-luxor-espresso.webp">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Playfair+Display:wght@600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
     <style>
         :root {
             --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
-            --font-serif: 'Playfair Display', serif;
+            --font-serif: 'Libre Caslon Display', Georgia, serif;
 
             /* Real measured height of .navbar (18px padding + 30px logo, both
                sides) — sections reserve this as top padding so the fixed,
@@ -171,7 +171,7 @@
 
         .hero-content { padding: 0 10%; margin-bottom: 28px; }
         .hero-heading {
-            font-family: var(--font-serif); font-weight: 700;
+            font-family: var(--font-serif); font-weight: 400;
             font-size: clamp(24px, 3.4vw, 38px); line-height: 1.15;
             max-width: 500px; margin: 0 0 22px;
         }
@@ -256,7 +256,7 @@
         .feature::before { background: linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.15) 100%); }
         .feature.right::before { background: linear-gradient(270deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.15) 100%); }
         .feature-kicker { margin: 0 0 12px; color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; }
-        .feature h2 { margin: 0 0 16px; font-family: var(--font-serif); font-weight: 700; font-size: clamp(30px, 4.6vw, 56px); line-height: 1.08; max-width: 620px; }
+        .feature h2 { margin: 0 0 16px; font-family: var(--font-serif); font-weight: 400; font-size: clamp(30px, 4.6vw, 56px); line-height: 1.08; max-width: 620px; }
         .feature p { margin: 0; max-width: 520px; font-size: clamp(15px, 1.4vw, 17px); line-height: 1.65; color: rgba(255,255,255,0.85); }
         .feature-points { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 10px; max-width: 520px; }
         .feature-points li { font-size: 15px; color: rgba(255,255,255,0.88); padding-left: 22px; position: relative; }

@@ -20,7 +20,7 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Oswald:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
     <style>
         :root {
             --muted: rgba(var(--ink),0.62); --border: rgba(var(--ink),0.16);
@@ -36,7 +36,7 @@
             position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
             padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(var(--bg-rgb),0.97);
         }
-        .top-bar h1 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 22px; }
+        .top-bar h1 { margin: 0; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 22px; }
         .badge { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--on-gold); background: var(--gold); padding: 4px 10px; border-radius: 999px; }
         .status { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
         .status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
@@ -91,7 +91,7 @@
             background: repeating-linear-gradient(45deg, #2a2a2a, #2a2a2a 14px, #222 14px, #222 28px); color: #ddd; font-size: 15px;
         }
         .ov { position: absolute; color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,0.35); }
-        .ov-title { left: 3.4%; top: 4.2%; font-family: 'Playfair Display', serif; font-weight: 400; font-size: max(17px, 3.6cqw); letter-spacing: 0.02em; color: #111; text-shadow: 0 0 14px rgba(var(--ink),0.7); }
+        .ov-title { left: 3.4%; top: 4.2%; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: max(17px, 3.6cqw); letter-spacing: 0.02em; color: #111; text-shadow: 0 0 14px rgba(var(--ink),0.7); }
         .ov-mark { right: 2.7%; top: 4.3%; width: 9.2%; aspect-ratio: 125 / 143; background: #fff; display: flex; align-items: center; justify-content: center; padding: 1.2%; }
         .ov-mark img { width: 82%; height: auto; display: block; }
         .ov-band { left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0)); }
@@ -120,16 +120,16 @@
         .brand { flex-direction: row !important; justify-content: flex-start !important; align-items: center; gap: 12px; }
         .brand img { height: 58px; width: auto; }
         .brand .rule { width: 1px; align-self: stretch; background: var(--sheet-gold); }
-        .brand b { display: block; font-family: 'Oswald', sans-serif; font-weight: 300; font-size: 21px; letter-spacing: 4px; color: var(--sheet-ink); }
+        .brand b { display: block; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 21px; letter-spacing: 4px; color: var(--sheet-ink); }
         .brand small { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: 0.4px; line-height: 1.45; color: var(--sheet-ink); }
         .brand small.tag { color: var(--sheet-gold); }
         .title-cell { text-align: center; align-items: center; }
         .title-cell .no { font-size: 10.5px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
-        .title-cell h2 { margin: 3px 0; padding-bottom: 4px; border-bottom: 1px solid var(--sheet-line); font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 25px; line-height: 1.15; letter-spacing: 1px; text-transform: uppercase; color: var(--sheet-ink); }
+        .title-cell h2 { margin: 3px 0; padding-bottom: 4px; border-bottom: 1px solid var(--sheet-line); font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 25px; line-height: 1.15; letter-spacing: 1px; text-transform: uppercase; color: var(--sheet-ink); }
         .title-cell .space { font-size: 11.5px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
         .drawing-cell { text-align: center; align-items: center; }
         .drawing-cell small { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
-        .drawing-cell b { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 18px; text-transform: uppercase; margin-top: 3px; }
+        .drawing-cell b { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 18px; text-transform: uppercase; margin-top: 3px; }
         .meta { width: 100%; height: 100%; border-collapse: collapse; font-size: 11px; }
         .meta th, .meta td { border-bottom: 1px solid var(--sheet-line); padding: 4px 10px; text-align: left; }
         .meta tr:last-child th, .meta tr:last-child td { border-bottom: none; }
@@ -142,7 +142,7 @@
         .sheet-drawing img { width: 100%; height: auto; display: block; }
         .zoom-note { margin-top: 6px; font-size: 11px; color: var(--sheet-soft); text-align: center; }
         .sheet-side { padding: 14px 16px; }
-        .sheet-side h3 { margin: 0 0 8px; font-family: 'Oswald', sans-serif; font-weight: 500; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
+        .sheet-side h3 { margin: 0 0 8px; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
         .specs { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0 0 14px; padding-bottom: 14px; border-bottom: 1px solid var(--sheet-line); font-size: 12px; }
         .specs dt { color: var(--sheet-soft); }
         .specs dd { margin: 0; }
@@ -150,7 +150,7 @@
         .notes li { margin-bottom: 5px; padding-left: 4px; }
 
         .schedule-wrap { padding: 14px; border-bottom: 2px solid var(--sheet-line); }
-        .schedule-wrap h3 { margin: 0 0 8px; font-family: 'Oswald', sans-serif; font-weight: 500; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
+        .schedule-wrap h3 { margin: 0 0 8px; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
         .schedule { width: 100%; border-collapse: collapse; font-size: 12px; }
         .schedule th { text-align: left; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 6px 8px; border-bottom: 1.5px solid var(--sheet-line); }
         .schedule td { padding: 7px 8px; border-bottom: 1px solid rgba(31,42,92,0.18); vertical-align: top; }
@@ -161,7 +161,7 @@
         .sheet-foot > div { padding: 8px 14px; border-right: 1px solid var(--sheet-line); }
         .sheet-foot > div:last-child { border-right: none; text-align: center; }
         .sheet-foot small { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
-        .sheet-foot b { display: block; margin-top: 3px; font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 17px; text-transform: uppercase; }
+        .sheet-foot b { display: block; margin-top: 3px; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 17px; text-transform: uppercase; }
         .sheet-foot .accent { color: #2848a8; }
         .sheet-foot .maker b { font-size: 19px; letter-spacing: 0.5px; }
 
@@ -248,7 +248,7 @@
         dialog { border: none; border-radius: 16px; padding: 0; width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 32px); background: var(--surface); color: var(--text); box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
         dialog::backdrop { background: rgba(0,0,0,0.6); }
         .dlg { padding: 22px; display: flex; flex-direction: column; gap: 14px; }
-        .dlg h2 { margin: 0; font-family: 'Playfair Display', serif; font-size: 24px; }
+        .dlg h2 { margin: 0; font-family: 'Libre Caslon Display', Georgia, serif; font-size: 24px; }
         .dlg p { margin: 0; line-height: 1.5; color: rgba(var(--ink),0.8); }
         .step { display: flex; gap: 12px; align-items: flex-start; }
         .step .n { flex: 0 0 30px; height: 30px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: flex; align-items: center; justify-content: center; font-weight: 700; }
