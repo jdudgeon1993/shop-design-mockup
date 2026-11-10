@@ -1,0 +1,136 @@
+<!-- Flipbook viewer for a Resources PDF: /resources/view/?doc=<slug>. Pages are pre-rendered
+     images (resources/docs/<slug>/pNN.webp) turned with StPageFlip (MIT). Two-page spreads on
+     wide screens, one page on phones; drag, swipe, arrow keys or the buttons. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/Assets/site-gate.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
+    <link rel="stylesheet" href="/Assets/dl-header.css">
+    <title>Resources - Design Lab</title>
+    <meta name="description" content="Flip through a Design Lab lookbook online, or download the PDF.">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
+    <script src="/resources/resources.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+    <style>
+        :root { --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),0.6); }
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; font-family: var(--font-body); background: var(--bg); color: var(--text); }
+        .viewer { max-width: 1400px; margin: 0 auto; padding: 22px 4% 40px; display: flex; flex-direction: column; gap: 18px; }
+        .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+        .back { color: var(--gold); text-decoration: none; font-size: 14px; font-weight: 600; }
+        .back:hover { text-decoration: underline; }
+        .title { display: flex; flex-direction: column; }
+        .title small { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); }
+        .title h1 { margin: 2px 0 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(24px, 3.4vw, 34px); line-height: 1.1; }
+        .tools { display: flex; align-items: center; gap: 8px; }
+        .btn {
+            appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 42px; height: 42px; padding: 0 16px;
+            border-radius: 999px; border: 1px solid var(--border); background: none; color: var(--text); cursor: pointer; text-decoration: none;
+            font: inherit; font-size: 12px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+        }
+        .btn:hover, .btn:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
+        .btn:disabled { opacity: 0.35; cursor: default; border-color: var(--border); color: var(--text); }
+        .btn svg { width: 18px; height: 18px; }
+        .count { min-width: 92px; text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+        .stage { position: relative; display: flex; justify-content: center; align-items: center; min-height: 60vh; }
+        #book { margin: 0 auto; }
+        #book .stf__item img, .plain img { box-shadow: 0 18px 40px rgba(0,0,0,0.5); }
+        .hint { text-align: center; font-size: 12.5px; color: var(--muted); margin: 0; }
+        .plain { display: flex; flex-direction: column; gap: 18px; align-items: center; }
+        .plain img { max-width: 100%; height: auto; }
+        .missing { text-align: center; padding: 80px 0; color: var(--muted); }
+        @media (max-width: 640px) { .tools .label { display: none; } .btn { padding: 0 12px; } }
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+    <script src="/Assets/dl-header.js"></script>
+    <main class="viewer">
+        <a class="back" href="/resources/">&larr; All resources</a>
+        <div class="bar">
+            <div class="title"><small id="kind"></small><h1 id="doc-title">Loading&hellip;</h1></div>
+            <div class="tools">
+                <button class="btn" id="prev" type="button" aria-label="Previous page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+                <span class="count" id="count" aria-live="polite"></span>
+                <button class="btn" id="next" type="button" aria-label="Next page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+                <a class="btn" id="download" href="#" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="label">PDF</span></a>
+            </div>
+        </div>
+        <div class="stage"><div id="book"></div><div class="plain" id="plain" hidden></div></div>
+        <p class="hint" id="hint">Drag a corner, swipe, or use the arrow keys to turn the page.</p>
+    </main>
+
+    <script>
+    (function () {
+        var R = window.DL_RESOURCES;
+        var slug = new URLSearchParams(location.search).get('doc');
+        var d = R && R.find(slug);
+        var titleEl = document.getElementById('doc-title');
+        if (!d) {
+            titleEl.textContent = 'Not found';
+            document.querySelector('.stage').innerHTML = '<p class="missing">We couldn’t find that resource. <a class="back" href="/resources/">See all resources</a></p>';
+            document.querySelector('.tools').hidden = true; document.getElementById('hint').hidden = true;
+            return;
+        }
+        document.title = d.title + ' - Design Lab';
+        titleEl.textContent = d.title;
+        document.getElementById('kind').textContent = d.kind + ' · ' + d.pages + ' pages';
+        document.getElementById('download').href = R.pdf(d.slug);
+        var urls = []; for (var i = 1; i <= d.pages; i++) urls.push(R.page(d.slug, i));
+        var count = document.getElementById('count'), prev = document.getElementById('prev'), next = document.getElementById('next');
+
+        // No flip library (offline CDN, very old browser): just show the pages one under another.
+        if (!window.St || !St.PageFlip) {
+            var plain = document.getElementById('plain'); plain.hidden = false;
+            plain.innerHTML = urls.map(function (u, n) { return '<img src="' + u + '" alt="Page ' + (n + 1) + '" loading="lazy">'; }).join('');
+            document.querySelector('.tools').hidden = true; document.getElementById('hint').hidden = true;
+            return;
+        }
+
+        // Size the book to the screen: a two-page spread when there's room, one page on phones.
+        var wide = d.w > d.h;                       // fold-out sheets: always one page at a time
+        var stage = document.querySelector('.stage');
+        var maxW = stage.clientWidth, maxH = Math.max(420, window.innerHeight - 220);
+        var spread = !wide && maxW >= 900;
+        var pageH = Math.min(maxH, (spread ? maxW / 2 : maxW) * d.h / d.w);
+        var pageW = Math.round(pageH * d.w / d.h); pageH = Math.round(pageH);
+        var book = document.getElementById('book');
+        book.style.width = (spread ? pageW * 2 : pageW) + 'px';
+
+        var flip = new St.PageFlip(book, {
+            width: pageW, height: pageH, size: 'fixed',
+            showCover: true, usePortrait: !spread, autoSize: false,
+            maxShadowOpacity: 0.45, mobileScrollSupport: false, flippingTime: 700
+        });
+        flip.loadFromImages(urls);
+
+        function paint() {
+            var i = flip.getCurrentPageIndex(), n = flip.getPageCount();
+            var shown = flip.getOrientation && flip.getOrientation() === 'landscape' && i > 0 && i < n - 1 ? (i + 1) + '–' + Math.min(n, i + 2) : String(i + 1);
+            count.textContent = 'Page ' + shown + ' of ' + n;
+            prev.disabled = i <= 0; next.disabled = i >= n - (spread && n % 2 === 0 ? 2 : 1);
+        }
+        flip.on('flip', paint); flip.on('changeOrientation', paint); flip.on('init', paint);
+        setTimeout(paint, 300);
+        prev.addEventListener('click', function () { flip.flipPrev(); });
+        next.addEventListener('click', function () { flip.flipNext(); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowRight') flip.flipNext();
+            else if (e.key === 'ArrowLeft') flip.flipPrev();
+        });
+        // A big change in window size (rotate a phone) re-lays the book out.
+        var lastW = window.innerWidth;
+        window.addEventListener('resize', function () {
+            if (Math.abs(window.innerWidth - lastW) > 120) { lastW = window.innerWidth; location.reload(); }
+        });
+    })();
+    </script>
+</body>
+</html>
