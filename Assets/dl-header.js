@@ -21,7 +21,7 @@
     if (!body) return;
     var path = location.pathname;
     function current(href) {
-        // /collections/cards/ still counts as Curated Collections.
+        // Anything under /collections/ counts as Curated Collections.
         return path === href || (href !== '/home/' && path.indexOf(href) === 0) ? ' aria-current="page"' : '';
     }
     var links = LINKS.map(function (l) { return '<a href="' + l.href + '"' + current(l.href) + '>' + l.label + '</a>'; }).join('');

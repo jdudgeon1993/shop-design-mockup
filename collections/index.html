@@ -1,4 +1,7 @@
-<!-- Curated Collections: pre-spec'd sets of catalog cabinets at a flat price per door style.
+<!-- Curated Collections: the Design Cards (front photo + flip to the spec-sheet back), then each
+     collection's buy page (?c=<slug>). Cards: STATIC_CARDS (hand-made, no DB rows yet) + DB collections
+     (minus HIDE). ?card=<slug>&side=back opens a card; ?pdf=<slug> is the hidden PDF-building frame.
+     Pre-spec'd sets of catalog cabinets at a flat price per door style.
      Data (public, live from Supabase): storefront_collections (flat price + individual price per
      door style), curated_collection_items, products, product_families, door_styles, finishes.
      Cart is shared with DIY and /cart/ (Assets/dl-core.js). -->
@@ -19,7 +22,7 @@
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Oswald:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/Assets/dl-core.js"></script>
     <script src="/Assets/dl-help.js" defer></script>
@@ -85,28 +88,201 @@
         .cc-step a { color: var(--gold); }
         #collections { scroll-margin-top: 90px; }
 
-        /* ---------- list ---------- */
-        .list { display: grid; grid-template-columns: 1fr; gap: 24px; }
-        @media (min-width: 860px) { .list { grid-template-columns: 1fr 1fr; } }
-        .coll-card {
-            position: relative; display: block; text-decoration: none; color: var(--white); border-radius: 14px; overflow: hidden;
-            border: 1px solid var(--border); background: var(--sunk); transition: 0.2s;
-        }
-        .coll-card:hover, .coll-card:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
-        .coll-card img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; }
-        /* No photo yet: the set drawn to scale (same drawing as "your kitchen so far"). */
-        .coll-scene { width: 100%; aspect-ratio: 16 / 10; display: flex; align-items: flex-start; justify-content: center; padding: 7% 14% 30%; box-sizing: border-box; background: #ece7df; }
-        .coll-scene svg { width: 100%; height: 100%; }
+        /* ---------- the Design Cards (moved from the old /collections/cards/ test page) ---------- */
+        :root { --sheet-ink: #1f2a5c; --sheet-gold: #e0a43a; --sheet-line: #1f2a5c; --sheet-soft: #5b6385; --flip-ms: 700ms; --lift-ms: 420ms; }
+        body.modal-open { overflow: hidden; }
         .gallery-scene { width: 100%; aspect-ratio: 4 / 3; border-radius: 14px; display: flex; align-items: center; justify-content: center; padding: 8%; box-sizing: border-box; background: #ece7df; }
         .gallery-scene svg { width: 100%; height: 100%; }
-        .coll-card .shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0) 70%); }
-        .coll-card .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 24px; }
-        .coll-card .space { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
-        .coll-card h2 { margin: 0 0 4px; font-size: 30px; }
-        .coll-card p { margin: 0 0 12px; font-size: 14px; color: rgba(var(--ink),0.8); }
-        .coll-card .price-row { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; font-size: 14px; }
-        .coll-card .price-row strong { color: var(--gold); font-size: 20px; }
-        .save-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: rgba(var(--gold-rgb),0.18); color: var(--gold); font-size: 12px; font-weight: 700; }
+        .sheet-drawing .drawn { background: #fff; padding: 4% 6%; }
+        .sheet-drawing .drawn svg { width: 100%; height: auto; display: block; }
+        /* ---------- the row of front cards ---------- */
+        .deck { display: grid; grid-template-columns: 1fr; gap: 26px; }
+        @media (min-width: 700px) { .deck { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 1100px) { .deck { grid-template-columns: 1fr 1fr 1fr; } }
+        .slot { display: flex; flex-direction: column; gap: 10px; }
+        .card {
+            appearance: none; display: block; width: 100%; padding: 0; border: none; background: none; cursor: pointer; text-align: left; color: inherit;
+            border-radius: 12px; aspect-ratio: 16 / 9; position: relative; transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+        }
+        .card:hover, .card:focus-visible { transform: translateY(-3px) rotate(-0.4deg); box-shadow: 0 16px 34px rgba(0,0,0,0.55); outline: none; }
+        .card:focus-visible .face { outline: 2px solid var(--gold); outline-offset: 3px; }
+        .card.is-lifted { visibility: hidden; }
+        .card-cap { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); }
+        .card-cap b { color: var(--white); font-weight: 600; }
+        .card-cap span { display: inline-flex; align-items: center; gap: 6px; color: var(--gold); font-weight: 700; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+        .card-cap svg { width: 14px; height: 14px; }
+
+        /* A face is the front or back of a card, used both in the deck and in the picked-up card. */
+        .face { position: absolute; inset: 0; border-radius: 12px; overflow: hidden; background: #111; container-type: inline-size; }
+        .front img.photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* Live front: the CEO's Canva layout, rebuilt as text over his blank photo. Sizes follow the card
+           width (cqw) like a printed card, with a floor so captions stay readable on phones. */
+        .ov { position: absolute; color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,0.35); }
+        .ov-title { left: 3.4%; top: 4.2%; font-family: 'Playfair Display', serif; font-weight: 400; font-size: max(17px, 3.6cqw); letter-spacing: 0.02em; color: #111; text-shadow: 0 0 14px rgba(var(--ink),0.7); }
+        .ov-mark { right: 2.7%; top: 4.3%; width: 9.2%; aspect-ratio: 125 / 143; background: #fff; display: flex; align-items: center; justify-content: center; padding: 1.2%; }
+        .ov-mark img { width: 82%; height: auto; display: block; }
+        .ov-band { left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0)); }
+        .ov-caption { left: 5.6%; bottom: 3.6%; font-weight: 400; font-size: max(10.5px, 1.75cqw); }
+        .ov-tag { right: 5.6%; bottom: 3.6%; font-weight: 400; font-size: max(10.5px, 1.75cqw); text-align: right; }
+        .ov-tag::before {
+            content: ''; position: absolute; right: 3%; bottom: calc(100% + 0.6cqw); width: 0; height: 0;
+            border-left: 1.5cqw solid transparent; border-right: 1.5cqw solid transparent; border-top: 2.4cqw solid #1f9a4a;
+        }
+
+        /* Small cards (phones): the captions wrap instead of running into each other. */
+        @container (max-width: 560px) {
+            .ov-band { height: 30%; }
+            .ov-caption { max-width: 56%; line-height: 1.3; }
+            .ov-tag { max-width: 34%; line-height: 1.3; }
+        }
+        /* ---------- the picked-up card (modal) ---------- */
+        .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(8,8,8,0); transition: background var(--lift-ms); }
+        .overlay.open { background: rgba(8,8,8,0.86); }
+        .stage {
+            position: fixed; z-index: 51; perspective: 2400px;
+            transition: top var(--lift-ms) cubic-bezier(.2,.8,.2,1), left var(--lift-ms) cubic-bezier(.2,.8,.2,1),
+                        width var(--lift-ms) cubic-bezier(.2,.8,.2,1), height var(--lift-ms) cubic-bezier(.2,.8,.2,1);
+        }
+        .stage.flipping { transition-duration: var(--flip-ms); }
+        .flipper { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform var(--flip-ms) cubic-bezier(.45,.05,.3,1); }
+        .stage.flipped .flipper { transform: rotateY(180deg); }
+        .stage .face { backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.6); }
+        .stage .back { transform: rotateY(180deg); background: #fff; color: var(--sheet-ink); }
+        /* Once the back is facing, drop the 3D so it scrolls reliably on phones. */
+        .stage.settled .flipper, .stage.settled .flipper * { transition: none !important; }
+        .stage.settled .flipper { transform: none; }
+        .stage.settled .front { display: none; }
+        .stage.settled .back { transform: none; }
+
+        .close-btn {
+            position: fixed; z-index: 52; top: 12px; right: 12px; width: 42px; height: 42px; border-radius: 50%;
+            border: 1px solid rgba(var(--ink),0.35); background: rgba(var(--bg-rgb),0.85); color: var(--text); font-size: 22px; line-height: 1; cursor: pointer;
+        }
+        .close-btn:hover, .close-btn:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
+        .toolbar {
+            position: fixed; z-index: 52; left: 50%; bottom: 20px; transform: translateX(-50%); display: flex; gap: 10px;
+            width: max-content; max-width: calc(100vw - 20px);
+        }
+        @media (max-width: 699px) {
+            .toolbar { bottom: 10px; width: calc(100vw - 20px); }
+            .toolbar .btn { flex: 1 1 0; min-width: 0; padding: 12px 10px; font-size: 12px; white-space: normal; text-align: center; line-height: 1.25; }
+        }
+        .close-btn, .toolbar { opacity: 0; transition: opacity 0.2s; }
+        .overlay.open ~ .close-btn, .overlay.open ~ .toolbar { opacity: 1; }
+        .btn {
+            appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 22px; border-radius: 999px;
+            font-size: 13px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; text-decoration: none; cursor: pointer; white-space: nowrap;
+        }
+        .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .btn-flip { background: var(--gold); border: 1px solid var(--gold); color: var(--black); }
+        .btn-flip:hover, .btn-flip:focus-visible { filter: brightness(1.08); outline: none; }
+        .btn-more { background: rgba(var(--bg-rgb),0.9); border: 1px solid rgba(var(--ink),0.35); color: var(--white); }
+        .btn-more:hover, .btn-more:focus-visible { border-color: var(--gold); color: var(--gold); outline: none; }
+
+        .back-scroll { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+
+        /* ---------- back: live spec sheet ---------- */
+        .sheet { margin: 12px; border: 2px solid var(--sheet-line); font-size: 13px; }
+        .sheet-head { display: grid; grid-template-columns: 1.35fr 1.6fr 1fr 0.95fr; border-bottom: 2px solid var(--sheet-line); }
+        .sheet-head > div { padding: 10px 14px; border-right: 1px solid var(--sheet-line); display: flex; flex-direction: column; justify-content: center; }
+        .sheet-head > div:last-child { border-right: none; padding: 0; }
+        .brand { flex-direction: row !important; justify-content: flex-start !important; align-items: center; gap: 12px; }
+        .brand img { height: 58px; width: auto; }
+        .brand .rule { width: 1px; align-self: stretch; background: var(--sheet-gold); }
+        .brand b { display: block; font-family: 'Oswald', sans-serif; font-weight: 300; font-size: 21px; letter-spacing: 4px; color: var(--sheet-ink); }
+        .brand small { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: 0.4px; line-height: 1.45; color: var(--sheet-ink); }
+        .brand small.tag { color: var(--sheet-gold); }
+        .title-cell { text-align: center; align-items: center; }
+        .title-cell .no { font-size: 10.5px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
+        .title-cell h2 { margin: 3px 0; padding-bottom: 4px; border-bottom: 1px solid var(--sheet-line); font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 25px; line-height: 1.15; letter-spacing: 1px; text-transform: uppercase; color: var(--sheet-ink); }
+        .title-cell .space { font-size: 11.5px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+        .drawing-cell { text-align: center; align-items: center; }
+        .drawing-cell small { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
+        .drawing-cell b { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 18px; text-transform: uppercase; margin-top: 3px; }
+        .meta { width: 100%; height: 100%; border-collapse: collapse; font-size: 11px; }
+        .meta th, .meta td { border-bottom: 1px solid var(--sheet-line); padding: 4px 10px; text-align: left; }
+        .meta tr:last-child th, .meta tr:last-child td { border-bottom: none; }
+        .meta th { font-weight: 600; text-transform: uppercase; border-right: 1px solid var(--sheet-line); width: 46%; }
+        .meta td { text-align: right; font-weight: 600; }
+
+        .sheet-body { display: grid; grid-template-columns: 1fr 320px; border-bottom: 2px solid var(--sheet-line); }
+        .sheet-drawing { padding: 14px; border-right: 1px solid var(--sheet-line); display: flex; flex-direction: column; justify-content: center; }
+        .sheet-drawing a { display: block; cursor: zoom-in; }
+        .sheet-drawing img { width: 100%; height: auto; display: block; }
+        .zoom-note { margin-top: 6px; font-size: 11px; color: var(--sheet-soft); text-align: center; }
+        .sheet-side { padding: 14px 16px; }
+        .sheet-side h3 { margin: 0 0 8px; font-family: 'Oswald', sans-serif; font-weight: 500; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
+        .specs { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0 0 14px; padding-bottom: 14px; border-bottom: 1px solid var(--sheet-line); font-size: 12px; }
+        .specs dt { color: var(--sheet-soft); }
+        .specs dd { margin: 0; }
+        .notes { margin: 0; padding-left: 24px; font-size: 12px; line-height: 1.45; text-transform: uppercase; letter-spacing: 0.2px; }
+        .notes li { margin-bottom: 5px; padding-left: 4px; }
+
+        .schedule-wrap { padding: 14px; border-bottom: 2px solid var(--sheet-line); }
+        .schedule-wrap h3 { margin: 0 0 8px; font-family: 'Oswald', sans-serif; font-weight: 500; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
+        .schedule { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .schedule th { text-align: left; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; padding: 6px 8px; border-bottom: 1.5px solid var(--sheet-line); }
+        .schedule td { padding: 7px 8px; border-bottom: 1px solid rgba(31,42,92,0.18); vertical-align: top; }
+        .schedule td.qty { font-weight: 700; width: 44px; }
+        .schedule td.sku { font-weight: 700; white-space: nowrap; }
+
+        .sheet-foot { display: grid; grid-template-columns: 1.3fr 1.2fr 1fr 1.3fr; }
+        .sheet-foot > div { padding: 8px 14px; border-right: 1px solid var(--sheet-line); }
+        .sheet-foot > div:last-child { border-right: none; text-align: center; }
+        .sheet-foot small { display: block; font-size: 9.5px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
+        .sheet-foot b { display: block; margin-top: 3px; font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 17px; text-transform: uppercase; }
+        .sheet-foot .accent { color: #2848a8; }
+        .sheet-foot .maker b { font-size: 19px; letter-spacing: 0.5px; }
+
+        /* Phones and narrow windows: the sheet stacks instead of shrinking. */
+        @media (max-width: 860px) {
+            .sheet { margin: 8px; }
+            .sheet-head { grid-template-columns: 1fr 1fr; }
+            .sheet-head > div { border-bottom: 1px solid var(--sheet-line); }
+            .sheet-head .brand { grid-column: 1 / -1; border-right: none; }
+            .sheet-head .title-cell { grid-column: 1 / -1; border-right: none; }
+            .sheet-head > div:nth-last-child(-n+2) { border-bottom: none; }
+            .brand img { height: 46px; }
+            .title-cell h2 { font-size: 24px; }
+            .sheet-body { grid-template-columns: 1fr; }
+            .sheet-drawing { border-right: none; border-bottom: 1px solid var(--sheet-line); padding: 10px; }
+            .notes { font-size: 13px; }
+            .schedule thead { display: none; }
+            .schedule, .schedule tbody, .schedule tr, .schedule td { display: block; width: 100%; }
+            .schedule tr { padding: 8px 0; border-bottom: 1px solid rgba(31,42,92,0.18); }
+            .schedule td { border: none; padding: 2px 0; }
+            .schedule td.qty, .schedule td.sku { display: inline; width: auto; font-size: 13.5px; }
+            .schedule td.qty::after { content: ' \00d7  '; }
+            .schedule td[data-label]::before { content: attr(data-label) ': '; color: var(--sheet-soft); }
+            .schedule td.empty { display: none; }
+            .sheet-foot { grid-template-columns: 1fr 1fr; }
+            .sheet-foot > div { border-bottom: 1px solid var(--sheet-line); }
+            .sheet-foot > div:nth-child(2) { border-right: none; }
+            .sheet-foot > div:nth-last-child(-n+2) { border-bottom: none; }
+            /* room for the toolbar that floats over the bottom of the card */
+            .sheet { margin-bottom: 74px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            :root { --flip-ms: 1ms; --lift-ms: 1ms; }
+            .card { transition: none; }
+        }
+
+        /* PDF render (?pdf=<slug>, loaded in a hidden 1400px-wide frame so the sheet always
+           lays out like desktop): the two faces at print size, added below the page.
+           (Hiding the rest of the page made html2canvas draw blank images.) */
+        #pdf-root { width: 1366px; }  /* in normal flow: html2canvas sizes its snapshot from the page */
+        #pdf-root .pdf-front { position: relative; width: 1366px; height: 768px; }
+        #pdf-root .pdf-front .face { border-radius: 0; }
+        #pdf-root .pdf-back { width: 1200px; background: #fff; color: var(--sheet-ink); }
+        #pdf-root .pdf-back .zoom-note { display: none; }
+                /* html2canvas squashes list numbers into the text, so the PDF copy spells them out. */
+        #pdf-root ol.notes { list-style: none; padding-left: 0; }
+        #pdf-root ol.notes li { display: flex; gap: 6px; }
+        #pdf-root ol.notes .n { flex: 0 0 22px; text-align: right; }
+        .btn[aria-busy="true"] { opacity: 0.7; cursor: progress; }
 
         /* ---------- detail ---------- */
         .detail-back { appearance: none; background: none; border: none; color: var(--gold); cursor: pointer; font-size: 14px; padding: 0; margin-bottom: 22px; }
@@ -238,8 +414,9 @@
                 </ol>
             </section>
 
-            <h2 class="cc-list-title" id="collections">The collections</h2>
-            <div class="list" id="list"></div>
+            <h2 class="cc-list-title" id="collections">The Design Cards</h2>
+            <p class="intro-sub">Tap a card to pick it up, then flip it over to see the plan and every detail.</p>
+            <div class="deck" id="deck"></div>
         </section>
 
         <section id="detail-view" hidden>
@@ -289,6 +466,17 @@
         </nav>
         <span>&copy; 2026 Design Lab</span>
     </footer>
+
+    <div class="overlay" id="overlay" hidden></div>
+    <div class="stage" id="stage" role="dialog" aria-modal="true" aria-label="Design Card" hidden>
+        <div class="flipper" id="flipper"></div>
+    </div>
+    <button class="close-btn" id="close" type="button" aria-label="Close" hidden>&times;</button>
+    <div class="toolbar" id="toolbar" hidden>
+        <button type="button" class="btn btn-flip" id="flip"></button>
+        <button type="button" class="btn btn-more" id="pdf">Download PDF</button>
+        <a class="btn btn-more" id="more" href="/collections/">See the full collection &rarr;</a>
+    </div>
 
     <div class="toast" id="toast" role="status"><span id="toast-text">Added to cart</span><a href="/cart/">View cart &rarr;</a></div>
 
@@ -365,21 +553,330 @@
             return DL.kitchen.svg(pieces, pieces[0].space, seen, 84); // a tighter frame than the 12' cart view
         }
 
+        // ---------- the Design Cards ----------
+        // Cards come from two places for now: STATIC cards the CEO made by hand (no DB rows yet) and
+        // the DB collections. CARD_EXTRA adds his card wording to a DB collection; HIDE keeps a DB
+        // collection off the page without deleting it.
+        var IMG = '/Assets/Images/curated/';
+        var HIDE = ['the-aspen'];
+        var STATIC_CARDS = [
+            {
+                slug: 'study-time', no: '001', name: 'Study Time', subtitle: 'Built-In Desk System',
+                front: IMG + 'study-time-front.webp', drawing: IMG + 'study-time-drawing.webp', drawingTitle: 'Front Elevation',
+                card: { title: 'STUDY TIME?', caption: 'CNC Classic Series Curated Collection 001', tag: 'Designed in the Lab' },
+                sheet: { sheet: 'A1', scale: 'NTS', date: '09/18/2026', rev: 'A' },
+                maker: 'CNC Cabinetry: Classic Series',
+                specs: [],
+                notes: [
+                    'Overall width = 99".', 'Cabinetry height = 90".', 'Tower widths = 18" each.', 'Tower depth = 15".',
+                    'Desk height = 28.5" (top included).', 'Countertop included (1 1/2" thick).', 'Cabinet depth = 24".',
+                    'Knee space width = 39" with 3" skirt.', 'Flush toe kick with molding (as shown).', 'Includes base molding along back.',
+                    'Base cabinets include 1 rollout each (as shown).', 'Manufacturer: CNC Cabinetry Classic Series.',
+                    '0.75" frameless construction.', 'Finish: White paint.', 'Door style: Woodbourne (extended lead time).',
+                    'See Design Lab for alternative sizes, colors, and door style options.'
+                ],
+                schedule: []
+            }
+        ];
+        var CARD_EXTRA = {
+            'the-denver': { no: '002', subtitle: 'L-Shaped Kitchen', card: { title: 'THE DENVER', caption: 'CNC Luxor Curated Collection 002', tag: 'Designed in the Lab' } }
+        };
+        var cards = [];
+
+        // A DB collection as a card: the back is filled in from its cabinets.
+        function cardFromDb(c) {
+            var x = CARD_EXTRA[c.slug] || {};
+            var items = (data.items[c.id] || []).slice().sort(function (a, b) { return a.sort_order - b.sort_order; });
+            var styles = c.offers.map(function (o) { return o.door_style; });
+            var fins = (data.finishesByStyle[cheapest(c).door_style_id] || []).map(function (f) { return f.name; });
+            return {
+                slug: c.slug, no: x.no || '', name: c.name, subtitle: x.subtitle || (c.space + ' Collection'), db: c,
+                front: c.hero, drawingSvg: sceneSvg(c, defaultHex(c)), drawingTitle: 'Cabinet Layout',
+                card: x.card || { title: c.name.toUpperCase(), caption: 'Curated Collection' + (x.no ? ' ' + x.no : ''), tag: 'Designed in the Lab' },
+                sheet: { sheet: 'A1', scale: 'NTS', date: '', rev: 'A' },
+                maker: 'Door style: ' + styles.join(' / '),
+                specs: [],
+                notes: [
+                    itemCount(c) + ' pieces in ' + items.length + ' line items.',
+                    'Door style: ' + styles.join(' or ') + '.',
+                    fins.length ? 'Finishes: ' + fins.join(', ') + '.' : '',
+                    'Every piece ships in the door style and finish you choose.',
+                    'See Design Lab for alternative sizes, colors, and door style options.'
+                ].filter(Boolean),
+                schedule: items.map(function (i) {
+                    var p = data.products[i.product_id], f = data.families[p.family_id] || {};
+                    var dims = p.width != null ? Number(p.width) + '"W × ' + Number(p.height) + '"H' + (p.depth != null ? ' × ' + Number(p.depth) + '"D' : '') : '';
+                    return { qty: i.quantity, sku: p.mfg_sku, extra: [f.name, dims].filter(Boolean).join(' · ') };
+                })
+            };
+        }
+        function buildCards() {
+            cards = STATIC_CARDS.concat(data.collections.filter(function (c) { return HIDE.indexOf(c.slug) < 0; }).map(cardFromDb));
+        }
+        function cardBySlug(slug) { return cards.filter(function (k) { return k.slug === slug; })[0]; }
+
+        var flipIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"></path><path d="M3 21v-5h5"></path></svg>';
+
+        function frontHtml(k) {
+            return '<div class="face front">' + (k.front ? '<img class="photo" src="' + esc(k.front) + '" alt="">' : '<div class="gallery-scene" style="border-radius:0;height:100%;aspect-ratio:auto">' + (k.drawingSvg || '') + '</div>') +
+                '<div class="ov ov-band"></div>' +
+                '<div class="ov ov-title">' + esc(k.card.title) + '</div>' +
+                '<div class="ov ov-mark"><img src="' + IMG + 'dl-mark-gold.webp" alt="Design Lab"></div>' +
+                '<div class="ov ov-caption">' + esc(k.card.caption) + '</div>' +
+                '<div class="ov ov-tag">' + esc(k.card.tag) + '</div></div>';
+        }
+
+        function sheetHtml(k) {
+            var s = k.sheet;
+            var specs = k.specs.map(function (p) { return '<dt>' + esc(p[0]) + ':</dt><dd>' + esc(p[1]) + '</dd>'; }).join('');
+            var notes = k.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('');
+            function cell(label, v) { return '<td data-label="' + label + '"' + (v ? '' : ' class="empty"') + '>' + esc(v || '—') + '</td>'; }
+            var rows = k.schedule.map(function (r) {
+                return '<tr><td class="qty">' + esc(r.qty) + '</td><td class="sku">' + esc(r.sku) + '</td>' +
+                    cell('Hinge', r.hinge) + cell('Integral fin ends', r.fin) + cell('Mods', r.mods) + cell('Additional', r.extra) + '</tr>';
+            }).join('');
+            var drawing = k.drawing
+                ? '<a href="' + esc(k.drawing) + '" target="_blank" rel="noopener"><img src="' + esc(k.drawing) + '" alt="' + esc(k.drawingTitle) + ' drawing of ' + esc(k.name) + '"></a><div class="zoom-note">Tap the drawing to open it full size</div>'
+                : '<div class="drawn" role="img" aria-label="' + esc(k.drawingTitle) + ' of ' + esc(k.name) + '">' + (k.drawingSvg || '') + '</div>';
+            return '<div class="sheet">' +
+                '<div class="sheet-head">' +
+                    '<div class="brand"><img src="' + IMG + 'dl-mark-gold.webp" alt="DL"><span class="rule"></span><div><b>DESIGN LAB</b>' +
+                        '<small>ONLINE CABINETRY.</small><small>CUSTOMER FOCUSED.</small><small class="tag">BEST FLIPPIN’ HOME ON THE BLOCK.</small></div></div>' +
+                    '<div class="title-cell"><span class="no">Curated Collection' + (k.no ? ' No. ' + esc(k.no) : '') + '</span><h2>' + esc(k.name) + '</h2><span class="space">' + esc(k.subtitle) + '</span></div>' +
+                    '<div class="drawing-cell"><small>Technical Drawing</small><b>' + esc(k.drawingTitle) + '</b></div>' +
+                    '<div><table class="meta"><tr><th>Sheet</th><td>' + esc(s.sheet) + '</td></tr><tr><th>Scale</th><td>' + esc(s.scale) + '</td></tr>' +
+                        '<tr><th>Date</th><td>' + esc(s.date || '—') + '</td></tr><tr><th>Rev.</th><td>' + esc(s.rev) + '</td></tr></table></div>' +
+                '</div>' +
+                '<div class="sheet-body">' +
+                    '<div class="sheet-drawing">' + drawing + '</div>' +
+                    '<div class="sheet-side">' + (specs ? '<h3>Specifications:</h3><dl class="specs">' + specs + '</dl>' : '') + '<h3>Notes:</h3><ol class="notes">' + notes + '</ol></div>' +
+                '</div>' +
+                (rows ? '<div class="schedule-wrap"><h3>Cabinet schedule:</h3><table class="schedule"><thead><tr><th>Qty</th><th>Cabinet</th><th>Hinge</th><th>Integral fin ends</th><th>Mods</th><th>Additional</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '') +
+                '<div class="sheet-foot">' +
+                    '<div><small>Project</small><b>' + esc(k.name) + '<br>' + esc(k.subtitle) + '</b></div>' +
+                    '<div><small>Collection</small><b class="accent">Curated Collection' + (k.no ? ' No. ' + esc(k.no) : '') + '</b></div>' +
+                    '<div><small>Drawing</small><b class="accent">' + esc(k.drawingTitle) + '</b></div>' +
+                    '<div class="maker"><small>Manufacturer / Cabinet Brand</small><b>' + esc(k.maker) + '</b></div>' +
+                '</div>' +
+            '</div>';
+        }
+        function backHtml(k) { return '<div class="face back"><div class="back-scroll">' + sheetHtml(k) + '</div></div>'; }
+
+        // ---------- PDF ----------
+        // Built inside a hidden 1400px frame (?pdf=<slug>) so the back always uses the desktop layout,
+        // then handed to this page to download.
+        var LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+        function loadScript(src) {
+            return new Promise(function (ok, fail) { var el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = fail; document.head.appendChild(el); });
+        }
+        function imagesReady(root) {
+            return Promise.all(Array.prototype.map.call(root.querySelectorAll('img'), function (img) {
+                return img.complete ? Promise.resolve() : new Promise(function (r) { img.onload = img.onerror = r; });
+            }));
+        }
+        function pdfName(k) { return 'Design Lab - Curated Collection ' + (k.no ? k.no + ' - ' : '') + k.name + '.pdf'; }
+        function buildPdf(slug) {
+            var k = cardBySlug(slug);
+            function reply(msg) { if (window.parent !== window) window.parent.postMessage(msg, location.origin); }
+            if (!k) { reply({ type: 'dl-pdf', ok: false }); return; }
+            var root = document.createElement('div');
+            root.id = 'pdf-root';
+            root.innerHTML = '<div class="pdf-front">' + frontHtml(k) + '</div><div class="pdf-back">' + sheetHtml(k) + '</div>';
+            document.body.appendChild(root);
+            var front = root.querySelector('.pdf-front'), sheet = root.querySelector('.pdf-back');
+            Array.prototype.forEach.call(root.querySelectorAll('ol.notes li'), function (li, i) {
+                li.innerHTML = '<span class="n">' + (i + 1) + '.</span><span>' + li.innerHTML + '</span>';
+            });
+            // html2canvas fails on the bottom shade's gradient, so the PDF copy gets it as a picture.
+            var band = front.querySelector('.ov-band');
+            if (band) {
+                var cv = document.createElement('canvas'); cv.width = 4; cv.height = 256;
+                var g = cv.getContext('2d'), grad = g.createLinearGradient(0, 256, 0, 0);
+                grad.addColorStop(0, 'rgba(0,0,0,0.55)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+                g.fillStyle = grad; g.fillRect(0, 0, 4, 256);
+                band.innerHTML = '<img src="' + cv.toDataURL() + '" alt="" style="display:block;width:100%;height:100%">';
+                band.style.background = 'none';
+            }
+            Promise.all([LIBS.reduce(function (p, src) { return p.then(function () { return loadScript(src); }); }, Promise.resolve()),
+                         document.fonts ? document.fonts.ready : null, imagesReady(root)])
+                .then(function () {
+                    function shot(el, bg) {
+                        return html2canvas(el, { scale: 2, useCORS: true, logging: false, backgroundColor: bg,
+                            width: el.offsetWidth, height: el.offsetHeight, windowWidth: 1400, scrollX: 0, scrollY: 0 });
+                    }
+                    return shot(front, null).then(function (a) { return shot(sheet, '#ffffff').then(function (b) { return [a, b]; }); });
+                })
+                .then(function (shots) {
+                    var W = 792; // 11 inches wide, in points
+                    var fh = W * shots[0].height / shots[0].width, bh = W * shots[1].height / shots[1].width;
+                    var doc = new window.jspdf.jsPDF({ unit: 'pt', format: [W, fh], orientation: 'landscape' });
+                    doc.setProperties({ title: 'Curated Collection ' + (k.no ? 'No. ' + k.no + ': ' : '') + k.name, author: 'Design Lab' });
+                    doc.addImage(shots[0].toDataURL('image/jpeg', 0.93), 'JPEG', 0, 0, W, fh);
+                    doc.addPage([W, bh], W > bh ? 'landscape' : 'portrait');
+                    doc.addImage(shots[1].toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, W, bh);
+                    reply({ type: 'dl-pdf', ok: true, name: pdfName(k), data: doc.output('arraybuffer') });
+                })
+                .catch(function (err) { if (window.console) console.error('PDF failed:', err); reply({ type: 'dl-pdf', ok: false }); });
+        }
+
+        var deck = document.getElementById('deck');
+        var overlay = document.getElementById('overlay'), stage = document.getElementById('stage');
+        var flipper = document.getElementById('flipper'), closeBtn = document.getElementById('close');
+        var toolbar = document.getElementById('toolbar'), flipBtn = document.getElementById('flip'), moreLink = document.getElementById('more');
+        var pdfBtn = document.getElementById('pdf'), pdfFrame = null, pdfTimer = null;
+        var open = null; // { card, k, back, busy }
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function pdfDone(label) {
+            if (pdfFrame) { pdfFrame.remove(); pdfFrame = null; }
+            clearTimeout(pdfTimer);
+            pdfBtn.removeAttribute('aria-busy');
+            pdfBtn.textContent = label || 'Download PDF';
+            if (label) setTimeout(function () { if (!pdfFrame) pdfBtn.textContent = 'Download PDF'; }, 3000);
+        }
+        function downloadPdf() {
+            if (!open || pdfFrame) return;
+            pdfBtn.setAttribute('aria-busy', 'true');
+            pdfBtn.textContent = 'Making PDF…';
+            pdfFrame = document.createElement('iframe');
+            pdfFrame.setAttribute('aria-hidden', 'true');
+            pdfFrame.tabIndex = -1;
+            pdfFrame.style.cssText = 'position:fixed;left:-10000px;top:0;width:1400px;height:1000px;border:0;visibility:hidden';
+            pdfFrame.src = location.pathname + '?pdf=' + encodeURIComponent(open.k.slug);
+            document.body.appendChild(pdfFrame);
+            pdfTimer = setTimeout(function () { pdfDone('PDF failed, try again'); }, 60000);
+        }
+        window.addEventListener('message', function (e) {
+            if (e.origin !== location.origin || !e.data || e.data.type !== 'dl-pdf' || !pdfFrame) return;
+            if (!e.data.ok) { pdfDone('PDF failed, try again'); return; }
+            var url = URL.createObjectURL(new Blob([e.data.data], { type: 'application/pdf' }));
+            var a = document.createElement('a');
+            a.href = url; a.download = e.data.name;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+            pdfDone('Downloaded ✓');
+        });
+        pdfBtn.addEventListener('click', downloadPdf);
+
+        function renderDeck() {
+            deck.innerHTML = cards.map(function (k, i) {
+                return '<div class="slot"><button type="button" class="card" data-i="' + i + '" aria-label="' + esc(k.name) + (k.no ? ', Curated Collection No. ' + esc(k.no) : '') + '. Pick up the card.">' + frontHtml(k) + '</button>' +
+                    '<div class="card-cap"><b>' + esc(k.name) + '</b><span>' + flipIcon + 'Tap to pick up</span></div></div>';
+            }).join('');
+        }
+
+        // ---------- pick up, flip, put down ----------
+        function place(r) {
+            stage.style.top = r.top + 'px'; stage.style.left = r.left + 'px';
+            stage.style.width = r.width + 'px'; stage.style.height = r.height + 'px';
+        }
+        // Where the card sits for each side. The front keeps the card's 16:9; the back is a taller sheet.
+        function targetRect(side) {
+            var vw = window.innerWidth, vh = window.innerHeight, phone = vw < 700;
+            var top = 64, bottom = phone ? 10 : 84;
+            var availH = vh - top - bottom, w, h;
+            if (side === 'front') {
+                w = Math.min(phone ? vw - 20 : 1100, vw - (phone ? 20 : 80));
+                h = Math.round(w * 9 / 16);
+                if (h > availH) { h = availH; w = Math.round(h * 16 / 9); }
+            } else {
+                w = phone ? vw - 20 : Math.min(1100, vw - 80);
+                h = phone ? availH : Math.min(availH, Math.round(w * 0.8));
+            }
+            return { top: Math.round(top + (availH - h) / 2), left: Math.round((vw - w) / 2), width: w, height: h };
+        }
+        function after(ms, fn) { return setTimeout(fn, reduced ? 0 : ms); }
+        function setFlipLabel() { flipBtn.innerHTML = flipIcon + (open && open.back ? 'Flip to front' : 'Flip to back'); }
+
+        function openCard(card, startOnBack) {
+            if (open) return;
+            var k = cards[Number(card.dataset.i)];
+            open = { card: card, k: k, back: false, busy: false };
+            flipper.innerHTML = frontHtml(k) + backHtml(k);
+            stage.classList.remove('flipped', 'settled', 'flipping');
+            stage.style.transition = 'none';
+            place(card.getBoundingClientRect());
+            overlay.hidden = false; stage.hidden = false; closeBtn.hidden = false; toolbar.hidden = false;
+            // A collection in the shop opens its buy page; a card without one offers the free meeting.
+            if (k.db) { moreLink.href = '?c=' + encodeURIComponent(k.slug); moreLink.innerHTML = 'See the full collection &rarr;'; }
+            else { moreLink.href = '/consultation/'; moreLink.innerHTML = 'Make it yours &rarr;'; }
+            setFlipLabel();
+            card.classList.add('is-lifted');
+            document.body.classList.add('modal-open');
+            stage.offsetWidth; // apply the start position before animating
+            stage.style.transition = '';
+            overlay.classList.add('open');
+            place(targetRect('front'));
+            flipBtn.focus({ preventScroll: true });
+            if (startOnBack) after(480, flip);
+        }
+        function flip() {
+            if (!open || open.busy) return;
+            open.busy = true;
+            stage.classList.add('flipping');
+            if (!open.back) {
+                stage.classList.add('flipped');
+                place(targetRect('back'));
+                after(720, function () { stage.classList.add('settled'); stage.classList.remove('flipping'); open.back = true; open.busy = false; setFlipLabel(); });
+            } else {
+                stage.classList.remove('settled');
+                stage.offsetWidth;
+                stage.classList.remove('flipped');
+                place(targetRect('front'));
+                after(720, function () { stage.classList.remove('flipping'); open.back = false; open.busy = false; setFlipLabel(); });
+            }
+        }
+        function closeCard(then) {
+            if (!open || open.busy) return;
+            if (open.back) { flip(); after(740, function () { closeCard(then); }); return; }
+            var card = open.card;
+            open.busy = true;
+            overlay.classList.remove('open');
+            place(card.getBoundingClientRect());
+            after(440, function () {
+                overlay.hidden = true; stage.hidden = true; closeBtn.hidden = true; toolbar.hidden = true;
+                card.classList.remove('is-lifted');
+                document.body.classList.remove('modal-open');
+                flipper.innerHTML = '';
+                open = null;
+                if (typeof then === 'function') then(); else card.focus({ preventScroll: true });
+            });
+        }
+        // Closing the card without the animation (going on to the collection's buy page).
+        function dropCard() {
+            if (!open) return;
+            overlay.classList.remove('open');
+            overlay.hidden = true; stage.hidden = true; closeBtn.hidden = true; toolbar.hidden = true;
+            open.card.classList.remove('is-lifted');
+            document.body.classList.remove('modal-open');
+            flipper.innerHTML = '';
+            open = null;
+        }
+
+        deck.addEventListener('click', function (e) {
+            var card = e.target.closest('.card');
+            if (card) openCard(card);
+        });
+        flipBtn.addEventListener('click', flip);
+        overlay.addEventListener('click', closeCard);
+        closeBtn.addEventListener('click', closeCard);
+        moreLink.addEventListener('click', function (e) {
+            if (!open || !open.k.db) return;
+            e.preventDefault();
+            var slug = open.k.slug;
+            dropCard();
+            history.pushState(null, '', '?c=' + encodeURIComponent(slug));
+            showDetail(slug);
+        });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeCard(); });
+        window.addEventListener('resize', function () { if (open && !open.busy) place(targetRect(open.back ? 'back' : 'front')); });
+
         // ---------- list ----------
         function showList() {
             document.getElementById('detail-view').hidden = true;
             document.getElementById('list-view').hidden = false;
-            document.getElementById('list').innerHTML = data.collections.map(function (c) {
-                var o = cheapest(c);
-                var pct = o.flat != null && o.individual ? Math.round((1 - o.flat / o.individual) * 100) : null;
-                return '<a class="coll-card" href="?c=' + encodeURIComponent(c.slug) + '" data-slug="' + esc(c.slug) + '">' +
-                    (c.hero ? '<img src="' + esc(c.hero) + '" alt="" loading="lazy">' : '<div class="coll-scene">' + sceneSvg(c, defaultHex(c)) + '</div>') + '<div class="shade"></div>' +
-                    '<div class="info on-photo"><span class="space">' + esc(c.space) + ' · ' + itemCount(c) + ' pieces</span>' +
-                    '<h2>' + esc(c.name) + '</h2><p>' + esc(c.tagline || '') + '</p>' +
-                    (o.flat != null ? '<div class="price-row">From <strong>' + fm(o.flat) + '</strong>' + (pct > 0 ? '<span class="save-pill">Save ' + pct + '% vs. separately</span>' : '') + '</div>'
-                        : '<div class="price-row">' + DL.prices.COMING_SOON + '</div>') +
-                    '</div></a>';
-            }).join('');
+            renderDeck();
             document.title = 'Curated Collections - Design Lab';
         }
 
@@ -497,13 +994,6 @@
         }
 
         // ---------- events ----------
-        document.getElementById('list').addEventListener('click', function (e) {
-            var a = e.target.closest('[data-slug]');
-            if (!a) return;
-            e.preventDefault();
-            history.pushState(null, '', '?c=' + encodeURIComponent(a.dataset.slug));
-            showDetail(a.dataset.slug);
-        });
         document.getElementById('detail-back').addEventListener('click', function () {
             history.pushState(null, '', location.pathname);
             showList();
@@ -526,16 +1016,26 @@
         });
 
         function route() {
-            var slug = new URLSearchParams(location.search).get('c');
-            if (slug) showDetail(slug); else showList();
+            var q = new URLSearchParams(location.search), slug = q.get('c');
+            if (slug && data.bySlug[slug] && HIDE.indexOf(slug) < 0) return showDetail(slug);
+            showList();
+            // ?card=<slug> picks that card up on arrival; add &side=back to land on the back.
+            var i = cards.map(function (k) { return k.slug; }).indexOf(q.get('card'));
+            if (i >= 0) openCard(deck.querySelector('[data-i="' + i + '"]'), q.get('side') === 'back');
         }
 
+        var pdfSlug = new URLSearchParams(location.search).get('pdf');
         load().then(function () {
+            buildCards();
+            if (pdfSlug) { buildPdf(pdfSlug); return; }
             document.getElementById('loading').hidden = true;
             route();
         }).catch(function (err) {
-            document.getElementById('loading').textContent = 'Sorry, collections could not be loaded. Please refresh the page.';
+            // The shop's collections didn't load: still show the hand-made cards.
             console.error(err);
+            cards = STATIC_CARDS.slice();
+            document.getElementById('loading').hidden = true;
+            showList();
         });
     })();
     </script>
