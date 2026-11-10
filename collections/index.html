@@ -339,6 +339,17 @@
             font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
         }
         .btn-primary:hover, .btn-primary:focus-visible { filter: brightness(1.08); }
+        .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+        .soon-note { margin: 14px 0 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+        .soon-note p { margin: 0 0 12px; }
+        .btn-talk {
+            display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 28px; border-radius: 999px; border: 1px solid var(--gold);
+            color: var(--gold); text-decoration: none; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-talk:hover, .btn-talk:focus-visible { background: rgba(var(--gold-rgb),0.12); }
+        .static-notes { margin: 0; padding-left: 22px; font-size: 14px; line-height: 1.6; color: rgba(var(--ink),0.85); }
+        .static-notes li { margin-bottom: 4px; }
+        .soon-pill { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: rgba(var(--gold-rgb),0.16); color: var(--gold); font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; vertical-align: 1px; }
 
         .included { margin-top: 40px; }
         .included h2 { margin: 0 0 6px; font-size: 26px; }
@@ -433,25 +444,30 @@
                     <h1 id="d-name"></h1>
                     <p class="tagline" id="d-tagline"></p>
                     <p class="desc" id="d-desc"></p>
-                    <div class="opt"><h3>Door Style <span id="d-style-label"></span></h3><div class="style-cards" id="d-styles"></div>
+                    <div class="opt" id="d-opt-style"><h3>Door Style <span id="d-style-label"></span></h3><div class="style-cards" id="d-styles"></div>
                         <p class="style-desc" id="d-style-desc"></p>
                         <button class="link-btn" id="d-guide-link" type="button">Compare door styles</button></div>
-                    <div class="opt"><h3>Finish <span id="d-finish-label"></span></h3><div class="swatches" id="d-finishes"></div></div>
-                    <div class="price-box">
+                    <div class="opt" id="d-opt-finish"><h3>Finish <span id="d-finish-label"></span></h3><div class="swatches" id="d-finishes"></div></div>
+                    <div class="price-box" id="d-price-box">
                         <div class="flat" id="d-flat"></div>
                         <div class="compare" id="d-compare"></div>
                     </div>
                     <button class="btn-primary" id="d-add" type="button">Add Collection to Cart</button>
+                    <div class="soon-note" id="d-soon-note" hidden>
+                        <p>Coming soon to order online. Talk with a designer and we'll price it, size it to your space and make it yours.</p>
+                        <a class="btn-talk" href="/consultation/">Talk with a designer</a>
+                    </div>
                 </div>
             </div>
 
-            <div class="included">
+            <div class="included" id="d-included">
                 <h2>What's included</h2>
                 <p id="d-inc-count"></p>
-                <table class="inc-table">
+                <table class="inc-table" id="d-inc-table">
                     <thead><tr><th>Qty</th><th>Item</th><th>Item #</th></tr></thead>
                     <tbody id="d-items"></tbody>
                 </table>
+                <ol class="static-notes" id="d-notes" hidden></ol>
             </div>
         </section>
     </main>
@@ -498,7 +514,8 @@
                             description: row.description, space: row.space, hero: row.hero_image_url, gallery: row.gallery_urls || [], card: row.card || null, offers: [] };
                         data.collections.push(c);
                     }
-                    c.offers.push({ door_style_id: row.door_style_id, door_style: row.door_style, flat: DL.prices.read(row.flat_price), individual: DL.prices.read(row.individual_price) });
+                    c.offers.push({ door_style_id: row.door_style_id, door_style: row.door_style, flat: DL.prices.read(row.flat_price), individual: DL.prices.read(row.individual_price),
+                        soon: Number(row.items_not_offered) > 0 }); // a piece isn't priced in this style yet: coming soon
                 });
                 var ids = data.collections.map(function (c) { return c.id; });
                 return Promise.all([
@@ -520,7 +537,15 @@
                 if (res.error) throw res.error;
                 res.data.forEach(function (p) { data.products[p.id] = p; });
                 var famIds = res.data.map(function (p) { return p.family_id; });
-                return sb.from('product_families').select('id,name,slug').in('id', famIds);
+                data.offered = {};
+                return Promise.all([
+                    sb.from('product_families').select('id,name,slug,is_active').in('id', famIds),
+                    sb.from('storefront_offers').select('product_id,door_style_id').in('product_id', res.data.map(function (p) { return p.id; }))
+                ]).then(function (r) {
+                    if (r[1].error) throw r[1].error;
+                    r[1].data.forEach(function (o) { data.offered[o.product_id + ':' + o.door_style_id] = true; });
+                    return r[0];
+                });
             }).then(function (res) {
                 if (res.error) throw res.error;
                 res.data.forEach(function (f) { data.families[f.id] = f; });
@@ -565,6 +590,8 @@
                 slug: 'study-time', no: '001', name: 'Study Time', subtitle: 'Built-In Desk System',
                 front: IMG + 'study-time-front.webp', drawing: IMG + 'study-time-drawing.webp', drawingTitle: 'Front Elevation',
                 card: { title: 'STUDY TIME?', caption: 'CNC Classic Series Curated Collection 001', tag: 'Designed in the Lab' },
+                tagline: 'A built-in desk with two bookcase towers.',
+                description: 'A 99" built-in desk system: two 18" towers with open shelves, a 39" knee space and base cabinets with roll-outs under a 1 1/2" top. CNC Classic Series, Woodbourne door in white paint.',
                 sheet: { sheet: 'A1', scale: 'NTS', date: '09/18/2026', rev: 'A' },
                 maker: 'CNC Cabinetry: Classic Series',
                 specs: [],
@@ -574,25 +601,6 @@
                     'Knee space width = 39" with 3" skirt.', 'Flush toe kick with molding (as shown).', 'Includes base molding along back.',
                     'Base cabinets include 1 rollout each (as shown).', 'Manufacturer: CNC Cabinetry Classic Series.',
                     '0.75" frameless construction.', 'Finish: White paint.', 'Door style: Woodbourne (extended lead time).',
-                    'See Design Lab for alternative sizes, colors, and door style options.'
-                ],
-                schedule: []
-            },
-            {
-                // CEO email "Curated Coll 008 STRUCTURE|3". The American Series isn't in the catalog yet,
-                // so this card has no cabinets to buy; sizes are read from his rendering (not given).
-                slug: 'american-hutch', no: '008', name: 'The American Hutch', subtitle: 'Hutch & Buffet',
-                front: IMG + 'american-hutch-front.webp', drawingTitle: 'Front Elevation',
-                blueprint: [{"id": "left-base", "kind": "base", "name": "Left base", "x": 0, "y": 0, "w": 30, "h": 34.5, "d": 24, "doors": 2, "drawers": 1, "shelves": 0, "toe": 4.5, "crown": 0}, {"id": "right-base", "kind": "base", "name": "Right base", "x": 30, "y": 0, "w": 30, "h": 34.5, "d": 24, "doors": 2, "drawers": 1, "shelves": 0, "toe": 4.5, "crown": 0}, {"id": "countertop", "kind": "counter", "name": "Countertop", "x": 0, "y": 34.5, "w": 60, "h": 1.5, "d": 24, "doors": 0, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "left-glass-wall-cabinet", "kind": "wall", "name": "Left glass wall cabinet", "x": 0, "y": 54, "w": 30, "h": 36, "d": 12, "doors": 2, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "right-glass-wall-cabinet", "kind": "wall", "name": "Right glass wall cabinet", "x": 30, "y": 54, "w": 30, "h": 36, "d": 12, "doors": 2, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "crown-molding", "kind": "filler", "name": "Crown molding", "x": -1, "y": 90, "w": 62, "h": 3, "d": 24, "doors": 0, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}],
-                card: { title: 'THE AMERICAN HUTCH', caption: 'Structure|3 Curated Collection 008', tag: 'Designed in the Lab' },
-                sheet: { sheet: 'A1', scale: 'NTS', date: '11/10/2026', rev: 'A' },
-                maker: 'STRUCTURE|3 Cabinetry & Closets',
-                specs: [['Construction', 'Framed full overlay, plywood'], ['Door style', 'Loveland (3" wide shaker)'], ['Upper doors', 'Glass']],
-                notes: [
-                    'Overall width = 60" (approx.).', 'Base cabinets: two 30" wide, each with 1 drawer over 2 doors.',
-                    'Base height = 34.5"; countertop 1.5" (36" to top).', 'Wall cabinets: two 30" wide x 36" high, glass doors.',
-                    'Wall cabinets mount 18" above the countertop.', 'Crown molding on top (approx. 93" overall).',
-                    'Under-cabinet light rail.', 'Countertop and backsplash: see Design Lab.',
                     'See Design Lab for alternative sizes, colors, and door style options.'
                 ],
                 schedule: []
@@ -820,8 +828,7 @@
             place(card.getBoundingClientRect());
             overlay.hidden = false; stage.hidden = false; closeBtn.hidden = false; toolbar.hidden = false;
             // A collection in the shop opens its buy page; a card without one offers the free meeting.
-            if (k.db) { moreLink.href = '?c=' + encodeURIComponent(k.slug); moreLink.innerHTML = 'See the full collection &rarr;'; }
-            else { moreLink.href = '/consultation/'; moreLink.innerHTML = 'Make it yours &rarr;'; }
+            moreLink.href = '?c=' + encodeURIComponent(k.slug); moreLink.innerHTML = 'See the full collection &rarr;';
             setFlipLabel();
             card.classList.add('is-lifted');
             document.body.classList.add('modal-open');
@@ -883,7 +890,7 @@
         overlay.addEventListener('click', closeCard);
         closeBtn.addEventListener('click', closeCard);
         moreLink.addEventListener('click', function (e) {
-            if (!open || !open.k.db) return;
+            if (!open) return;
             e.preventDefault();
             var slug = open.k.slug;
             dropCard();
@@ -902,9 +909,43 @@
         }
 
         // ---------- detail ----------
+        // Detail parts that a hand-made card (no catalog yet) hides.
+        function staticMode(on) {
+            ['d-opt-style', 'd-opt-finish', 'd-inc-table'].forEach(function (id) { document.getElementById(id).hidden = on; });
+            document.getElementById('d-notes').hidden = !on;
+        }
+        // A hand-made card: its page shows the design, "pricing coming soon" and Talk with a designer.
+        function showStatic(k) {
+            sel = null;
+            staticMode(true);
+            document.getElementById('list-view').hidden = true;
+            document.getElementById('detail-view').hidden = false;
+            var main = document.getElementById('d-main');
+            main.hidden = false; main.src = k.front; main.alt = k.name;
+            document.getElementById('d-scene').hidden = true;
+            document.getElementById('d-thumbs').innerHTML = '';
+            document.getElementById('d-space').textContent = 'Curated Collection No. ' + k.no;
+            document.getElementById('d-name').textContent = k.name;
+            document.getElementById('d-tagline').textContent = k.tagline || k.subtitle || '';
+            document.getElementById('d-desc').textContent = k.description || '';
+            document.getElementById('d-flat').textContent = DL.prices.COMING_SOON;
+            document.getElementById('d-flat').classList.add('is-soon');
+            document.getElementById('d-compare').innerHTML = '';
+            var addBtn = document.getElementById('d-add');
+            addBtn.disabled = true; addBtn.textContent = 'Coming soon';
+            document.getElementById('d-soon-note').hidden = false;
+            document.getElementById('d-inc-count').textContent = 'Design details (from the back of the card):';
+            document.getElementById('d-notes').innerHTML = k.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('');
+            document.title = k.name + ' - Design Lab';
+            window.scrollTo(0, 0);
+        }
         function showDetail(slug) {
             var c = data.bySlug[slug];
-            if (!c) return showList();
+            if (!c) {
+                var k = cardBySlug(slug);
+                return k && !k.db ? showStatic(k) : showList();
+            }
+            staticMode(false);
             var o = cheapest(c);
             sel = { c: c, styleId: o.door_style_id, finishId: null, img: c.hero };
             // Start on the finish the card shows (e.g. Taupe), when that door style has it.
@@ -923,8 +964,9 @@
             document.getElementById('d-items').innerHTML = items.map(function (i) {
                 var p = data.products[i.product_id], f = data.families[p.family_id];
                 var dims = p.width != null ? Number(p.width) + '"W × ' + Number(p.height) + '"H' + (p.depth != null ? ' × ' + Number(p.depth) + '"D' : '') + ' · ' : '';
-                return '<tr><td class="qty">' + i.quantity + ' ×</td><td><a href="/diy-wizard/?family=' + encodeURIComponent(f.slug) + '">' +
-                    '<div class="name">' + esc(f.name) + '</div><div class="desc">' + esc(dims + p.description) + '</div></a></td>' +
+                var soon = o.soon && !data.offered[p.id + ':' + o.door_style_id]; // only while the collection itself is coming soon
+                var body = '<div class="name">' + esc(f.name) + (soon ? ' <span class="soon-pill">Coming soon</span>' : '') + '</div><div class="desc">' + esc(dims + p.description) + '</div>';
+                return '<tr><td class="qty">' + i.quantity + ' ×</td><td>' + (f.is_active === false ? body : '<a href="/diy-wizard/?family=' + encodeURIComponent(f.slug) + '">' + body + '</a>') + '</td>' +
                     '<td class="sku">' + esc(p.mfg_sku) + '</td></tr>';
             }).join('');
             document.title = c.name + ' - Design Lab';
@@ -967,6 +1009,10 @@
                 return '<button type="button" class="swatch" data-finish="' + f.id + '" aria-pressed="' + (f.id === sel.finishId) + '" title="' + esc(f.name) +
                     '" aria-label="' + esc(f.name) + '" style="background:' + esc(f.swatch_hex || '#777') + '"></button>';
             }).join('');
+            var addBtn = document.getElementById('d-add');
+            addBtn.disabled = o.soon;
+            addBtn.textContent = o.soon ? 'Coming soon' : 'Add Collection to Cart';
+            document.getElementById('d-soon-note').hidden = !o.soon;
             document.getElementById('d-flat').textContent = DL.prices.text(o.flat);
             document.getElementById('d-flat').classList.toggle('is-soon', o.flat == null);
             document.getElementById('d-compare').innerHTML = o.flat != null && o.individual != null
@@ -974,6 +1020,7 @@
         }
 
         function addToCart() {
+            if (document.getElementById('d-add').disabled) return;
             var c = sel.c, o = c.offers.filter(function (x) { return x.door_style_id === sel.styleId; })[0];
             var fin = (data.finishesByStyle[sel.styleId] || []).filter(function (f) { return f.id === sel.finishId; })[0];
             var items = (data.items[c.id] || []).slice().sort(function (a, b) { return a.sort_order - b.sort_order; });
@@ -1041,7 +1088,7 @@
 
         function route() {
             var q = new URLSearchParams(location.search), slug = q.get('c');
-            if (slug && data.bySlug[slug] && HIDE.indexOf(slug) < 0) return showDetail(slug);
+            if (slug && ((data.bySlug[slug] && HIDE.indexOf(slug) < 0) || (cardBySlug(slug) && !cardBySlug(slug).db))) return showDetail(slug);
             showList();
             // ?card=<slug> picks that card up on arrival; add &side=back to land on the back.
             var i = cards.map(function (k) { return k.slug; }).indexOf(q.get('card'));
