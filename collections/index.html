@@ -26,6 +26,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/Assets/dl-core.js"></script>
     <script src="/Assets/dl-help.js" defer></script>
+    <script src="/collections/editor/blueprint.js"></script>
     <style>
         :root { --white: var(--text); --black: var(--bg); --panel: var(--surface); --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),0.58); }
         *, *::before, *::after { box-sizing: border-box; }
@@ -494,7 +495,7 @@
                     var c = data.bySlug[row.slug];
                     if (!c) {
                         c = data.bySlug[row.slug] = { id: row.collection_id, slug: row.slug, name: row.name, tagline: row.tagline,
-                            description: row.description, space: row.space, hero: row.hero_image_url, gallery: row.gallery_urls || [], offers: [] };
+                            description: row.description, space: row.space, hero: row.hero_image_url, gallery: row.gallery_urls || [], card: row.card || null, offers: [] };
                         data.collections.push(c);
                     }
                     c.offers.push({ door_style_id: row.door_style_id, door_style: row.door_style, flat: DL.prices.read(row.flat_price), individual: DL.prices.read(row.individual_price) });
@@ -555,10 +556,10 @@
 
         // ---------- the Design Cards ----------
         // Cards come from two places for now: STATIC cards the CEO made by hand (no DB rows yet) and
-        // the DB collections. CARD_EXTRA adds his card wording to a DB collection; HIDE keeps a DB
-        // collection off the page without deleting it.
+        // the published DB collections, whose card text + drawing live in curated_collections.card
+        // (migration 0029). HIDE keeps a DB collection off the page without unpublishing it.
         var IMG = '/Assets/Images/curated/';
-        var HIDE = ['the-aspen'];
+        var HIDE = ['the-denver', 'the-aspen']; // unpublished in 0029 too; kept so the order of merge vs. migration doesn't matter
         var STATIC_CARDS = [
             {
                 slug: 'study-time', no: '001', name: 'Study Time', subtitle: 'Built-In Desk System',
@@ -578,25 +579,25 @@
                 schedule: []
             }
         ];
-        var CARD_EXTRA = {
-            'the-denver': { no: '002', subtitle: 'L-Shaped Kitchen', card: { title: 'THE DENVER', caption: 'CNC Luxor Curated Collection 002', tag: 'Designed in the Lab' } }
-        };
         var cards = [];
 
         // A DB collection as a card: the back is filled in from its cabinets.
         function cardFromDb(c) {
-            var x = CARD_EXTRA[c.slug] || {};
+            var x = c.card || {};
             var items = (data.items[c.id] || []).slice().sort(function (a, b) { return a.sort_order - b.sort_order; });
             var styles = c.offers.map(function (o) { return o.door_style; });
             var fins = (data.finishesByStyle[cheapest(c).door_style_id] || []).map(function (f) { return f.name; });
             return {
                 slug: c.slug, no: x.no || '', name: c.name, subtitle: x.subtitle || (c.space + ' Collection'), db: c,
-                front: c.hero, drawingSvg: sceneSvg(c, defaultHex(c)), drawingTitle: 'Cabinet Layout',
-                card: x.card || { title: c.name.toUpperCase(), caption: 'Curated Collection' + (x.no ? ' ' + x.no : ''), tag: 'Designed in the Lab' },
-                sheet: { sheet: 'A1', scale: 'NTS', date: '', rev: 'A' },
-                maker: 'Door style: ' + styles.join(' / '),
-                specs: [],
-                notes: [
+                front: c.hero,
+                // The CEO's drawing (blueprint pieces) when there is one, else the cabinets drawn in a row.
+                drawingSvg: x.blueprint && window.DLBlueprint ? DLBlueprint.svg(x.blueprint) : sceneSvg(c, defaultHex(c)),
+                drawingTitle: x.drawing_title || (x.blueprint ? 'Front Elevation' : 'Cabinet Layout'),
+                card: { title: x.title || c.name.toUpperCase(), caption: x.caption || 'Curated Collection' + (x.no ? ' ' + x.no : ''), tag: x.tag || 'Designed in the Lab' },
+                sheet: x.sheet || { sheet: 'A1', scale: 'NTS', date: '', rev: 'A' },
+                maker: x.maker || 'Door style: ' + styles.join(' / '),
+                specs: x.specs || [],
+                notes: x.notes || [
                     itemCount(c) + ' pieces in ' + items.length + ' line items.',
                     'Door style: ' + styles.join(' or ') + '.',
                     fins.length ? 'Finishes: ' + fins.join(', ') + '.' : '',
@@ -606,7 +607,7 @@
                 schedule: items.map(function (i) {
                     var p = data.products[i.product_id], f = data.families[p.family_id] || {};
                     var dims = p.width != null ? Number(p.width) + '"W × ' + Number(p.height) + '"H' + (p.depth != null ? ' × ' + Number(p.depth) + '"D' : '') : '';
-                    return { qty: i.quantity, sku: p.mfg_sku, extra: [f.name, dims].filter(Boolean).join(' · ') };
+                    return { qty: i.quantity, sku: p.mfg_sku, mods: (x.mods || {})[p.sku] || '', extra: [f.name, dims].filter(Boolean).join(' · ') };
                 })
             };
         }
@@ -886,6 +887,9 @@
             if (!c) return showList();
             var o = cheapest(c);
             sel = { c: c, styleId: o.door_style_id, finishId: null, img: c.hero };
+            // Start on the finish the card shows (e.g. Taupe), when that door style has it.
+            var cardFin = c.card && c.card.finish && (data.finishesByStyle[o.door_style_id] || []).filter(function (f) { return f.name === c.card.finish; })[0];
+            if (cardFin) sel.finishId = cardFin.id;
             pickStyle(o.door_style_id);
             document.getElementById('list-view').hidden = true;
             document.getElementById('detail-view').hidden = false;
