@@ -630,8 +630,10 @@
             return {
                 slug: c.slug, no: x.no || '', name: c.name, subtitle: x.subtitle || (c.space + ' Collection'), db: c,
                 front: c.hero,
-                // The CEO's drawing (blueprint pieces) when there is one, else the cabinets drawn in a row.
-                drawingSvg: x.blueprint && window.DLBlueprint ? DLBlueprint.svg(x.blueprint) : sceneSvg(c, defaultHex(c)),
+                // The CEO's own drawing (a picture from SketchUp) when the card has one; else the blueprint
+                // pieces drawn to scale; else the cabinets drawn in a row.
+                drawing: x.drawing || null,
+                drawingSvg: x.drawing ? null : x.blueprint && window.DLBlueprint ? DLBlueprint.svg(x.blueprint) : sceneSvg(c, defaultHex(c)),
                 drawingTitle: x.drawing_title || (x.blueprint ? 'Front Elevation' : 'Cabinet Layout'),
                 card: { title: x.title || c.name.toUpperCase(), caption: x.caption || 'Curated Collection' + (x.no ? ' ' + x.no : ''), tag: x.tag || 'Designed in the Lab' },
                 sheet: x.sheet || { sheet: 'A1', scale: 'NTS', date: '', rev: 'A' },
