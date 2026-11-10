@@ -577,6 +577,25 @@
                     'See Design Lab for alternative sizes, colors, and door style options.'
                 ],
                 schedule: []
+            },
+            {
+                // CEO email "Curated Coll 008 STRUCTURE|3". The American Series isn't in the catalog yet,
+                // so this card has no cabinets to buy; sizes are read from his rendering (not given).
+                slug: 'american-hutch', no: '008', name: 'The American Hutch', subtitle: 'Hutch & Buffet',
+                front: IMG + 'american-hutch-front.webp', drawingTitle: 'Front Elevation',
+                blueprint: [{"id": "left-base", "kind": "base", "name": "Left base", "x": 0, "y": 0, "w": 30, "h": 34.5, "d": 24, "doors": 2, "drawers": 1, "shelves": 0, "toe": 4.5, "crown": 0}, {"id": "right-base", "kind": "base", "name": "Right base", "x": 30, "y": 0, "w": 30, "h": 34.5, "d": 24, "doors": 2, "drawers": 1, "shelves": 0, "toe": 4.5, "crown": 0}, {"id": "countertop", "kind": "counter", "name": "Countertop", "x": 0, "y": 34.5, "w": 60, "h": 1.5, "d": 24, "doors": 0, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "left-glass-wall-cabinet", "kind": "wall", "name": "Left glass wall cabinet", "x": 0, "y": 54, "w": 30, "h": 36, "d": 12, "doors": 2, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "right-glass-wall-cabinet", "kind": "wall", "name": "Right glass wall cabinet", "x": 30, "y": 54, "w": 30, "h": 36, "d": 12, "doors": 2, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}, {"id": "crown-molding", "kind": "filler", "name": "Crown molding", "x": -1, "y": 90, "w": 62, "h": 3, "d": 24, "doors": 0, "drawers": 0, "shelves": 0, "toe": 0, "crown": 0}],
+                card: { title: 'THE AMERICAN HUTCH', caption: 'Structure|3 Curated Collection 008', tag: 'Designed in the Lab' },
+                sheet: { sheet: 'A1', scale: 'NTS', date: '11/10/2026', rev: 'A' },
+                maker: 'STRUCTURE|3 Cabinetry & Closets',
+                specs: [['Construction', 'Framed full overlay, plywood'], ['Door style', 'Loveland (3" wide shaker)'], ['Upper doors', 'Glass']],
+                notes: [
+                    'Overall width = 60" (approx.).', 'Base cabinets: two 30" wide, each with 1 drawer over 2 doors.',
+                    'Base height = 34.5"; countertop 1.5" (36" to top).', 'Wall cabinets: two 30" wide x 36" high, glass doors.',
+                    'Wall cabinets mount 18" above the countertop.', 'Crown molding on top (approx. 93" overall).',
+                    'Under-cabinet light rail.', 'Countertop and backsplash: see Design Lab.',
+                    'See Design Lab for alternative sizes, colors, and door style options.'
+                ],
+                schedule: []
             }
         ];
         var cards = [];
@@ -612,6 +631,7 @@
             };
         }
         function buildCards() {
+            STATIC_CARDS.forEach(function (k) { if (k.blueprint && !k.drawingSvg && window.DLBlueprint) k.drawingSvg = DLBlueprint.svg(k.blueprint); });
             cards = STATIC_CARDS.concat(data.collections.filter(function (c) { return HIDE.indexOf(c.slug) < 0; }).map(cardFromDb));
         }
         function cardBySlug(slug) { return cards.filter(function (k) { return k.slug === slug; })[0]; }
