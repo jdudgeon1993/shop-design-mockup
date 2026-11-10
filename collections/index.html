@@ -99,7 +99,6 @@
         /* ---------- the row of front cards ---------- */
         .deck { display: grid; grid-template-columns: 1fr; gap: 26px; }
         @media (min-width: 700px) { .deck { grid-template-columns: 1fr 1fr; } }
-        @media (min-width: 1100px) { .deck { grid-template-columns: 1fr 1fr 1fr; } }
         .slot { display: flex; flex-direction: column; gap: 10px; }
         .card {
             appearance: none; display: block; width: 100%; padding: 0; border: none; background: none; cursor: pointer; text-align: left; color: inherit;
@@ -341,7 +340,11 @@
         .btn-primary:hover, .btn-primary:focus-visible { filter: brightness(1.08); }
         .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
         .soon-note { margin: 14px 0 0; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
-        .soon-note p { margin: 0 0 12px; }
+        .buy-btns { display: grid; gap: 10px; }
+        .btn-talk { background: none; cursor: pointer; font-family: inherit; }
+        .d-help { margin-top: 14px; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        .buy-hint { margin: 10px 0 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
         .btn-talk {
             display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 28px; border-radius: 999px; border: 1px solid var(--gold);
             color: var(--gold); text-decoration: none; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
@@ -452,16 +455,18 @@
                         <div class="flat" id="d-flat"></div>
                         <div class="compare" id="d-compare"></div>
                     </div>
-                    <button class="btn-primary" id="d-add" type="button">Add Collection to Cart</button>
-                    <div class="soon-note" id="d-soon-note" hidden>
-                        <p>Coming soon to order online. Talk with a designer and we'll price it, size it to your space and make it yours.</p>
-                        <a class="btn-talk" href="/consultation/">Talk with a designer</a>
+                    <div class="buy-btns">
+                        <button class="btn-primary" id="d-add" type="button">Buy as is</button>
+                        <button class="btn-talk" id="d-talk" type="button" aria-expanded="false" aria-controls="d-help">Speak with a designer to edit</button>
                     </div>
+                    <div class="d-help" id="d-help" hidden></div>
+                    <p class="buy-hint" id="d-buy-hint">Want a different size, color or style? A designer will adjust it with you, free.</p>
+                    <p class="soon-note" id="d-soon-note" hidden>Coming soon to order online. Speak with a designer and we'll price it and make it yours.</p>
                 </div>
             </div>
 
             <div class="included" id="d-included">
-                <h2>What's included</h2>
+                <h2 id="d-inc-title">What's included</h2>
                 <p id="d-inc-count"></p>
                 <table class="inc-table" id="d-inc-table">
                     <thead><tr><th>Qty</th><th>Item</th><th>Item #</th></tr></thead>
@@ -591,7 +596,7 @@
                 front: IMG + 'study-time-front.webp', drawing: IMG + 'study-time-drawing.webp', drawingTitle: 'Front Elevation',
                 card: { title: 'STUDY TIME?', caption: 'CNC Classic Series Curated Collection 001', tag: 'Designed in the Lab' },
                 tagline: 'A built-in desk with two bookcase towers.',
-                description: 'A 99" built-in desk system: two 18" towers with open shelves, a 39" knee space and base cabinets with roll-outs under a 1 1/2" top. CNC Classic Series, Woodbourne door in white paint.',
+                description: 'A 99" built-in desk system: two 18" towers with open shelves, a 39" knee space and base cabinets with roll-outs under a 1 1/2" top. CNC Classic Series with the Woodbourne door.',
                 sheet: { sheet: 'A1', scale: 'NTS', date: '09/18/2026', rev: 'A' },
                 maker: 'CNC Cabinetry: Classic Series',
                 specs: [],
@@ -909,10 +914,36 @@
         }
 
         // ---------- detail ----------
+        // "Speak with a designer to edit" opens the live Help request (dl-help.js) right here,
+        // with the collection already written in, so the designer knows what they want changed.
+        var talkFor = '';
+        function resetTalk(label) {
+            talkFor = label;
+            document.getElementById('d-help').hidden = true;
+            document.getElementById('d-talk').setAttribute('aria-expanded', 'false');
+        }
+        function prefill(box) {
+            var t = box.querySelector('textarea');
+            if (t && !t.value) t.value = "I'd like to edit " + talkFor + ': ';
+        }
+        document.getElementById('d-talk').addEventListener('click', function () {
+            var box = document.getElementById('d-help'), btn = this;
+            if (!window.DL || !DL.help) { location.href = '/consultation/'; return; }
+            box.hidden = !box.hidden;
+            btn.setAttribute('aria-expanded', String(!box.hidden));
+            if (box.hidden) return;
+            DL.help.mount(box);
+            prefill(box);
+            // The help box redraws when a designer comes online; write the collection back in.
+            if (!box._watch) { box._watch = new MutationObserver(function () { prefill(box); }); box._watch.observe(box, { childList: true }); }
+            var n = box.querySelector('input[name="name"]');
+            if (n) n.focus();
+        });
         // Detail parts that a hand-made card (no catalog yet) hides.
         function staticMode(on) {
             ['d-opt-style', 'd-opt-finish', 'd-inc-table'].forEach(function (id) { document.getElementById(id).hidden = on; });
             document.getElementById('d-notes').hidden = !on;
+            document.getElementById('d-inc-title').textContent = on ? 'Design details' : "What's included";
         }
         // A hand-made card: its page shows the design, "pricing coming soon" and Talk with a designer.
         function showStatic(k) {
@@ -934,7 +965,9 @@
             var addBtn = document.getElementById('d-add');
             addBtn.disabled = true; addBtn.textContent = 'Coming soon';
             document.getElementById('d-soon-note').hidden = false;
-            document.getElementById('d-inc-count').textContent = 'Design details (from the back of the card):';
+            document.getElementById('d-buy-hint').hidden = true;
+            resetTalk(k.name + (k.no ? ' (No. ' + k.no + ')' : ''));
+            document.getElementById('d-inc-count').textContent = 'From the back of the card. A designer will turn these into your cabinet list.';
             document.getElementById('d-notes').innerHTML = k.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('');
             document.title = k.name + ' - Design Lab';
             window.scrollTo(0, 0);
@@ -1011,8 +1044,10 @@
             }).join('');
             var addBtn = document.getElementById('d-add');
             addBtn.disabled = o.soon;
-            addBtn.textContent = o.soon ? 'Coming soon' : 'Add Collection to Cart';
+            addBtn.textContent = o.soon ? 'Coming soon' : 'Buy as is';
             document.getElementById('d-soon-note').hidden = !o.soon;
+            document.getElementById('d-buy-hint').hidden = o.soon;
+            resetTalk(c.name + (c.card && c.card.no ? ' (No. ' + c.card.no + ')' : ''));
             document.getElementById('d-flat').textContent = DL.prices.text(o.flat);
             document.getElementById('d-flat').classList.toggle('is-soon', o.flat == null);
             document.getElementById('d-compare').innerHTML = o.flat != null && o.individual != null
