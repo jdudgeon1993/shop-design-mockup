@@ -22,6 +22,7 @@ alter table public.curated_collections drop constraint if exists curated_collect
 alter table public.curated_collections add constraint curated_collections_space_check
   check (space in ('Kitchen', 'Bath', 'Laundry', 'Closet', 'Office', 'Mudroom'));
 
+-- Same as the live view (pricing tag check from 0024) plus c.card as the last column.
 create or replace view public.storefront_collections as
  select c.id as collection_id,
     c.slug,
@@ -35,9 +36,9 @@ create or replace view public.storefront_collections as
     s.door_style_id,
     ds.name as door_style,
     ds.code as door_style_code,
-    case when (select exists (select 1 from public.profiles pr where pr.id = (select auth.uid()) and pr.role in ('employee', 'admin')))
+    case when (select exists (select 1 from public.profile_tags pt where pt.profile_id = (select auth.uid()) and pt.tag = 'pricing'))
          then s.flat_price end::numeric(12, 2) as flat_price,
-    case when (select exists (select 1 from public.profiles pr where pr.id = (select auth.uid()) and pr.role in ('employee', 'admin')))
+    case when (select exists (select 1 from public.profile_tags pt where pt.profile_id = (select auth.uid()) and pt.tag = 'pricing'))
          then (select sum(ci.quantity::numeric * round(pp.list_price * lp.dealer_multiplier * lp.retail_multiplier, 2))
                  from curated_collection_items ci
                  join product_prices pp on pp.product_id = ci.product_id and pp.price_code = ds.price_code
