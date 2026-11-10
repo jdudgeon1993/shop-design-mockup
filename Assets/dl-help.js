@@ -7,7 +7,7 @@
 // one-look rule still applies. Nothing is stored in the database: when the session
 // ends the channel is simply gone.
 //
-// DL.help.mount(el)  renders the "Get live help" box into el (cart page).
+// DL.help.mount(el, opts)  renders the "Get live help" box into el (cart page; collections with their own wording).
 // Any page that loads this file keeps an active session going (and shows its bar).
 (function () {
     if (!window.DL || !DL.supabase || DL.agentMode) return; // not inside the Help Desk catalog
@@ -19,6 +19,7 @@
 
     var state = { sid: null, name: '', topic: '', status: 'idle', agent: null, agentId: null, video: null, msgs: [] };
     var chatOpen = false, unread = 0;
+    var boxOpts = null;
     var lobby = null, session = null, agentsOnline = 0, boxes = [], bar = null, videoApi = null;
     var agentHere = false; // set by the agent's messages and presence join/leave
 
@@ -286,15 +287,16 @@
             return '<h3>Connected with ' + esc(state.agent) + '</h3><p>They can see your cart and make changes with you. Every change shows up here right away.</p>';
         }
         var on = agentsOnline > 0;
-        return '<h3>Want a hand with your order?</h3>' +
-            '<p>A Design Lab agent can look at your cart with you, live, and fix anything that\'s missing. Add a video call if it helps.</p>' +
+        var o = boxOpts || {};
+        return '<h3>' + esc(o.title || 'Want a hand with your order?') + '</h3>' +
+            '<p>' + esc(o.text || 'A Design Lab agent can look at your cart with you, live, and fix anything that\'s missing. Add a video call if it helps.') + '</p>' +
             '<div class="dlh-status"><span class="dlh-dot' + (on ? ' on' : '') + '"></span>' +
             (on ? 'An agent is available now' : 'No agents online right now. You can still ask; someone will pick it up when they\'re back.') + '</div>' +
             '<form class="dlh-form" data-dlh-request><label class="sr-only" for="dlh-name">Your first name</label>' +
             '<input id="dlh-name" name="name" placeholder="Your first name" autocomplete="given-name" value="' + esc(state.name || '') + '">' +
             '<label class="sr-only" for="dlh-topic">What do you need help with?</label>' +
             '<textarea id="dlh-topic" name="topic" maxlength="300" placeholder="What do you need help with? (optional) e.g. I can\'t find the trim piece"></textarea>' +
-            '<button class="dlh-btn" type="submit">Get live help</button></form>';
+            '<button class="dlh-btn" type="submit">' + esc(o.button || 'Get live help') + '</button></form>';
     }
     function paint() {
         boxes.forEach(function (el) {
@@ -331,7 +333,8 @@
     });
 
     DL.help = {
-        mount: function (el) { if (el && boxes.indexOf(el) < 0) { boxes.push(el); joinLobby(); paint(); } }
+        // opts (optional): { title, text, button } to word the box for the page it sits on.
+        mount: function (el, opts) { if (opts) boxOpts = opts; if (el && boxes.indexOf(el) < 0) { boxes.push(el); joinLobby(); paint(); } }
     };
 
     // Pick an open session back up after a reload or a page change.

@@ -12,6 +12,13 @@
     <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>About Us - Design Lab</title>
     <meta name="description" content="The story behind Design Lab: three industry veterans bringing a retail experience to quality cabinetry.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Design Lab">
+    <meta property="og:title" content="About Us | Design Lab">
+    <meta property="og:description" content="The story behind Design Lab: three industry veterans bringing a retail experience to quality cabinetry.">
+    <meta property="og:url" content="https://shopdesignlab.com/about/">
+    <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/why-choose-us.png">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#1a1a1a">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
@@ -40,7 +47,7 @@
         .about-hero { text-align: center; padding: 110px 8% 90px; }
         .about-hero h1 {
             margin: 0 auto 20px; max-width: 720px;
-            font-size: clamp(30px, 5.5vw, 52px); font-weight: 700; line-height: 1.15;
+            font-family: var(--font-display); font-size: clamp(32px, 5.5vw, 56px); font-weight: 400; line-height: 1.12;
         }
         .about-hero h1 em { color: var(--gold); font-style: normal; }
         .about-hero p { margin: 0 auto; max-width: 560px; color: rgba(var(--ink),0.65); font-size: 16px; line-height: 1.65; }
@@ -49,7 +56,7 @@
         .story { border-top: 1px solid var(--border); }
         .story-inner { max-width: 980px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 60px; align-items: flex-start; }
         .story-text { flex: 1 1 420px; min-width: 0; }
-        .story-text h2 { margin: 0 0 22px; font-size: clamp(24px, 3.5vw, 34px); line-height: 1.2; }
+        .story-text h2 { font-family: var(--font-display); font-weight: 400; margin: 0 0 22px; font-size: clamp(24px, 3.5vw, 34px); line-height: 1.2; }
         .story-text p { margin: 0 0 18px; color: rgba(var(--ink),0.7); font-size: 15px; line-height: 1.75; }
         .story-text p:last-child { margin-bottom: 0; }
 
@@ -58,7 +65,7 @@
             border: 1px solid var(--border); border-radius: 8px; padding: 26px 24px;
             background: rgba(var(--ink),0.03); text-align: center;
         }
-        .stat-card strong { display: block; color: var(--gold); font-size: 40px; font-weight: 700; line-height: 1; margin-bottom: 8px; }
+        .stat-card strong { display: block; color: var(--gold); font-family: var(--font-display); font-size: 44px; font-weight: 400; line-height: 1; margin-bottom: 8px; }
         .stat-card span { color: rgba(var(--ink),0.6); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; line-height: 1.5; }
 
         /* Confidence statement */
@@ -73,7 +80,7 @@
         /* Pillars */
         .pillars { border-top: 1px solid var(--border); }
         .pillars-head { text-align: center; max-width: 640px; margin: 0 auto 56px; }
-        .pillars-head h2 { margin: 0 0 14px; font-size: clamp(24px, 3.5vw, 34px); }
+        .pillars-head h2 { font-family: var(--font-display); font-weight: 400; margin: 0 0 14px; font-size: clamp(24px, 3.5vw, 34px); }
         .pillars-head p { margin: 0; color: rgba(var(--ink),0.6); font-size: 15px; line-height: 1.6; }
         .pillar-grid {
             display: grid; gap: 22px; max-width: 1060px; margin: 0 auto;
@@ -109,7 +116,7 @@
 
         /* Closing CTA */
         .closing { border-top: 1px solid var(--border); text-align: center; }
-        .closing h2 { margin: 0 0 14px; font-size: clamp(24px, 3.5vw, 34px); }
+        .closing h2 { font-family: var(--font-display); font-weight: 400; margin: 0 0 14px; font-size: clamp(24px, 3.5vw, 34px); }
         .closing p { margin: 0 auto 34px; max-width: 520px; color: rgba(var(--ink),0.6); font-size: 15px; line-height: 1.6; }
 
         .btn-pill, .btn-secondary {
@@ -120,12 +127,15 @@
             text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1.5px;
             cursor: pointer; transition: 0.3s; margin: 6px;
         }
-        .btn-pill { background: var(--white); color: var(--black); }
-        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); }
+        .btn-pill { background: var(--gold); color: var(--on-gold, #1a1a1a); }
+        .btn-pill:hover, .btn-pill:focus-visible { filter: brightness(1.08); }
         .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
         .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
 
-        .page-foot { border-top: 1px solid var(--border); padding: 26px 8%; text-align: center; color: rgba(var(--ink),0.4); font-size: 12px; }
+        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(var(--ink),0.5); }
+        .shop-footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+        .shop-footer a { color: rgba(var(--ink),0.7); text-decoration: none; }
+        .shop-footer a:hover { color: var(--gold); }
 
         @media (max-width: 640px) {
             section { padding: 64px 7%; }
@@ -207,12 +217,23 @@
     <section class="closing">
         <p class="kicker">Meet Us</p>
         <h2>Sit down with a designer — from anywhere.</h2>
-        <p>No showroom visit required. Join a private video consultation and walk through your project face-to-face, or start building your own cabinetry right now.</p>
-        <a class="btn-pill" href="../consultation/">Book a Video Consultation</a>
-        <a class="btn-secondary" href="../diy-wizard/">Try the DIY Builder</a>
+        <p>No showroom visit required. Tell us about your project and we&rsquo;ll set up a private video call, or start with a Design Card or the DIY Shop right now.</p>
+        <a class="btn-pill" href="mailto:hello@shopdesignlab.com?subject=Design%20consultation">Talk to a Designer</a>
+        <a class="btn-secondary" href="/collections/">See the Design Cards</a>
+        <a class="btn-secondary" href="/diy-wizard/">Shop DIY</a>
     </section>
 
-    <p class="page-foot">&copy; 2026 Design Lab. All rights reserved.</p>
+    <footer class="shop-footer">
+        <nav aria-label="Site">
+            <a href="/home/">Home</a>
+            <a href="/diy-wizard/">DIY Shop</a>
+            <a href="/collections/">Curated Collections</a>
+            <a href="/about/">About Us</a>
+            <a href="/consultation/">Join a Video Call</a>
+            <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
+        </nav>
+        <span>&copy; 2026 Design Lab</span>
+    </footer>
 
 </body>
 </html>

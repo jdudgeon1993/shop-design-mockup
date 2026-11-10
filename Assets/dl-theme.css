@@ -20,6 +20,8 @@
  * The switcher lives in Assets/dl-theme.js.
  */
 :root {
+    /* Type: display = Libre Caslon Display (look-alike of The Seasons, the CEO's card font), body = Montserrat. */
+    --font-display: 'Libre Caslon Display', Georgia, serif; --font-body: 'Montserrat', sans-serif;
     --bg: #1a1a1a; --bg-rgb: 26,26,26;
     --surface: #222222; --surface-2: #2a2a2a; --sunk: #141414;
     --ink: 255,255,255; --text: #ffffff;

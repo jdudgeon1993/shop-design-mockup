@@ -16,7 +16,14 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
     <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>Curated Collections - Design Lab</title>
-    <meta name="description" content="Designer-planned kitchens and baths, ordered as one set. Choose your door style and finish; every piece arrives matched.">
+    <meta name="description" content="Professionally designed in the Lab, make it yours: pre-designed mini-projects for kitchens, baths, closets, laundry rooms and more. Flip a Design Card, buy it as is, or have a designer edit it.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Design Lab">
+    <meta property="og:title" content="Curated Collections | Design Lab">
+    <meta property="og:description" content="Professionally designed in the Lab, make it yours: pre-designed mini-projects for kitchens, baths, closets, laundry rooms and more. Flip a Design Card, buy it as is, or have a designer edit it.">
+    <meta property="og:url" content="https://shopdesignlab.com/collections/">
+    <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/curated-section.png">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#1a1a1a">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
@@ -363,6 +370,7 @@
         .inc-table td.qty { width: 60px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
         .inc-table td.sku { white-space: nowrap; color: rgba(var(--ink),0.75); font-variant-numeric: tabular-nums; }
         .inc-table .name { font-weight: 600; }
+        .inc-table .mod-note { color: var(--gold); }
         .inc-table .desc { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
         .inc-table a { color: inherit; text-decoration: none; }
         .inc-table a:hover .name { color: var(--gold); }
@@ -483,7 +491,7 @@
             <a href="/diy-wizard/">DIY Shop</a>
             <a href="/collections/">Curated Collections</a>
             <a href="/about/">About Us</a>
-            <a href="/consultation/">Video Consultation</a>
+            <a href="/consultation/">Join a Video Call</a>
             <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
         </nav>
         <span>&copy; 2026 Design Lab</span>
@@ -932,7 +940,7 @@
             box.hidden = !box.hidden;
             btn.setAttribute('aria-expanded', String(!box.hidden));
             if (box.hidden) return;
-            DL.help.mount(box);
+            DL.help.mount(box, { title: 'Want this design changed?', text: 'A Design Lab designer will adjust the size, color or style with you, live. Add a video call if it helps.', button: 'Speak with a designer' });
             prefill(box);
             // The help box redraws when a designer comes online; write the collection back in.
             if (!box._watch) { box._watch = new MutationObserver(function () { prefill(box); }); box._watch.observe(box, { childList: true }); }
@@ -998,7 +1006,9 @@
                 var p = data.products[i.product_id], f = data.families[p.family_id];
                 var dims = p.width != null ? Number(p.width) + '"W × ' + Number(p.height) + '"H' + (p.depth != null ? ' × ' + Number(p.depth) + '"D' : '') + ' · ' : '';
                 var soon = o.soon && !data.offered[p.id + ':' + o.door_style_id]; // only while the collection itself is coming soon
-                var body = '<div class="name">' + esc(f.name) + (soon ? ' <span class="soon-pill">Coming soon</span>' : '') + '</div><div class="desc">' + esc(dims + p.description) + '</div>';
+                var mod = c.card && c.card.mods && c.card.mods[p.sku];
+                var body = '<div class="name">' + esc(f.name) + (soon ? ' <span class="soon-pill">Coming soon</span>' : '') + '</div><div class="desc">' + esc(dims + p.description) + '</div>' +
+                    (mod ? '<div class="desc mod-note">Designed with: ' + esc(mod) + '</div>' : '');
                 return '<tr><td class="qty">' + i.quantity + ' ×</td><td>' + (f.is_active === false ? body : '<a href="/diy-wizard/?family=' + encodeURIComponent(f.slug) + '">' + body + '</a>') + '</td>' +
                     '<td class="sku">' + esc(p.mfg_sku) + '</td></tr>';
             }).join('');
