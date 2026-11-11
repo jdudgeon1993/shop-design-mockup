@@ -92,8 +92,12 @@
         }
         .ov { position: absolute; color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,0.35); }
         .ov-title { left: 3.4%; top: 4.2%; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: max(17px, 3.6cqw); letter-spacing: 0.02em; color: #111; text-shadow: 0 0 14px rgba(var(--ink),0.7); }
-        .ov-mark { right: 2.7%; top: 4.3%; width: 9.2%; aspect-ratio: 125 / 143; background: #fff; display: flex; align-items: center; justify-content: center; padding: 1.2%; }
-        .ov-mark img { width: 82%; height: auto; display: block; }
+        /* The DL mark: the gold logo with no box (CEO's pick, 11/10), lifted off bright photos by a
+           soft dark glow in the corner and a slight shadow. */
+        .ov-glow { right: 0; top: 0; width: 38%; height: 50%; pointer-events: none;
+            background: radial-gradient(ellipse 100% 100% at 100% 0%, rgba(12,12,12,0.6) 0%, rgba(12,12,12,0.3) 42%, rgba(12,12,12,0) 74%); }
+        .ov-mark { right: 3.2%; top: 5%; width: 8%; aspect-ratio: 300 / 399; }
+        .ov-mark img { width: 100%; height: auto; display: block; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6)); }
         .ov-band { left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0)); }
         .ov-caption { left: 5.6%; bottom: 3.6%; font-weight: 400; font-size: max(10.5px, 1.75cqw); }
         .ov-tag { right: 5.6%; bottom: 3.6%; font-weight: 400; font-size: max(10.5px, 1.75cqw); text-align: right; }
@@ -503,8 +507,9 @@
         $('front-side').innerHTML =
             '<div class="face">' + pic +
                 '<div class="ov ov-band"></div>' +
+                '<div class="ov ov-glow"></div>' +
                 '<div class="ov ov-title">' + ed('card.title', c.card.title, 'Big title') + '</div>' +
-                '<div class="ov ov-mark"><img src="' + IMG + 'dl-mark-gold.webp" alt="Design Lab"></div>' +
+                '<div class="ov ov-mark"><img src="/Assets/Images/curated/dl-mark-gold-clear.webp" alt="Design Lab"></div>' +
                 '<div class="ov ov-caption">' + ed('card.caption', c.card.caption, 'Caption, e.g. CNC Classic Series Curated Collection ' + c.no) + '</div>' +
                 '<div class="ov ov-tag">' + ed('card.tag', c.card.tag, 'Tag line') + '</div>' +
             '</div>' +
