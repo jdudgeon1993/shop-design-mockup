@@ -648,6 +648,62 @@
                     'See Design Lab for alternative sizes, colors, and door style options.'
                 ],
                 schedule: []
+            },
+            {
+                slug: 'laundry-man', no: '007', name: 'Laundry Man & the Cat', subtitle: 'Laundry Room',
+                front: IMG + 'laundry-man-front.webp', drawing: IMG + 'laundry-man-drawing.webp', drawingTitle: 'Front Elevation',
+                card: { title: 'LAUNDRY MAN & THE CAT', caption: 'Structure|3 Curated Collection 007', tag: 'Designed in the Lab' },
+                tagline: 'A walnut laundry wall: a hanging nook, a sink, a folding counter and a stacked washer-dryer tower.',
+                description: 'A 152" laundry wall in walnut slab: a hanging nook with a rod over a 2-drawer base, a 26" sink base, a folding counter set 3" lower on 24"-deep cabinets, three wall cabinets above, and a 30" opening for a stacked washer and dryer. Countertop, backsplash, sink and faucet through Design Lab; washer, dryer and lighting by others.',
+                sheet: { sheet: 'A1', scale: 'NTS', date: '11/12/2026', rev: 'A' },
+                maker: 'STRUCTURE|3 Cabinetry & Closets',
+                specs: [
+                    ['Manufacturer', 'STRUCTURE|3 Cabinetry & Closets'], ['Construction', '0.75" Plywood Frameless'],
+                    ['Drawer Box', 'White Double-Wall Steel'], ['Drawer Guides', 'Full Extension Soft Close'],
+                    ['Door Style', 'Aspen (Slab)'], ['Finish', 'Walnut'], ['Accessories', 'TAG Hardware Hanging Rod']
+                ],
+                notes: [
+                    'Overall width: 152".', 'Mounting height: 90".',
+                    'Uppers: (3) W2736 over the sink and folding counter (83" run), 1" fills.',
+                    'Hanging nook: W3012 (pulled to 26" deep) over a 48" hanging space with a TAG Hardware rod; .25" back panel cut to size on site.',
+                    'Base left: 30" 2-drawer base (custom); see Design Lab for the top.',
+                    '26" deep sink base, 26" wide.',
+                    'Folding counter: (2) 27" cabinets, 24" deep and 31.5" tall, set 3" lower for folding.',
+                    'Appliance opening: 30" wide and 78" high (variable), with 3" panels each side and a false panel above depending on the opening height.',
+                    'Washer, dryer and lighting by others.',
+                    'See Design Lab for countertop, backsplash, sink and faucet.',
+                    'See Design Lab for optional sizes, materials, colors, styles and hardware.'
+                ],
+                schedule: []
+            },
+            {
+                slug: 'welcome-home', no: '010', name: 'Welcome Home', subtitle: 'Drop Zone',
+                front: IMG + 'welcome-home-front.webp', drawing: IMG + 'welcome-home-drawing.webp', drawingTitle: 'Front Elevation',
+                card: { title: 'WELCOME HOME', caption: 'CNC Concord Series Curated Collection 010', tag: 'Designed in the Lab' },
+                tagline: 'A drop zone: two tall cabinets, a bench with hooks, and storage above.',
+                description: 'A 111" drop zone: two 27" tall cabinets 24" deep, a 57" bench on two cabinets with hooks on a solid-stock rail, and cabinets above with a finished bottom. CNC Concord Series in Ocean paint. Wallpaper backsplash by others.',
+                sheet: { sheet: 'A1', scale: 'NTS', date: '11/12/2026', rev: 'A' },
+                maker: 'CNC Cabinetry: Concord Series',
+                specs: [
+                    ['Manufacturer', 'CNC Concord Series'], ['Construction', '0.75" Plywood Framed Full Overlay'],
+                    ['Drawer Box', 'Solid Wood Dovetail'], ['Drawer Guides', 'Full Extension Undermount Soft Close'],
+                    ['Door Style', 'Fashion (Soft Close)'], ['Drawer Fronts', 'Matching'],
+                    ['Species', 'Paint Grade / MDF'], ['Finish', 'Ocean Paint']
+                ],
+                notes: [
+                    'Overall width: 111".', 'Mounting height: 96".',
+                    'Tall cabinets: (2) 27" wide, 24" deep.',
+                    'Center: 57" wide, with wall cabinets above (finished bottom) and a solid-stock hook rail.',
+                    'Center bench: (2) 27"W x 12"H wall cabinets pulled to 21" deep, on a jobsite-built toe (16.5" + 1.5" top = 18" high).',
+                    'Flush toe.',
+                    'Finish: Ocean paint. A sample must be ordered and approved.',
+                    'Crown molding optional (a few options).',
+                    'Interior accessories optional and can be added.',
+                    'Wallpaper backsplash by others.',
+                    'See Design Lab for optional crown, hooks and bench top.',
+                    'See Design Lab for optional door styles, sizes, species and finish.'
+                ],
+                schedule: []
             }
         ];
         var cards = [];
@@ -687,6 +743,8 @@
         function buildCards() {
             STATIC_CARDS.forEach(function (k) { if (k.blueprint && !k.drawingSvg && window.DLBlueprint) k.drawingSvg = DLBlueprint.svg(k.blueprint); });
             cards = STATIC_CARDS.concat(data.collections.filter(function (c) { return HIDE.indexOf(c.slug) < 0; }).map(cardFromDb));
+            // In card-number order, hand-made and shop cards together (001, 007, 008, ...).
+            cards.sort(function (a, b) { return (parseInt(a.no, 10) || 999) - (parseInt(b.no, 10) || 999); });
         }
         function cardBySlug(slug) { return cards.filter(function (k) { return k.slug === slug; })[0]; }
 
