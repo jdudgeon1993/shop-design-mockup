@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/Assets/site-gate.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <script src="/Assets/dl-theme.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Design Lab — New Home (Preview)</title>
+    <meta name="description" content="Design Lab: quality cabinetry for every room. Build your own in the DIY Shop, start from a designer-planned Curated Collection, or meet a designer over video.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Design Lab">
+    <meta property="og:title" content="Online Cabinetry | Design Lab">
+    <meta property="og:description" content="Design Lab: quality cabinetry for every room. Build your own in the DIY Shop, start from a designer-planned Curated Collection, or meet a designer over video.">
+    <meta property="og:url" content="https://shopdesignlab.com/home-preview/">
+    <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/hero-section-i1.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="image" href="/Assets/Images/cnc-luxor-espresso.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --white: #ffffff; --black: #1a1a1a; --bg-light: #f9f9f9;
+            --font-serif: 'Libre Caslon Display', Georgia, serif;
+
+            /* Real measured height of .navbar (18px padding + 30px logo, both
+               sides) — sections reserve this as top padding so the fixed,
+               translucent navbar never sits over content underneath it. */
+            --navbar-h: 68px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            height: 100%; margin: 0; font-family: 'Montserrat', sans-serif;
+            overflow: hidden; overflow-x: hidden; max-width: 100vw;
+        }
+
+        .scroll-container {
+            height: 100dvh; width: 100%; overflow-y: scroll; overflow-x: hidden;
+            scroll-snap-type: y mandatory; overscroll-behavior-y: contain;
+        }
+
+        section {
+            height: 100dvh; width: 100%; scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center; padding: var(--navbar-h) 10% 0;
+            position: relative; color: var(--white);
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+        }
+
+        /* Dark scrim so text stays legible over any photo */
+        section::before {
+            content: ""; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.65));
+        }
+
+        section > * { position: relative; z-index: 1; }
+
+        /* Navbar: transparent overlay, not a separate bar — sits directly on the dark page */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; display: flex;
+            justify-content: space-between; align-items: center; padding: 18px 5%;
+            z-index: 1000; background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px); color: var(--white); font-weight: 600;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        /* Brand lockup: the gold DL mark + "Design Lab" in Libre Caslon Display
+           (a free look-alike of The Seasons, the font on the CEO's cards). */
+        .nav-brand, .footer-brand-mark { display: inline-flex; align-items: center; gap: 12px; color: var(--text, #fff); text-decoration: none; }
+        .nav-logo { display: block; height: 32px; width: auto; }
+        .brand-name { font-family: 'Libre Caslon Display', serif; font-weight: 400; font-size: 24px; line-height: 1; letter-spacing: 0.04em; white-space: nowrap; }
+        /* Phones: just the DL mark in the header (the footer keeps the full lockup). */
+        @media (max-width: 768px) { .nav-brand .brand-name { display: none; } }
+
+        #nav-toggle { display: none; }
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; z-index: 1001; }
+        .hamburger span { width: 25px; height: 3px; background: var(--white); transition: 0.3s; }
+        #nav-toggle:checked ~ .hamburger span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        #nav-toggle:checked ~ .hamburger span:nth-child(2) { opacity: 0; }
+        #nav-toggle:checked ~ .hamburger span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+        .nav-menu { display: flex; align-items: center; gap: 48px; }
+
+        .nav-links { display: flex; gap: 32px; align-items: center; }
+        .nav-links a {
+            color: var(--white); text-decoration: none; font-weight: 600;
+            font-size: 14px; letter-spacing: 0.5px; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--gold); }
+
+        .nav-icons { display: flex; gap: 20px; align-items: center; }
+        .nav-icon { color: var(--white); display: inline-flex; transition: color 0.2s; }
+        .nav-icon:hover { color: var(--gold); }
+        .nav-icon svg { width: 20px; height: 20px; display: block; }
+
+        /* Unified Button */
+        .btn-pill {
+            /* Reset native <button> form-control chrome so it renders identically
+               to an <a> — browsers don't inherit font/appearance into buttons by
+               default, which is why these looked different from each other. */
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+
+            display: inline-block; margin: 24px 0 0; padding: 14px 36px;
+            border: none; border-radius: 999px;
+            background: var(--white); color: var(--black);
+
+            /* When this is a direct child of a column flex container (like
+               these full-screen <section> elements), flexbox's default
+               align-items:stretch would otherwise blow it out to full width
+               regardless of display:inline-block — pin it to content width. */
+            align-self: flex-start;
+
+            font: inherit; font-size: 14px; font-weight: 700; line-height: 1;
+            text-align: center; text-decoration: none;
+            text-transform: uppercase; letter-spacing: 2px;
+
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); transform: scale(1.05); }
+
+        /* Hero — the only section now: the photo, the logo, and the
+           heading/buttons live in .hero-photo; the stat bar is a separate
+           sibling below it. On desktop .hero-photo grows to fill whatever
+           space .hero-stats doesn't need, so the two together still total
+           exactly 100dvh. On mobile .hero-photo gets its own min-height:
+           100dvh instead — the photo gets a full screen to itself so it's
+           actually visible, and .hero-stats becomes a normal section you
+           scroll to, not squeezed into the same screen. */
+        .hero { background-color: var(--black); padding: 0; }
+        .hero::before { content: none; } /* replaced by .hero-photo::before, scoped to just the photo area */
+
+        .hero-photo {
+            position: relative; overflow: hidden;
+            flex: 1 1 auto; display: flex; flex-direction: column; justify-content: flex-end;
+            padding: var(--navbar-h) 0 0;
+        }
+        /* Scrim removed per CEO feedback — the photo was reading too dark.
+           .hero-photo > * still gets z-index:1 so content stays above the
+           .hero-slide photo layers (z-index:0) even without a scrim between
+           them. */
+        .hero-photo > * { position: relative; z-index: 1; }
+
+        .hero-top { padding: 28px 10% 0; }
+
+        /* Two stacked layers crossfade between hero images. JS keeps exactly
+           one of these two elements' background-image up to date and toggles
+           which one is visible — this works for any number of images in the
+           rotation, not just two. */
+        .hero-slide {
+            position: absolute; inset: 0; z-index: 0;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            opacity: 0; transition: opacity 1.2s ease;
+        }
+        .hero-slide.is-active { opacity: 1; }
+        /* Light photos (real CNC kitchens) need a little help behind the logo and heading.
+           Only the text side is shaded; the rest of the kitchen stays bright. */
+        .hero-photo::after {
+            content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+            background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.3) 32%, rgba(0,0,0,0) 58%);
+        }
+        @media (max-width: 760px) {
+            .hero-photo::after { background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0.45) 100%); }
+        }
+
+        /* The logo's tagline text is baked into this PNG, not real HTML text,
+           so it can't take a text-shadow directly — a drop-shadow filter on
+           the whole image gives the same legibility boost against a bright
+           photo without darkening the photo itself (unlike the old scrim). */
+        .hero-logo-img { display: block; width: 100%; max-width: 480px; height: auto; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.7)); }
+
+        .hero-content { padding: 0 10%; margin-bottom: 28px; }
+        .hero-heading {
+            font-family: var(--font-serif); font-weight: 400;
+            font-size: clamp(24px, 3.4vw, 38px); line-height: 1.15;
+            max-width: 500px; margin: 0 0 22px;
+        }
+
+        /* Fixed width so all three read as one deliberate set instead of
+           each pill sizing to its own text — the longest label just wraps
+           to a second line rather than stretching its pill wider. */
+        .hero-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+        .btn-hero {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            outline: none; box-shadow: none; box-sizing: border-box;
+            display: inline-flex; align-items: center; justify-content: space-between; gap: 10px;
+            width: 290px;
+            background: var(--gold); color: var(--black);
+            padding: 13px 24px; border: none; border-radius: 999px;
+            font: inherit; font-weight: 700; font-size: 12px; line-height: 1.3;
+            text-align: left;
+            text-transform: uppercase; letter-spacing: 0.75px; text-decoration: none;
+            cursor: pointer; transition: 0.25s ease;
+        }
+        .btn-hero:hover, .btn-hero:focus-visible { background: var(--white); }
+        .btn-hero .arrow { transition: transform 0.25s ease; }
+        .btn-hero:hover .arrow, .btn-hero:focus-visible .arrow { transform: translateX(3px); }
+
+        /* Stat bar: a solid strip anchored to the bottom of the hero, not
+           the section's own 10% side padding — full-bleed width with each
+           column keeping its own inset instead. */
+        .hero-stats {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            background: rgba(var(--bg-rgb),0.92); color: var(--text); border-top: 1px solid rgba(var(--ink),0.12);
+        }
+        .hero-stat {
+            padding: 26px 22px; border-right: 1px solid rgba(var(--ink),0.12);
+            transition: transform 0.25s ease;
+        }
+        .hero-stat:last-child { border-right: none; }
+        .hero-stat:hover { transform: translateY(-3px); }
+        .hero-stat-icon { width: 30px; height: 30px; margin-bottom: 12px; color: var(--text); transition: color 0.25s ease; }
+        .hero-stat-icon svg { width: 100%; height: 100%; }
+        .hero-stat:hover .hero-stat-icon { color: var(--gold); }
+        .hero-stat h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text); }
+        .hero-stat p { margin: 0; font-size: 12.5px; line-height: 1.5; color: rgba(var(--ink),0.6); }
+
+
+        /* Footer: sized to its own content now (no more min-height:100dvh) —
+           simplified down to brand + one flat link list, so forcing it to a
+           full screen would just leave a lot of empty black space. */
+        .site-footer {
+            width: 100%; scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center;
+            background: var(--bg); color: var(--text);
+            padding: 80px 10% 40px;
+        }
+        .footer-top { display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; align-items: flex-start; }
+        .footer-brand { flex: 1 1 220px; max-width: 340px; }
+        .footer-brand-mark { margin-bottom: 16px; }
+        .footer-logo { height: 36px; width: auto; display: block; }
+        .footer-brand-mark .brand-name { font-size: 26px; }
+        .footer-tagline { color: rgba(var(--ink),0.6); margin: 0 0 20px; line-height: 1.5; }
+        .footer-social { display: flex; gap: 16px; }
+        .footer-social a { color: var(--text); display: inline-flex; transition: color 0.2s; }
+        .footer-social a:hover { color: var(--gold); }
+        .footer-social svg { width: 20px; height: 20px; }
+
+        /* One flat list instead of headed Shop/Company/Legal columns — the
+           two links that have no other path to them (Video Consultation,
+           Employee Login) live here alongside About Us and Contact. */
+        .footer-links { display: flex; flex-wrap: wrap; gap: 12px 28px; list-style: none; margin: 0; padding: 0; }
+        .footer-links a { color: rgba(var(--ink),0.75); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--gold); }
+
+        .footer-bottom {
+            margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(var(--ink),0.1);
+            color: rgba(var(--ink),0.5); font-size: 13px;
+        }
+
+        /* Feature sections (DIY / Curated / Full Service / Why) — full-screen
+           photo with the shared section scrim, copy anchored left or right. */
+        .feature { align-items: flex-start; }
+        .feature.right { align-items: flex-end; text-align: right; }
+        .feature.right .btn-pill, .feature.right .feature-actions { align-self: flex-end; }
+        .feature::before { background: linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.15) 100%); }
+        .feature.right::before { background: linear-gradient(270deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.15) 100%); }
+        .feature-kicker { margin: 0 0 12px; color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; }
+        .feature h2 { margin: 0 0 16px; font-family: var(--font-serif); font-weight: 400; font-size: clamp(30px, 4.6vw, 56px); line-height: 1.08; max-width: 620px; }
+        .feature p { margin: 0; max-width: 520px; font-size: clamp(15px, 1.4vw, 17px); line-height: 1.65; color: rgba(255,255,255,0.85); }
+        .feature-points { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 10px; max-width: 520px; }
+        .feature-points li { font-size: 15px; color: rgba(255,255,255,0.88); padding-left: 22px; position: relative; }
+        .feature.right .feature-points li { padding-left: 0; padding-right: 22px; }
+        .feature-points li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+        .feature.right .feature-points li::before { left: auto; right: 0; }
+        .feature-actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+        .feature-actions .btn-pill { align-self: auto; }
+        .btn-link { margin-top: 24px; color: var(--white); font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; border-bottom: 1px solid var(--gold); padding-bottom: 3px; }
+        .btn-link:hover { color: var(--gold); }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .feature, .feature.right { align-items: flex-start; text-align: left; padding: calc(var(--navbar-h) + 20px) 8% 40px; }
+            .feature.right .btn-pill, .feature.right .feature-actions { align-self: flex-start; }
+            .feature::before, .feature.right::before { background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.8)); }
+            .feature.right .feature-points li { padding-left: 22px; padding-right: 0; }
+            .feature.right .feature-points li::before { left: 0; right: auto; }
+
+            .hamburger { display: flex; }
+
+            /* Logo stays visible; the links + icons collapse into one dropdown panel */
+            .nav-menu {
+                display: none; flex-direction: column; align-items: flex-start; gap: 20px;
+                position: absolute; top: 68px; left: 0; width: 100%;
+                background: var(--bg); padding: 20px; border-bottom: 1px solid rgba(var(--ink),0.1);
+            }
+            #nav-toggle:checked ~ .nav-menu { display: flex; }
+            .nav-links { flex-direction: column; gap: 16px; align-items: flex-start; }
+            .nav-icons { flex-direction: row; gap: 24px; }
+
+            /* The photo gets its own screen space — same top/bottom split as
+               desktop (logo top, heading/buttons bottom) — instead of
+               competing with the stat bar. Stats become a normal section
+               below, reached by scrolling, not squeezed. Capped at 60vh
+               (not a full 100dvh) because the photo itself is a wide/
+               panoramic shot — forcing it into a full-height, narrow mobile
+               box crops it down to a sliver of its center; a shorter box
+               keeps far more of the actual kitchen in frame. */
+            .hero { height: auto; }
+            .hero-photo { min-height: 60vh; padding-bottom: 32px; }
+            .hero-logo-img { max-width: 320px; }
+            .hero-heading { font-size: clamp(28px, 8vw, 40px); }
+            .btn-hero { width: 100%; justify-content: space-between; }
+
+            /* Roomy single column now that stats aren't fighting for
+               vertical space inside the same screen as the photo. */
+            .hero-stats { grid-template-columns: 1fr; }
+            .hero-stat { padding: 22px 8%; border-right: none; border-bottom: 1px solid rgba(var(--ink),0.12); }
+            .hero-stat:last-child { border-bottom: none; }
+
+            .site-footer { padding: 60px 10% 30px; }
+        }
+
+        @media (max-width: 420px) {
+            .hero-logo-img { max-width: 260px; }
+        }
+
+        /* ===== New layout (Linen), /home-preview/ only. Normal scrolling below Corbin's hero. ===== */
+        .scroll-container { scroll-snap-type: none; }
+        section.nl { height: auto; min-height: 0; scroll-snap-align: none; display: block; padding: 0; color: var(--nl-white); }
+        section.nl::before { content: none; }
+        section.nl.nl-pad { padding-block: 88px; }
+        section.nl.nl-cards, section.nl.nl-lib { color: var(--nl-ink); }
+        .nl, .nl-foot {
+            --nl-charcoal: #1a1a1a; --nl-surface: #232323; --nl-line: rgba(255,255,255,0.13);
+            --nl-gold: #d4af37; --nl-gold-ink: #8a6c14; --nl-white: #faf8f3; --nl-muted: rgba(250,248,243,0.7);
+            --nl-linen: #ece5d8; --nl-linen-2: #e2d9c9; --nl-ink: #1d1b18; --nl-ink-soft: #57504a;
+            --nl-display: 'Libre Caslon Display', Georgia, serif;
+        }
+        .nl img { max-width: 100%; display: block; }
+        .nl-in { max-width: 1200px; margin: 0 auto; padding-left: max(16px, 4%); padding-right: max(16px, 4%); }
+        .nl-pad { padding-block: 88px; }
+        .nl h2, .nl h3 { text-wrap: balance; }
+        .nl-kicker { font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin: 0 0 12px; color: var(--nl-gold); }
+        .nl-h2 { font-family: var(--nl-display); font-weight: 400; font-size: clamp(32px, 4.3vw, 52px); line-height: 1.06; margin: 0; }
+        .nl-lead { font-size: 16px; line-height: 1.65; margin: 0; max-width: 48ch; }
+        .nl-btn { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 13px 24px; border-radius: 999px; font: 700 12px 'Montserrat', sans-serif; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; border: 1px solid transparent; cursor: pointer; background: var(--nl-gold); color: #1a1a1a; transition: transform .2s; }
+        .nl-btn:hover { transform: scale(1.04); }
+        .nl a:focus-visible, .nl button:focus-visible, .nl-foot a:focus-visible, .nl-foot button:focus-visible, .nl-foot input:focus-visible { outline: 2px solid var(--nl-gold); outline-offset: 3px; }
+
+        /* 1) three ways to start */
+        .nl-start { background: var(--nl-charcoal); }
+        .nl-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px 40px; margin-bottom: 36px; }
+        .nl-start .nl-lead { color: var(--nl-muted); }
+        .nl-paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .nl-path { position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 440px; padding: 26px; border-radius: 18px; overflow: hidden; color: var(--nl-white); text-decoration: none; background: center/cover; isolation: isolate; transition: transform .3s ease; }
+        .nl-path::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(10,10,10,.86) 0%, rgba(10,10,10,.25) 55%, rgba(10,10,10,.05) 100%); }
+        .nl-path:hover { transform: translateY(-6px); }
+        .nl-path small { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--nl-gold); }
+        .nl-path h3 { font-family: var(--nl-display); font-weight: 400; font-size: 32px; line-height: 1.05; margin: 8px 0; }
+        .nl-path p { margin: 0 0 18px; font-size: 14px; line-height: 1.55; color: rgba(250,248,243,.85); }
+        .nl-go { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--nl-gold); color: #1a1a1a; font-size: 18px; transition: transform .3s; }
+        .nl-path:hover .nl-go { transform: translateX(4px); }
+
+        /* 2) the Design Cards, on linen */
+        .nl-cards { background: var(--nl-linen); color: var(--nl-ink); position: relative; overflow: hidden; }
+        .nl-cards .nl-kicker { color: var(--nl-gold-ink); }
+        .nl-cards .nl-lead { color: var(--nl-ink-soft); }
+        .nl-cards .nl-top { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: end; margin-bottom: 40px; }
+        .nl-cards .nl-h2 em { font-style: normal; color: var(--nl-gold-ink); }
+        .nl-rule { position: absolute; left: 0; right: 0; top: 34px; width: 100%; height: 30px; pointer-events: none; opacity: .5; }
+        .nl-deck { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .nl-flip { perspective: 1600px; }
+        .nl-flip > button { all: unset; display: block; width: 100%; cursor: pointer; border-radius: 14px; }
+        .nl-card { position: relative; width: 100%; aspect-ratio: 16 / 10.5; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.45,.05,.3,1); }
+        .nl-flip.on .nl-card { transform: rotateY(180deg); }
+        .nl-face { position: absolute; inset: 0; border-radius: 14px; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 18px 36px rgba(0,0,0,.28); }
+        .nl-front img.ph { width: 100%; height: 100%; object-fit: cover; }
+        .nl-front .t { position: absolute; left: 4%; top: 5%; font-family: var(--nl-display); font-size: clamp(15px, 1.6vw, 20px); color: #111; letter-spacing: .02em; }
+        .nl-front .glow { position: absolute; right: 0; top: 0; width: 42%; height: 58%; background: radial-gradient(ellipse 100% 100% at 100% 0%, rgba(12,12,12,.7) 0%, rgba(12,12,12,.42) 40%, rgba(12,12,12,0) 78%); }
+        .nl-front img.m { position: absolute; right: 3.2%; top: 5%; width: 8%; height: auto; filter: drop-shadow(0 1px 3px rgba(0,0,0,.6)); }
+        .nl-front .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 22% 5% 4%; background: linear-gradient(0deg, rgba(0,0,0,.55), transparent); color: #fff; font-size: 12px; display: flex; justify-content: space-between; }
+        .nl-back { transform: rotateY(180deg); background: #fff; color: #1f2a5c; display: flex; flex-direction: column; }
+        .nl-back .bh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 14px; border-bottom: 2px solid #1f2a5c; }
+        .nl-back .bh b { font-family: var(--nl-display); font-weight: 400; font-size: 17px; }
+        .nl-back .bh span { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #1f3fd1; white-space: nowrap; }
+        .nl-back img { flex: 1; min-height: 0; width: 100%; object-fit: contain; padding: 8px; }
+        .nl-under { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; }
+        .nl-under strong { font-size: 16px; }
+        .nl-under small { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--nl-gold-ink); margin-bottom: 3px; }
+        .nl-under a { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--nl-ink); white-space: nowrap; text-decoration: none; border-bottom: 1px solid currentColor; padding-block: 12px 2px; }
+        .nl-more { margin-top: 36px; text-align: center; }
+
+        /* 3) try a colour */
+        .nl-try { background: var(--nl-charcoal); }
+        .nl-try .nl-in { display: grid; grid-template-columns: .9fr 1.1fr; gap: 56px; align-items: center; }
+        .nl-try .nl-lead { color: var(--nl-muted); margin: 14px 0 26px; }
+        .nl-sw { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+        .nl-sw button { width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(255,255,255,.25); cursor: pointer; box-shadow: inset 0 0 0 3px var(--nl-charcoal); transition: transform .2s; padding: 0; }
+        .nl-sw button:hover { transform: scale(1.08); }
+        .nl-sw button[aria-pressed="true"] { border-color: var(--nl-gold); box-shadow: inset 0 0 0 3px var(--nl-charcoal), 0 0 0 3px rgba(212,175,55,.35); }
+        .nl-fin { font-family: var(--nl-display); font-size: 30px; margin: 0; }
+        .nl-finnote { font-size: 13px; color: var(--nl-muted); margin: 6px 0 0; }
+        .nl-morefin { margin: 22px 0 0; font-size: 14px; color: var(--nl-muted); }
+        .nl-morefin a { color: var(--nl-gold); font-weight: 700; text-decoration: none; }
+        .nl-door { position: relative; justify-self: center; width: min(300px, 70vw); aspect-ratio: 1 / 2; }
+        .nl-door img { position: absolute; inset: 0; width: 100%; height: calc(100% - 34px); object-fit: contain; filter: drop-shadow(0 24px 34px rgba(0,0,0,.5)); transition: opacity .45s ease; }
+        .nl-door img.off { opacity: 0; }
+        .nl-door span { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--nl-muted); }
+
+        /* 4) one photo moment */
+        .nl-moment { position: relative; min-height: 560px; display: flex !important; align-items: flex-end; background: center/cover url(/Assets/Images/full-service-section.webp); }
+        .nl-moment::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.15) 60%); }
+        .nl-moment .nl-in { position: relative; z-index: 1; width: 100%; padding-block: 64px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 24px; }
+        .nl-moment .nl-h2 { max-width: 640px; }
+        .nl-moment .nl-lead { color: rgba(250,248,243,.88); margin-top: 14px; }
+
+        /* 5) the library, on linen */
+        .nl-lib { background: var(--nl-linen-2); color: var(--nl-ink); overflow: hidden; }
+        .nl-lib .nl-kicker { color: var(--nl-gold-ink); }
+        .nl-lib .nl-lead { color: var(--nl-ink-soft); margin: 14px 0 26px; }
+        .nl-lib .nl-in { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+        .nl-fan { position: relative; height: 380px; }
+        .nl-fan img { position: absolute; left: 50%; bottom: 0; width: 210px; border-radius: 4px; box-shadow: 0 24px 44px rgba(0,0,0,.35); transform-origin: 50% 100%; transition: transform .4s ease; }
+        .nl-fan img.c { object-fit: cover; height: 272px; }
+        .nl-fan img:nth-child(1) { transform: translateX(-50%) rotate(-14deg) translateX(-90px); }
+        .nl-fan img:nth-child(2) { transform: translateX(-50%) rotate(-2deg); z-index: 2; }
+        .nl-fan img:nth-child(3) { transform: translateX(-50%) rotate(11deg) translateX(90px); }
+        .nl-fan:hover img:nth-child(1) { transform: translateX(-50%) rotate(-18deg) translateX(-120px); }
+        .nl-fan:hover img:nth-child(3) { transform: translateX(-50%) rotate(15deg) translateX(120px); }
+        .nl-series { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+        .nl-series span { padding: 8px 14px; border-radius: 999px; border: 1px solid currentColor; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: .85; }
+
+        /* 6) full footer */
+        .nl-foot { background: var(--nl-charcoal); color: var(--nl-white); border-top: 1px solid var(--nl-line); padding-block: 64px 30px; }
+        .nl-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1.4fr; gap: 36px; }
+        .nl-lock { display: flex; align-items: center; gap: 12px; font-family: var(--nl-display); font-size: 22px; letter-spacing: .3em; margin-bottom: 14px; }
+        .nl-lock img { height: 34px; width: auto; }
+        .nl-foot p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--nl-muted); }
+        .nl-foot h4 { margin: 0 0 14px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--nl-gold); }
+        .nl-foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 14px; }
+        .nl-foot ul a { color: var(--nl-white); text-decoration: none; display: inline-block; padding-block: 6px; }
+        .nl-foot ul a:hover { color: var(--nl-gold); }
+        .nl-signup { display: flex; gap: 8px; margin-top: 14px; }
+        .nl-signup input { flex: 1; min-width: 0; height: 44px; border-radius: 999px; border: 1px solid var(--nl-line); background: var(--nl-surface); color: var(--nl-white); padding: 0 16px; font: inherit; font-size: 14px; }
+        .nl-signup .nl-btn { padding: 0 18px; height: 44px; }
+        .nl-msg { min-height: 18px; margin-top: 8px !important; font-size: 12.5px !important; }
+        .nl-base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--nl-line); font-size: 12.5px; color: rgba(250,248,243,.5); }
+        .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+        /* preview ribbon (this page only) */
+        .nl-ribbon { position: fixed; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 2000; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); padding: 8px 8px 8px 16px; border-radius: 999px; background: rgba(14,14,14,.92); color: #faf8f3; border: 1px solid #d4af37; font: 600 12.5px 'Montserrat', sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+        @media (max-width: 480px) { .nl-ribbon { font-size: 11.5px; width: max-content; } }
+        .nl-ribbon button { border: 0; border-radius: 999px; background: #d4af37; color: #1a1a1a; font: 700 11px 'Montserrat', sans-serif; letter-spacing: 1px; text-transform: uppercase; padding: 8px 12px; cursor: pointer; min-height: 32px; }
+
+        @media (max-width: 900px) {
+            .nl-paths, .nl-deck { grid-template-columns: 1fr; }
+            .nl-path { min-height: 340px; }
+            .nl-cards .nl-top, .nl-try .nl-in, .nl-lib .nl-in { grid-template-columns: 1fr; gap: 28px; }
+            .nl-grid { grid-template-columns: 1fr 1fr; }
+            .nl-grid > :first-child, .nl-grid > :last-child { grid-column: 1 / -1; }
+            .nl-fan { height: 300px; } .nl-fan img { width: 160px; } .nl-fan img.c { height: 208px; }
+            .nl-fan img:nth-child(1) { transform: translateX(-50%) rotate(-14deg) translateX(-60px); }
+            .nl-fan img:nth-child(3) { transform: translateX(-50%) rotate(11deg) translateX(60px); }
+            section.nl.nl-pad { padding-block: 64px; }
+        }
+        @media (prefers-reduced-motion: reduce) { .nl-card, .nl-path, .nl-fan img, .nl-door img { transition: none; } }
+    </style>
+</head>
+<body data-header="overlay">
+    <script src="/Assets/dl-header.js"></script>
+
+    <div class="scroll-container">
+        <section class="hero">
+            <div class="hero-photo on-photo">
+                <div class="hero-slide"></div>
+                <div class="hero-slide"></div>
+
+                <div class="hero-content">
+                    <h1 class="hero-heading">Cabinetry for Every Room of the House</h1>
+                    <div class="hero-actions">
+                        <a class="btn-hero" href="/diy-wizard/">DIY Shop Here <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                        <a class="btn-hero" href="/collections/">Shop Curated Collections <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                        <a class="btn-hero" href="mailto:hello@shopdesignlab.com?subject=Design%20consultation">Meet with a Designer about my Project <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.9 6.4 6.9.6-5.2 4.6 1.6 6.8L12 17l-6.2 3.4 1.6-6.8L2.2 9l6.9-.6Z"></path></svg></div>
+                    <h3>Nearly 90 Years of Experience</h3>
+                    <p>Three industry veterans. One shared standard.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"></path></svg></div>
+                    <h3>Thoughtful Design</h3>
+                    <p>Beautiful, functional, organized... happiness.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
+                    <h3>Customer Confidence</h3>
+                    <p>Clarity. Guidance. Review. Approval. Every step.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg></div>
+                    <h3>Built for Real Life</h3>
+                    <p>Quality cabinetry for every room, every style, every budget.</p>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6Z"></path></svg></div>
+                    <h3>We're With You</h3>
+                    <p>From inspiration to installation and beyond.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== New layout (Linen). Everything above (header, hero, value strip) is the live home's, unchanged. ===== -->
+        <section class="nl nl-start nl-pad" aria-labelledby="nl-start-h">
+            <div class="nl-in">
+                <div class="nl-top">
+                    <div><p class="nl-kicker">Three ways to start</p><h2 class="nl-h2" id="nl-start-h">Where do you want to begin?</h2></div>
+                    <p class="nl-lead">Build it piece by piece, start from a professionally designed card, or hand it to a designer. Every path ends with a designer reviewing your order.</p>
+                </div>
+                <div class="nl-paths">
+                    <a class="nl-path" href="/diy-wizard/" style="background-image:url(/Assets/Images/diy-section.webp)"><small>DIY Shop</small><h3>Build it yourself</h3><p>Every cabinet, filtered by room, size and door style.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
+                    <a class="nl-path" href="/collections/" style="background-image:url(/Assets/Images/curated/american-hutch-front.webp)"><small>Curated Collections</small><h3>Pick a Design Card</h3><p>Pre-designed mini-projects. Buy as is or make it yours.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
+                    <a class="nl-path" href="mailto:hello@shopdesignlab.com?subject=Design%20consultation" style="background-image:url(/Assets/Images/full-service-section.webp)"><small>Full Service</small><h3>Talk to a designer</h3><p>We plan and spec your space with you, from anywhere.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
+                </div>
+            </div>
+        </section>
+
+        <section class="nl nl-cards nl-pad" aria-labelledby="nl-cards-h">
+            <svg class="nl-rule" viewBox="0 0 1200 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 15H1200" stroke="#24305e" stroke-width="1" vector-effect="non-scaling-stroke"/><path d="M60 5v20M1140 5v20" stroke="#24305e" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
+            <div class="nl-in">
+                <div class="nl-top">
+                    <div><p class="nl-kicker">Curated Collections &middot; The Design Cards</p><h2 class="nl-h2" id="nl-cards-h">Professionally designed in the Lab. <em>Make it yours.</em></h2></div>
+                    <p class="nl-lead">Tap a card to flip it. The back has the drawing. Open a card to see the specs and every note, then buy it as is or have a designer make it yours.</p>
+                </div>
+                <div class="nl-deck" id="nl-deck"></div>
+                <div class="nl-more"><a class="nl-btn" href="/collections/">See every Design Card</a></div>
+            </div>
+        </section>
+
+        <section class="nl nl-try nl-pad" aria-labelledby="nl-try-h">
+            <div class="nl-in">
+                <div>
+                    <p class="nl-kicker">Try a colour</p>
+                    <h2 class="nl-h2" id="nl-try-h">See it in your finish.</h2>
+                    <p class="nl-lead">Tap a finish to see the real door. Shown here: the Luxor shaker door.</p>
+                    <div class="nl-sw" id="nl-sw" role="group" aria-label="Finish"></div>
+                    <p class="nl-fin" id="nl-fin" aria-live="polite"></p>
+                    <p class="nl-finnote" id="nl-finnote"></p>
+                    <p class="nl-morefin">Plus many more finishes across our other door styles. <a href="/diy-wizard/">See every door style &rarr;</a></p>
+                </div>
+                <div class="nl-door">
+                    <img id="nl-door-a" src="/Assets/Images/doors/luxor-harvest.webp" alt="Luxor door in Harvest">
+                    <img id="nl-door-b" src="/Assets/Images/doors/luxor-harvest.webp" alt="" aria-hidden="true" class="off">
+                    <span>Luxor &middot; Shaker &middot; Real door photo</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="nl nl-moment" aria-labelledby="nl-moment-h">
+            <div class="nl-in">
+                <div><p class="nl-kicker">Full service</p><h2 class="nl-h2" id="nl-moment-h">Rather have a designer handle it?</h2><p class="nl-lead">Meet face to face over video, from anywhere. We&rsquo;ll plan and spec your space with you, then build the order for your approval.</p></div>
+                <a class="nl-btn" href="mailto:hello@shopdesignlab.com?subject=Design%20consultation">Talk to a designer</a>
+            </div>
+        </section>
+
+        <section class="nl nl-lib nl-pad" aria-labelledby="nl-lib-h">
+            <div class="nl-in">
+                <div class="nl-fan" aria-hidden="true">
+                    <img class="c" src="/Assets/Images/curated/american-hutch-front.webp" alt="">
+                    <img src="/resources/docs/closet-structure/cover.webp" alt="">
+                    <img class="c" src="/Assets/Images/curated/laundry-is-done-front.webp" alt="">
+                </div>
+                <div>
+                    <p class="nl-kicker">The Resource Library</p>
+                    <h2 class="nl-h2" id="nl-lib-h">Everything you need to plan, choose and build.</h2>
+                    <p class="nl-lead">Flip through our Field Guides, every Lab Book, and the Lab Notes on the way. Free for homeowners, designers and contractors.</p>
+                    <div class="nl-series"><span>Field Guides</span><span>Lab Books</span><span>Lab Notes</span></div>
+                    <a class="nl-btn" href="/resources/">Open the library</a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="nl-foot">
+            <div class="nl-in">
+                <div class="nl-grid">
+                    <div><div class="nl-lock"><img src="/Assets/Logos/dl-mark-gold.svg" alt="">DESIGN LAB</div><p>Online cabinetry. Customer focused. Best flippin&rsquo; home on the block.</p></div>
+                    <div><h4>Shop</h4><ul><li><a href="/diy-wizard/">DIY Shop</a></li><li><a href="/collections/">Curated Collections</a></li><li><a href="/resources/">Resource Library</a></li></ul></div>
+                    <div><h4>Company</h4><ul><li><a href="/about/">About Us</a></li><li><a href="/consultation/">Join a Video Call</a></li><li><a href="/dashboard/">Employee Login</a></li></ul></div>
+                    <div><h4>Contact</h4><ul><li><a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a></li></ul></div>
+                    <div><h4>New Field Guides</h4><p>Get each new Field Guide and Lab Book when it&rsquo;s published.</p>
+                        <form class="nl-signup" id="nl-signup"><label for="nl-em" class="sr">Email</label><input id="nl-em" type="email" autocomplete="email" placeholder="Your email" required><button class="nl-btn" type="submit">Join</button></form>
+                        <p class="nl-msg" id="nl-msg" aria-live="polite"></p></div>
+                </div>
+                <div class="nl-base"><span>&copy; 2026 Design Lab. All rights reserved.</span></div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="nl-ribbon" id="nl-ribbon" role="note"><span>Preview: the new home page. The live home is unchanged.</span><button type="button" id="nl-ribbon-x">Hide</button></div>
+
+    <script>
+        (function () {
+            // Hero slideshow: real CNC kitchens first (5 max, 5 s each). pos = which part of
+            // the photo stays in frame when the screen crops it; anchored low so the
+            // cabinets show, not the ceiling.
+            var heroImages = [
+                { src: '/Assets/Images/cnc-luxor-espresso.webp', pos: 'center 62%' },
+                { src: '/Assets/Images/cnc-luxor-white.webp', pos: 'center 60%' },
+                { src: '/Assets/Images/cnc-luxor-smoky-grey.webp', pos: 'center 55%' },
+                { src: '/Assets/Images/cnc-luxor-harvest.webp', pos: 'center 58%' },
+                { src: '/Assets/Images/hero-section-i1.webp', pos: 'center 72%' }
+            ];
+
+            function paint(slide, img) {
+                slide.style.backgroundImage = "url('" + img.src + "')";
+                slide.style.backgroundPosition = img.pos;
+            }
+
+            var slides = document.querySelectorAll('.hero-slide');
+            if (!slides.length || !heroImages.length) return;
+
+            slides.forEach(function (slide) { paint(slide, heroImages[0]); });
+
+            // Warm the cache so each crossfade lands on a loaded photo.
+            heroImages.slice(1).forEach(function (img) { new Image().src = img.src; });
+            slides[0].classList.add('is-active');
+
+            // Nothing to rotate to yet, or the visitor has asked for less motion.
+            if (heroImages.length < 2) return;
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+            var activeLayer = 0;
+            var nextIndex = 1;
+
+            setInterval(function () {
+                var showing = slides[activeLayer];
+                var hidden = slides[1 - activeLayer];
+                paint(hidden, heroImages[nextIndex]);
+                hidden.classList.add('is-active');
+                showing.classList.remove('is-active');
+                activeLayer = 1 - activeLayer;
+                nextIndex = (nextIndex + 1) % heroImages.length;
+            }, 5000);
+        })();
+    </script>
+    <script>
+        // New layout: the Design Cards, Try a colour, the Field Guide sign-up.
+        (function () {
+            var CARDS = [
+                { slug: 'study-time', title: 'Study Time', front: 'STUDY TIME?', no: '001', img: 'study-time' },
+                { slug: 'american-hutch', title: 'The American Hutch', front: 'THE AMERICAN HUTCH', no: '008', img: 'american-hutch' },
+                { slug: 'laundry-is-done', title: 'Laundry is Done!', front: 'LAUNDRY IS DONE!', no: '009', img: 'laundry-is-done' }
+            ];
+            var P = '/Assets/Images/curated/';
+            document.getElementById('nl-deck').innerHTML = CARDS.map(function (c) {
+                return '<div class="nl-flip"><button type="button" aria-label="Flip ' + c.title + '" aria-pressed="false"><div class="nl-card">' +
+                    '<div class="nl-face nl-front"><img class="ph" src="' + P + c.img + '-front.webp" alt="' + c.title + '" loading="lazy"><div class="glow"></div>' +
+                    '<img class="m" src="' + P + 'dl-mark-white.webp" alt=""><span class="t">' + c.front + '</span><div class="cap"><span>Curated Collection ' + c.no + '</span><span>Designed in the Lab</span></div></div>' +
+                    '<div class="nl-face nl-back"><div class="bh"><b>' + c.title + '</b><span>Lab Book No. ' + c.no + '</span></div><img src="' + P + c.img + '-drawing.webp" alt="' + c.title + ' front elevation drawing" loading="lazy"></div>' +
+                    '</div></button><div class="nl-under"><div><small>Lab Book No. ' + c.no + '</small><strong>' + c.title + '</strong></div>' +
+                    '<a href="/collections/?card=' + c.slug + '&amp;side=back">Open card</a></div></div>';
+            }).join('');
+            document.querySelectorAll('.nl-flip > button').forEach(function (b) {
+                b.addEventListener('click', function () { var on = b.parentNode.classList.toggle('on'); b.setAttribute('aria-pressed', String(on)); });
+            });
+
+            // Try a colour: real Luxor door photos; each swatch colour is sampled from its photo.
+            var FIN = [
+                { n: 'White', f: 'luxor-white', c: '#e6e6e6', note: 'A clean painted white' },
+                { n: 'Misty Grey', f: 'luxor-misty-grey', c: '#b6b2af', note: 'A soft painted grey' },
+                { n: 'Smoky Grey', f: 'luxor-smoky-grey', c: '#4f4b46', note: 'A stained grey with visible grain' },
+                { n: 'Harvest', f: 'luxor-harvest', c: '#aa8f73', note: 'A warm natural stain' },
+                { n: 'Espresso', f: 'luxor-espresso', c: '#34251b', note: 'A deep brown stain' }
+            ];
+            var D = '/Assets/Images/doors/', sw = document.getElementById('nl-sw');
+            sw.innerHTML = FIN.map(function (f, i) { return '<button type="button" data-i="' + i + '" aria-label="' + f.n + '" aria-pressed="false" style="background:' + f.c + '"></button>'; }).join('');
+            FIN.forEach(function (f) { var im = new Image(); im.src = D + f.f + '.webp'; });
+            var front = document.getElementById('nl-door-a'), back = document.getElementById('nl-door-b');
+            function pick(i, first) {
+                var f = FIN[i];
+                if (!first) {
+                    back.src = D + f.f + '.webp'; back.alt = 'Luxor door in ' + f.n; back.removeAttribute('aria-hidden');
+                    back.classList.remove('off'); front.classList.add('off'); front.setAttribute('aria-hidden', 'true'); front.alt = '';
+                    var t = front; front = back; back = t;
+                }
+                document.getElementById('nl-fin').textContent = f.n;
+                document.getElementById('nl-finnote').textContent = f.note;
+                sw.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.i === i)); });
+            }
+            sw.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
+            pick(3, true);
+
+            // Field Guide sign-up: insert-only table (launch_signups, line 'field-guides'); employees see it in the dashboard.
+            var form = document.getElementById('nl-signup'), msg = document.getElementById('nl-msg');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var email = document.getElementById('nl-em').value.trim();
+                if (!window.DL || !DL.supabase) { msg.textContent = 'Sorry, that didn’t go through. Please try again.'; return; }
+                msg.textContent = 'Adding you…';
+                DL.supabase.from('launch_signups').insert({ email: email, line: 'field-guides', source: 'home' }).then(function (r) {
+                    if (r.error && r.error.code !== '23505') { msg.textContent = 'Sorry, that didn’t go through. Please try again.'; return; }
+                    msg.textContent = 'You’re on the list. We’ll send each new guide when it’s out.'; form.reset();
+                });
+            });
+
+            var rib = document.getElementById('nl-ribbon');
+            document.getElementById('nl-ribbon-x').addEventListener('click', function () { rib.hidden = true; });
+        })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/Assets/dl-core.js"></script>
+</body>
+</html>
