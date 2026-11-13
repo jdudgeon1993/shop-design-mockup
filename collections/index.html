@@ -222,7 +222,8 @@
         .sheet-drawing { padding: 14px; border-right: 1px solid var(--sheet-line); display: flex; flex-direction: column; justify-content: center; }
         .sheet-drawing a { display: block; cursor: zoom-in; }
         .sheet-drawing img { width: 100%; height: auto; display: block; }
-        .zoom-note { margin-top: 6px; font-size: 11px; color: var(--sheet-soft); text-align: center; }
+        .zoom-note { display: block; margin-top: 8px; font-size: 12.5px; font-weight: 700; letter-spacing: .02em; color: var(--sheet-blue); text-align: center; text-decoration: none; }
+        .zoom-note:hover { text-decoration: underline; }
         .sheet-side { padding: 14px 16px; }
         .sheet-side h3 { margin: 0 0 8px; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 16px; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; color: var(--sheet-blue); }
         .specs { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0 0 14px; padding-bottom: 14px; border-bottom: 1px solid var(--sheet-line); font-size: 12px; }
@@ -738,7 +739,7 @@
                 front: IMG + 'welcome-home-front.webp', drawing: IMG + 'welcome-home-drawing.webp', drawingTitle: 'Front Elevation',
                 card: { title: 'WELCOME HOME', caption: 'CNC Concord Series Curated Collection 010', tag: 'Designed in the Lab' },
                 tagline: 'A drop zone: two tall cabinets, a bench with hooks, and storage above.',
-                description: 'A 111" drop zone: two 27" tall cabinets 24" deep, a 57" bench on two cabinets with hooks on a solid-stock rail, and cabinets above with a finished bottom. CNC Concord Series in Ocean paint. Wallpaper backsplash by others.',
+                description: 'A 111" drop zone: two 24" tall cabinets 24" deep (each with a 3" filler, 27" overall), a 57" bench on two cabinets with hooks on a solid-stock rail, and cabinets above with a finished bottom. CNC Concord Series in Ocean paint. Wallpaper backsplash by others.',
                 sheet: { sheet: 'A1', scale: 'NTS', date: '11/12/2026', rev: 'A' },
                 maker: 'CNC Cabinetry: Concord Series',
                 specs: [
@@ -749,7 +750,7 @@
                 ],
                 notes: [
                     'Overall width: 111".', 'Mounting height: 96".',
-                    'Tall cabinets: (2) 27" wide, 24" deep.',
+                    'Tall cabinets: (2) 24" wide, 24" deep, each with a 3" filler (27" each with the filler).',
                     'Center: 57" wide, with wall cabinets above (finished bottom) and a solid-stock hook rail.',
                     'Center bench: (2) 27"W x 12"H wall cabinets pulled to 21" deep, on a jobsite-built toe (16.5" + 1.5" top = 18" high).',
                     'Flush toe.',
@@ -834,7 +835,7 @@
                     cell('Hinge', r.hinge) + cell('Integral fin ends', r.fin) + cell('Mods', r.mods) + cell('Additional', r.extra) + '</tr>';
             }).join('');
             var drawing = k.drawing
-                ? '<a href="' + esc(k.drawing) + '" target="_blank" rel="noopener"><img src="' + esc(k.drawing) + '" alt="' + esc(k.drawingTitle) + ' drawing of ' + esc(k.name) + '"></a><div class="zoom-note">Tap the drawing to open it full size</div>'
+                ? '<a href="' + esc(k.drawing) + '" target="_blank" rel="noopener"><img src="' + esc(k.drawing) + '" alt="' + esc(k.drawingTitle) + ' drawing of ' + esc(k.name) + '"></a><a class="zoom-note" href="' + esc(k.drawing) + '" target="_blank" rel="noopener">&#128269; Tap or click the drawing to see it larger</a>'
                 : '<div class="drawn" role="img" aria-label="' + esc(k.drawingTitle) + ' of ' + esc(k.name) + '">' + (k.drawingSvg || '') + '</div>';
             return '<div class="sheet">' +
                 '<div class="sheet-head">' +
