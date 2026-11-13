@@ -1,5 +1,5 @@
 // Messages: what visitors send from the storefront's Connect page (/connect/).
-// Table public.contact_messages (database/0031_contact_messages.sql). Employees read
+// Table public.contact_messages (database/migrations/0031_contact_messages.sql). Employees read
 // them and mark them handled; the badge counts new ones.
 DLDash.register({
     id: 'messages', label: 'Messages', order: 55,
