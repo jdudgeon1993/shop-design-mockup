@@ -11,6 +11,7 @@ explaining what it does.
 | Collections | `curated_collections`, `curated_collection_items`, `curated_collection_styles` (flat price per door style) |
 | Orders | `orders`, `order_items` (snapshots of what was bought), created only by `place_order()` |
 | People | `profiles` (role: customer / designer / employee / admin), `addresses`, `consultation_rooms` |
+| Messages | `contact_messages` (Connect page: visitors send, employees read and mark handled), `launch_signups` (Field Guide and launch emails) |
 
 **Pricing:** list prices are visible to employees only. Retail = list x dealer multiplier x retail
 multiplier, set per product line in `private.line_pricing` (currently demo values).
@@ -19,3 +20,6 @@ multiplier, set per product line in `private.line_pricing` (currently demo value
 spec book with dealer list prices) is kept privately, because this repository is public.
 
 `0006_backfill_employee_profiles_MANUAL.sql` was run by hand in the Supabase SQL Editor.
+
+**Not applied yet:** `0026_lock_vendor_snapshot.sql` (waiting on an OK) and
+`0031_contact_messages.sql` (the Connect page's messages; waiting on an OK).

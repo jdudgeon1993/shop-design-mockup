@@ -1,0 +1,244 @@
+<!-- Connect: the contact form behind the header's CONNECT button (added 2026-11-13).
+     Messages go to Supabase public.contact_messages (database/migrations/0031_contact_messages.sql)
+     and show in the employee dashboard under Messages. If sending fails, the page
+     says so and shows the email address instead. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/Assets/site-gate.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
+    <title>Connect - Design Lab</title>
+    <meta name="description" content="Send Design Lab a message about your project, ask for a video call with a designer, or ask about an order or samples.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Design Lab">
+    <meta property="og:title" content="Connect | Design Lab">
+    <meta property="og:description" content="Send Design Lab a message about your project, or ask for a video call with a designer.">
+    <meta property="og:url" content="https://shopdesignlab.com/connect/">
+    <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/full-service-section.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#2b211b">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/Assets/dl-core.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; font-family: var(--font-body); background: var(--bg); color: var(--text); }
+        .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .2em; font-weight: 700; font-size: 12px; margin: 0 0 12px; }
+        h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; text-wrap: balance; }
+
+        .wrap { max-width: 1180px; margin: 0 auto; padding: 64px 5% 96px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+        .intro h1 { font-size: clamp(34px, 5vw, 54px); line-height: 1.08; margin-bottom: 16px; }
+        .intro h1 em { font-style: normal; color: var(--gold); }
+        .intro > p { margin: 0 0 34px; max-width: 54ch; color: rgba(var(--ink), .68); font-size: 16px; line-height: 1.65; }
+
+        form { display: grid; gap: 20px; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .field { display: grid; gap: 7px; min-width: 0; }
+        label, legend { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(var(--ink), .8); }
+        .opt { font-weight: 500; letter-spacing: 0; text-transform: none; color: rgba(var(--ink), .5); }
+        input[type="text"], input[type="email"], input[type="tel"], select, textarea {
+            width: 100%; font: inherit; font-size: 16px; color: var(--text);
+            background: var(--surface); border: 1px solid rgba(var(--ink), .2); border-radius: 10px;
+            padding: 13px 14px; min-height: 50px;
+        }
+        textarea { min-height: 150px; resize: vertical; line-height: 1.55; }
+        select { appearance: none; -webkit-appearance: none; padding-right: 40px;
+            background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+            background-position: calc(100% - 20px) 22px, calc(100% - 15px) 22px; background-size: 5px 5px; background-repeat: no-repeat; }
+        input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; border-color: var(--gold); }
+        [aria-invalid="true"] { border-color: var(--danger) !important; }
+        .err { color: var(--danger); font-size: 13px; min-height: 0; margin: 0; }
+        .err:empty { display: none; }
+
+        fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 10px; }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chips label { position: relative; text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 600; color: var(--text); }
+        .chips input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+        .chips span { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(var(--ink), .22); background: var(--surface); cursor: pointer; transition: border-color .2s, background .2s; }
+        .chips input:checked + span { background: var(--espresso); color: #f3ede3; border-color: var(--espresso); }
+        .chips input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+        .send { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 34px;
+            border: 0; border-radius: 999px; background: var(--gold); color: var(--on-gold);
+            font: 700 13px var(--font-body); letter-spacing: .16em; text-transform: uppercase; cursor: pointer; transition: filter .2s, transform .2s;
+        }
+        .btn:hover, .btn:focus-visible { filter: brightness(1.1); transform: translateY(-1px); outline: none; }
+        .btn[disabled] { opacity: .6; cursor: wait; transform: none; }
+        .fine { margin: 0; font-size: 13px; color: rgba(var(--ink), .55); }
+        .status { margin: 0; font-size: 14.5px; }
+        .status:empty { display: none; }
+        .status.bad { color: var(--danger); }
+
+        .done { background: var(--surface); border: 1px solid rgba(var(--ink), .14); border-radius: 16px; padding: 34px; }
+        .done h2 { font-size: 32px; margin: 6px 0 10px; }
+        .done p { margin: 0 0 18px; color: rgba(var(--ink), .7); line-height: 1.6; }
+        .done a { color: var(--gold); font-weight: 700; }
+
+        aside { display: grid; gap: 18px; position: sticky; top: calc(var(--sh-stick) + 24px); }
+        .photo { border-radius: 16px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--sunk); }
+        .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .ways { background: var(--bg-2); border-radius: 16px; padding: 26px 26px 10px; }
+        .ways h2 { font-size: 24px; margin-bottom: 8px; }
+        .ways ul { list-style: none; margin: 0; padding: 0; }
+        .ways li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; padding: 16px 0; border-top: 1px solid rgba(var(--ink), .12); }
+        .ways li:first-child { border-top: 0; }
+        .ways svg { width: 22px; height: 22px; color: var(--gold); margin-top: 2px; }
+        .ways b { display: block; font-size: 15px; margin-bottom: 2px; }
+        .ways p { margin: 0; font-size: 14px; color: rgba(var(--ink), .65); line-height: 1.55; overflow-wrap: anywhere; }
+        .ways a { color: var(--gold); font-weight: 700; text-decoration: none; }
+        .ways a:hover { text-decoration: underline; }
+
+        @media (max-width: 900px) {
+            .wrap { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-top: 40px; }
+            aside { position: static; }
+            .photo { display: none; }
+        }
+        @media (max-width: 560px) { .row { grid-template-columns: minmax(0, 1fr); } }
+    </style>
+</head>
+<body>
+    <script src="/Assets/dl-header.js"></script>
+
+    <main class="wrap">
+        <div class="intro">
+            <p class="kicker">Connect</p>
+            <h1>Tell us about <em>your space.</em></h1>
+            <p>A new kitchen, a closet, one wall of a laundry room, or a question about an order. Send us a note and a real person from Design Lab will get back to you.</p>
+
+            <form id="form" novalidate>
+                <div class="row">
+                    <div class="field"><label for="c-name">Your name</label><input id="c-name" type="text" autocomplete="name" maxlength="120" required><p class="err" id="e-name"></p></div>
+                    <div class="field"><label for="c-email">Email</label><input id="c-email" type="email" autocomplete="email" maxlength="254" required><p class="err" id="e-email"></p></div>
+                </div>
+                <div class="row">
+                    <div class="field"><label for="c-phone">Phone <span class="opt">(optional)</span></label><input id="c-phone" type="tel" autocomplete="tel" maxlength="40"></div>
+                    <div class="field"><label for="c-topic">What can we help with?</label>
+                        <select id="c-topic">
+                            <option value="project">Start a project</option>
+                            <option value="designer">A video call with a designer</option>
+                            <option value="samples">Door samples</option>
+                            <option value="order">An order I placed</option>
+                            <option value="other">Something else</option>
+                        </select></div>
+                </div>
+                <fieldset>
+                    <legend>I&rsquo;m a</legend>
+                    <div class="chips">
+                        <label><input type="radio" name="role" value="homeowner" checked><span>Homeowner</span></label>
+                        <label><input type="radio" name="role" value="designer"><span>Designer</span></label>
+                        <label><input type="radio" name="role" value="contractor"><span>Contractor</span></label>
+                        <label><input type="radio" name="role" value="other"><span>Other</span></label>
+                    </div>
+                </fieldset>
+                <div class="field"><label for="c-msg">Your message</label>
+                    <textarea id="c-msg" maxlength="4000" required placeholder="Which room, rough size, the look you're after, and when you'd like it done."></textarea><p class="err" id="e-msg"></p></div>
+                <fieldset>
+                    <legend>Best way to reach you</legend>
+                    <div class="chips">
+                        <label><input type="radio" name="prefer" value="email" checked><span>Email</span></label>
+                        <label><input type="radio" name="prefer" value="phone"><span>Phone</span></label>
+                    </div>
+                    <p class="err" id="e-prefer"></p>
+                </fieldset>
+                <div class="send">
+                    <button class="btn" type="submit" id="send">Send message</button>
+                    <p class="fine">We only use your details to reply to you.</p>
+                </div>
+                <p class="status" id="status" role="status" aria-live="polite"></p>
+            </form>
+
+            <div class="done" id="done" hidden tabindex="-1">
+                <p class="kicker">Message sent</p>
+                <h2>Thank you, <span id="d-name"></span>.</h2>
+                <p>Your message is with the Design Lab team, and we&rsquo;ll reply by <span id="d-how">email</span>. While you wait, you can look through the <a href="/collections/">Design Cards</a> or start a list in the <a href="/diy-wizard/">DIY Shop</a>.</p>
+            </div>
+        </div>
+
+        <aside>
+            <div class="photo"><img src="/Assets/Images/curated/five-oclock-front.webp" alt="A wet bar with glossy cabinets, floating shelves and a wine fridge" loading="lazy"></div>
+            <div class="ways">
+                <h2>Other ways to reach us</h2>
+                <ul>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                        <div><b>Email</b><p><a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a></p></div></li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3"/></svg>
+                        <div><b>Have a room code?</b><p>If a designer sent you a code for a video call, <a href="/consultation/">join the call here</a>.</p></div></li>
+                    <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+                        <div><b>Plan it yourself first</b><p>Browse the <a href="/resources/">Resource Library</a> for measuring guides and Field Guides.</p></div></li>
+                </ul>
+            </div>
+        </aside>
+    </main>
+
+    <script src="/Assets/dl-footer.js"></script>
+    <script>
+    (function () {
+        var form = document.getElementById('form'), send = document.getElementById('send'), status = document.getElementById('status');
+        var $ = function (id) { return document.getElementById(id); };
+
+        // ?topic=designer (from "Meet with a designer" buttons) picks the topic for them.
+        try {
+            var t = new URLSearchParams(location.search).get('topic');
+            if (t && $('c-topic').querySelector('option[value="' + t.replace(/[^a-z]/g, '') + '"]')) $('c-topic').value = t;
+        } catch (e) {}
+
+        function setErr(input, errId, text) {
+            $(errId).textContent = text || '';
+            if (input) input.setAttribute('aria-invalid', text ? 'true' : 'false');
+            if (input && text) input.setAttribute('aria-describedby', errId); else if (input) input.removeAttribute('aria-describedby');
+            return !text;
+        }
+        function check() {
+            var ok = true, first = null;
+            function f(input, errId, text) { if (!setErr(input, errId, text)) { ok = false; first = first || input; } }
+            var name = $('c-name').value.trim(), email = $('c-email').value.trim(), msg = $('c-msg').value.trim();
+            var prefer = form.querySelector('input[name="prefer"]:checked').value, phone = $('c-phone').value.trim();
+            f($('c-name'), 'e-name', name ? '' : 'Please add your name.');
+            f($('c-email'), 'e-email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'Please enter a full email address, like name@example.com.');
+            f($('c-msg'), 'e-msg', msg ? '' : 'Please tell us a little about what you need.');
+            f(prefer === 'phone' ? $('c-phone') : null, 'e-prefer', prefer === 'phone' && !phone ? 'Add a phone number above so we can call you.' : '');
+            if (first) first.focus();
+            return ok;
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            status.className = 'status'; status.textContent = '';
+            if (!check()) return;
+            var prefer = form.querySelector('input[name="prefer"]:checked').value;
+            var row = {
+                name: $('c-name').value.trim(),
+                email: $('c-email').value.trim(),
+                phone: $('c-phone').value.trim() || null,
+                role: form.querySelector('input[name="role"]:checked').value,
+                topic: $('c-topic').value,
+                message: $('c-msg').value.trim(),
+                prefer: prefer,
+                source: (document.referrer && document.referrer.indexOf(location.origin) === 0 ? document.referrer.slice(location.origin.length) : 'direct').slice(0, 120)
+            };
+            send.disabled = true; send.textContent = 'Sending…';
+            var sb = window.DL && window.DL.supabase;
+            (sb ? sb.from('contact_messages').insert(row) : Promise.reject(new Error('offline'))).then(function (r) {
+                if (r.error) throw r.error;
+                $('d-name').textContent = row.name.split(' ')[0];
+                $('d-how').textContent = prefer === 'phone' ? 'phone' : 'email';
+                form.hidden = true; $('done').hidden = false; $('done').focus();
+            }).catch(function () {
+                status.className = 'status bad';
+                status.innerHTML = 'Your message didn’t send. Please try again, or email us at <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>.';
+                send.disabled = false; send.textContent = 'Send message';
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

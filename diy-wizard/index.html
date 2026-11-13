@@ -13,7 +13,6 @@
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/Assets/dl-theme.css">
-    <script src="/Assets/dl-theme.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
     <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>DIY Shop - Design Lab</title>
@@ -25,7 +24,7 @@
     <meta property="og:url" content="https://shopdesignlab.com/diy-wizard/">
     <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/diy-section.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#2b211b">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,7 +90,8 @@
         }
         .pick-card:not(:disabled):hover, .pick-card:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
         .pick-card[aria-pressed="true"] { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; background: rgba(var(--gold-rgb),0.08); }
-        .pick-card:disabled { cursor: default; opacity: 0.55; }
+        .pick-card:disabled { cursor: default; opacity: 0.8; }
+        .mfr-art.soon-art { color: rgba(var(--gold-rgb), .75); }
         .pick-card .pc-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
         .pick-card h2 { margin: 0; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 22px; }
         .pick-card p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
@@ -141,7 +141,8 @@
         .finish-pick { margin-top: 26px; padding: 22px; border: 1px solid var(--gold); border-radius: 14px; background: rgba(var(--gold-rgb),0.05); scroll-margin-top: 90px; }
         .finish-pick h2 { margin: 0 0 4px; font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 22px; }
         .finish-pick > p { margin: 0 0 16px; color: var(--muted); font-size: 13.5px; }
-        .finish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+        .finish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: 14px; }
+        @media (max-width: 520px) { .finish-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         .finish-tile {
             appearance: none; font: inherit; color: var(--white); cursor: pointer; padding: 0; overflow: hidden; text-align: center;
             background: rgba(var(--ink),0.03); border: 1px solid var(--border); border-radius: 12px; transition: 0.2s;
@@ -149,7 +150,7 @@
         .finish-tile:hover, .finish-tile:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
         .finish-tile .ft-art { display: block; aspect-ratio: 3 / 4; background: #fff center / contain no-repeat; }
         .finish-tile .ft-art.dl-photo { background-origin: content-box; padding: 10px; background-size: contain; background-repeat: no-repeat; background-position: center; }
-        .finish-tile b { display: block; padding: 10px 8px 12px; font-size: 13px; }
+        .finish-tile b { display: block; padding: 12px 8px 14px; font-size: 14px; }
 
         .look-bar {
             display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; margin: 0 0 18px; padding: 12px 16px;
@@ -186,7 +187,7 @@
         @media (min-width: 960px) { .shop { grid-template-columns: 250px 1fr; } }
 
         .filters { display: flex; flex-direction: column; gap: 20px; }
-        @media (min-width: 960px) { .filters { position: sticky; top: 84px; align-self: start; max-height: calc(100vh - 96px); overflow-y: auto; } }
+        @media (min-width: 960px) { .filters { position: sticky; top: calc(var(--sh-stick) + 16px); align-self: start; max-height: calc(100vh - var(--sh-stick) - 28px); overflow-y: auto; } }
         .filter-group h3 { margin: 0 0 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(var(--ink),0.5); }
         .chips { display: flex; flex-wrap: wrap; gap: 8px; }
         .chip {
@@ -281,7 +282,7 @@
         .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
         /* ---------- product panel ---------- */
-        .overlay { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,0.72); display: flex; align-items: flex-end; justify-content: center; }
+        .overlay { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.72); display: flex; align-items: flex-end; justify-content: center; }
         @media (min-width: 860px) { .overlay { align-items: center; padding: 24px; } }
         .panel {
             position: relative; width: 100%; max-width: 980px; max-height: 94vh; overflow: hidden; display: flex; flex-direction: column;
@@ -354,10 +355,6 @@
         .toast.show { opacity: 1; transform: translateX(-50%); pointer-events: auto; }
         .toast a { color: var(--gold); font-weight: 700; text-decoration: none; }
 
-        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(var(--ink),0.5); }
-        .shop-footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
-        .shop-footer a { color: rgba(var(--ink),0.7); text-decoration: none; }
-        .shop-footer a:hover { color: var(--gold); }
 
         [hidden] { display: none !important; }
     </style>
@@ -453,18 +450,7 @@
         </div>
     </main>
 
-    <footer class="shop-footer">
-        <nav aria-label="Site">
-            <a href="/home/">Home</a>
-            <a href="/diy-wizard/">DIY Shop</a>
-            <a href="/collections/">Curated Collections</a>
-            <a href="/resources/">Resources</a>
-            <a href="/about/">About Us</a>
-            <a href="/consultation/">Join a Video Call</a>
-            <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
-        </nav>
-        <span>&copy; 2026 Design Lab</span>
-    </footer>
+    <script src="/Assets/dl-footer.js"></script>
 
     <!-- Product panel -->
     <div class="overlay" id="overlay" hidden>
@@ -1537,9 +1523,16 @@
                     '<p>' + esc(lines.map(function (l) { return l.description; }).filter(Boolean)[0] || 'All-plywood cabinetry built to order.') + '</p>' +
                     '<span class="pc-cta">Choose ' + esc(v.name) + ' &rarr;</span></div></button>';
             });
+            // A simple line drawing of storage cabinets for lines that aren't in the shop yet.
+            var SOON_ART = '<svg viewBox="0 0 220 150" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">' +
+                '<rect x="20" y="12" width="56" height="128" rx="2"/><path d="M48 12v128M42 70v10M54 70v10"/>' +
+                '<rect x="84" y="62" width="58" height="78" rx="2"/><path d="M84 88h58M84 114h58M106 75h14M106 101h14M106 127h14"/>' +
+                '<rect x="150" y="12" width="50" height="40" rx="2"/><path d="M175 12v40M170 32h-2M182 32h-2"/>' +
+                '<rect x="150" y="62" width="50" height="78" rx="2"/><path d="M150 101h50"/><path d="M160 76h30M160 115h30" stroke-dasharray="3 4"/>' +
+                '<path d="M8 140h204"/></svg>';
             COMING_SOON.forEach(function (c) {
                 cards.push('<button type="button" class="pick-card" disabled>' +
-                    '<div class="mfr-art"><span class="wordmark">' + esc(c.name) + '</span></div>' +
+                    '<div class="mfr-art soon-art">' + SOON_ART + '</div>' +
                     '<div class="pc-body"><span class="badge">Coming soon</span><h2>' + esc(c.name) + '</h2><p>' + esc(c.blurb) + '</p></div></button>');
             });
             var grid = document.getElementById('mfr-grid');

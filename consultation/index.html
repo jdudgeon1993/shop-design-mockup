@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/Assets/dl-theme.css">
-    <script src="/Assets/dl-theme.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
     <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>Video Consultation - Design Lab</title>
@@ -17,7 +16,7 @@
     <meta property="og:url" content="https://shopdesignlab.com/consultation/">
     <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/full-service-section.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#2b211b">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
@@ -32,7 +31,7 @@
         /* Targets one full viewport, but min-height (not height) + no overflow:hidden
            means it's still scrollable if content ever needs more room than that —
            a mobile keyboard popping up should never be able to trap someone here. */
-        .page { display: flex; flex-direction: column; min-height: calc(100dvh - 68px); width: 100%; } /* 68px = the site header */
+        .page { display: flex; flex-direction: column; width: 100%; }
 
         .top-bar {
             flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
@@ -58,13 +57,48 @@
            whatever inline sizing Jitsi's own script applies. Direct-child
            selector on purpose — Jitsi injects straight into #call-frame, so this
            shouldn't reach into deeper-nested iframes some other feature adds later. */
-        /* Test schemes: the intro stage follows the page color (Original keeps black). */
-        html[data-scheme] .call-frame { background: var(--bg); }
+        /* The intro sits on the page's linen; a live call goes black. */
+        .call-frame { background: var(--bg); }
+        body.in-call .call-frame { background: #000; }
+        /* During a call: the page is exactly the screen under the slim header, and the footer steps aside. */
+        body.in-call .page { height: calc(100dvh - var(--sh-tall)); }
+        body.in-call .dl-footer { display: none; }
         .call-frame > iframe {
             position: absolute; inset: 0; width: 100% !important; height: 100% !important; border: 0;
         }
 
         .stage { text-align: center; padding: 40px 20px; width: 100%; max-height: 100%; overflow-y: auto; }
+
+        /* Intro: a room photo beside the steps and the room-code box */
+        #stage-choice { text-align: left; padding: 56px 5% 72px; max-height: none; overflow: visible; }
+        .consult { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; }
+        .consult-photo { margin: 0; position: relative; border-radius: 18px; overflow: hidden; aspect-ratio: 4 / 5; background: var(--sunk); }
+        .consult-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .consult-photo figcaption {
+            position: absolute; left: 16px; right: 16px; bottom: 16px; padding: 14px 16px; border-radius: 12px;
+            background: rgba(43,33,27,.86); color: #f3ede3; font-size: 13.5px; line-height: 1.5;
+        }
+        .consult-photo figcaption b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 19px; margin-bottom: 2px; }
+        #stage-choice .intro-hero { margin: 0 0 30px; max-width: none; }
+        #stage-choice .intro-heading { font-size: clamp(32px, 4.4vw, 48px); line-height: 1.1; }
+        #stage-choice .intro-line { margin: 0; max-width: 52ch; font-size: 15.5px; color: rgba(var(--ink),0.68); }
+        #stage-choice .how-it-works { margin: 0 0 34px; max-width: none; gap: 0; position: relative; }
+        #stage-choice .how-it-works li { padding: 0 0 18px; position: relative; font-size: 14.5px; }
+        #stage-choice .how-it-works li:not(:last-child)::before { content: ""; position: absolute; left: 13px; top: 28px; bottom: 2px; width: 1px; background: rgba(var(--gold-rgb), .45); }
+        #stage-choice .step-num { background: var(--bg); position: relative; }
+        #stage-choice .join-panel { margin: 0; max-width: 440px; background: var(--surface); border-radius: 14px; padding: 24px; }
+        #stage-choice .join-panel h3 { color: var(--text); }
+        #stage-choice .join-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        #stage-choice .room-input { flex: 1 1 200px; margin: 0; text-align: left; min-height: 48px; font-size: 16px; border-radius: 999px; padding: 0 18px; background: var(--bg); }
+        #stage-choice .join-row .btn-pill { margin: 0; min-height: 48px; }
+        #stage-choice .no-code { margin: 14px 0 0; font-size: 13.5px; color: rgba(var(--ink),0.6); }
+        #stage-choice .no-code a { color: var(--gold); font-weight: 700; }
+        #stage-choice .employee-link { margin: 30px 0 0; }
+        @media (max-width: 860px) {
+            .consult { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+            .consult-photo { aspect-ratio: 16 / 10; }
+            #stage-choice { padding-top: 32px; }
+        }
         .stage p { color: rgba(var(--ink),0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
         .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(var(--ink),0.55); font-size: 14px; line-height: 1.5; }
 
@@ -106,8 +140,8 @@
             text-align: center; text-decoration: none; text-transform: uppercase; letter-spacing: 1.5px;
             cursor: pointer; transition: 0.3s; margin: 4px;
         }
-        .btn-pill { background: var(--white); color: var(--black); }
-        .btn-pill:hover, .btn-pill:focus-visible { background: var(--gold); }
+        .btn-pill { background: var(--gold); color: var(--on-gold); }
+        .btn-pill:hover, .btn-pill:focus-visible { filter: brightness(1.1); }
         .btn-pill:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
         .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
@@ -135,6 +169,7 @@
         body.in-call .top-bar { padding: 10px 5%; }
 
         [hidden] { display: none !important; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -144,6 +179,12 @@
         <div class="call-frame" id="call-frame">
             <!-- Step 1: the immersive client-facing intro (the only path clients ever see) -->
             <div class="stage" id="stage-choice">
+              <div class="consult">
+                <figure class="consult-photo">
+                    <img src="/Assets/Images/full-service-section.webp" alt="A finished kitchen with warm wood cabinets" loading="lazy">
+                    <figcaption><b>Your designer, on your screen</b>Share your space, see finishes up close and change things as you talk.</figcaption>
+                </figure>
+                <div class="consult-body">
                 <div class="intro-hero">
                     <p class="kicker">Video Consultation</p>
                     <h1 class="intro-heading">Meet With Your Designer — From Anywhere</h1>
@@ -159,11 +200,17 @@
 
                 <div class="join-panel">
                     <h3>Have Your Room Code?</h3>
-                    <input type="text" id="join-input" class="room-input" placeholder="e.g. dl-amber-oak-482">
-                    <button class="btn-pill" id="join-existing-btn">Join Consultation</button>
+                    <label for="join-input" class="sr-only">Room code</label>
+                    <div class="join-row">
+                        <input type="text" id="join-input" class="room-input" placeholder="e.g. dl-amber-oak-482" autocomplete="off" autocapitalize="none" spellcheck="false">
+                        <button class="btn-pill" id="join-existing-btn">Join</button>
+                    </div>
+                    <p class="no-code">No code yet? <a href="/connect/?topic=designer">Ask for a video call</a> and we&rsquo;ll set one up.</p>
                 </div>
 
                 <a class="employee-link" id="employee-link" href="/dashboard/">Design Lab team member? Sign in to start a session</a>
+                </div>
+              </div>
             </div>
 
             <!-- Step 2: room ready, not yet in-call -->
@@ -281,5 +328,6 @@
             }
         })();
     </script>
+    <script src="/Assets/dl-footer.js"></script>
 </body>
 </html>

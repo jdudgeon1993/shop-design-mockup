@@ -5,7 +5,6 @@
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/Assets/dl-theme.css">
-    <script src="/Assets/dl-theme.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
     <link rel="stylesheet" href="/Assets/dl-header.css">
     <meta name="robots" content="noindex, nofollow">
@@ -18,7 +17,7 @@
     <meta property="og:url" content="https://shopdesignlab.com/home/">
     <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/hero-section-i1.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#2b211b">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -321,6 +320,126 @@
         @media (max-width: 420px) {
             .hero-logo-img { max-width: 260px; }
         }
+
+        /* ===== The Linen home (approved 2026-11-13). The page scrolls normally (the window, not a
+           scroll box) so the shared header can fold and the shared footer can sit at the bottom. ===== */
+        html, body { height: auto; overflow: visible; }
+        .scroll-container { height: auto; overflow: visible; scroll-snap-type: none; }
+        section.nl { height: auto; min-height: 0; scroll-snap-align: none; display: block; padding: 0; color: var(--nl-white); }
+        section.nl::before { content: none; }
+        section.nl.nl-pad { padding-block: 88px; }
+        section.nl.nl-cards, section.nl.nl-lib { color: var(--nl-ink); }
+        .nl {
+            /* The site's Linen & Espresso tokens (Assets/dl-theme.css), so the home matches every other page. */
+            --nl-charcoal: #2b211b; --nl-surface: #352a22; --nl-line: rgba(243,237,227,0.14);
+            --nl-gold: #d9b56a; --nl-gold-ink: #866224; --nl-white: #f3ede3; --nl-muted: rgba(243,237,227,0.72);
+            --nl-linen: #f3ede3; --nl-linen-2: #e9e0d2; --nl-ink: #2b211b; --nl-ink-soft: #5e5047;
+            --nl-display: 'Libre Caslon Display', Georgia, serif;
+        }
+        .nl img { max-width: 100%; display: block; }
+        .nl-in { max-width: 1200px; margin: 0 auto; padding-left: max(16px, 4%); padding-right: max(16px, 4%); }
+        .nl-pad { padding-block: 88px; }
+        .nl h2, .nl h3 { text-wrap: balance; }
+        .nl-kicker { font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin: 0 0 12px; color: var(--nl-gold); }
+        .nl-h2 { font-family: var(--nl-display); font-weight: 400; font-size: clamp(32px, 4.3vw, 52px); line-height: 1.06; margin: 0; }
+        .nl-lead { font-size: 16px; line-height: 1.65; margin: 0; max-width: 48ch; }
+        .nl-btn { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 13px 24px; border-radius: 999px; font: 700 12px 'Montserrat', sans-serif; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; border: 1px solid transparent; cursor: pointer; background: var(--nl-gold); color: #1a1a1a; transition: transform .2s; }
+        .nl-btn:hover { transform: scale(1.04); }
+        .nl a:focus-visible, .nl button:focus-visible { outline: 2px solid var(--nl-gold); outline-offset: 3px; }
+
+        /* 1) three ways to start */
+        .nl-start { background: var(--nl-charcoal); }
+        .nl-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 16px 40px; margin-bottom: 36px; }
+        .nl-start .nl-lead { color: var(--nl-muted); }
+        .nl-paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .nl-path { position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 440px; padding: 26px; border-radius: 18px; overflow: hidden; color: var(--nl-white); text-decoration: none; background: center/cover; isolation: isolate; transition: transform .3s ease; }
+        .nl-path::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(10,10,10,.86) 0%, rgba(10,10,10,.25) 55%, rgba(10,10,10,.05) 100%); }
+        .nl-path:hover { transform: translateY(-6px); }
+        .nl-path small { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--nl-gold); }
+        .nl-path h3 { font-family: var(--nl-display); font-weight: 400; font-size: 32px; line-height: 1.05; margin: 8px 0; }
+        .nl-path p { margin: 0 0 18px; font-size: 14px; line-height: 1.55; color: rgba(250,248,243,.85); }
+        .nl-go { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--nl-gold); color: #1a1a1a; font-size: 18px; transition: transform .3s; }
+        .nl-path:hover .nl-go { transform: translateX(4px); }
+
+        /* 2) the Design Cards, on linen */
+        .nl-cards { background: var(--nl-linen); color: var(--nl-ink); position: relative; overflow: hidden; }
+        .nl-cards .nl-kicker { color: var(--nl-gold-ink); }
+        .nl-cards .nl-lead { color: var(--nl-ink-soft); }
+        .nl-cards .nl-top { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: end; margin-bottom: 40px; }
+        .nl-cards .nl-h2 em { font-style: normal; color: var(--nl-gold-ink); }
+        .nl-rule { position: absolute; left: 0; right: 0; top: 34px; width: 100%; height: 30px; pointer-events: none; opacity: .5; }
+        .nl-deck { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .nl-flip { perspective: 1600px; }
+        .nl-flip > button { all: unset; display: block; width: 100%; cursor: pointer; border-radius: 14px; }
+        .nl-card { position: relative; width: 100%; aspect-ratio: 16 / 10.5; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.45,.05,.3,1); }
+        .nl-flip.on .nl-card { transform: rotateY(180deg); }
+        .nl-face { position: absolute; inset: 0; border-radius: 14px; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 18px 36px rgba(0,0,0,.28); }
+        .nl-front img.ph { width: 100%; height: 100%; object-fit: cover; }
+        .nl-front .t { position: absolute; left: 4%; top: 5%; font-family: var(--nl-display); font-size: clamp(15px, 1.6vw, 20px); color: #111; letter-spacing: .02em; }
+        .nl-front .glow { position: absolute; right: 0; top: 0; width: 42%; height: 58%; background: radial-gradient(ellipse 100% 100% at 100% 0%, rgba(12,12,12,.7) 0%, rgba(12,12,12,.42) 40%, rgba(12,12,12,0) 78%); }
+        .nl-front img.m { position: absolute; right: 3.2%; top: 5%; width: 8%; height: auto; filter: drop-shadow(0 1px 3px rgba(0,0,0,.6)); }
+        .nl-front .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 22% 5% 4%; background: linear-gradient(0deg, rgba(0,0,0,.55), transparent); color: #fff; font-size: 12px; display: flex; justify-content: space-between; }
+        .nl-back { transform: rotateY(180deg); background: #fff; color: #1f2a5c; display: flex; flex-direction: column; }
+        .nl-back .bh { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 10px 14px; border-bottom: 2px solid #1f2a5c; }
+        .nl-back .bh b { font-family: var(--nl-display); font-weight: 400; font-size: 17px; }
+        .nl-back .bh span { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #1f3fd1; white-space: nowrap; }
+        .nl-back img { flex: 1; min-height: 0; width: 100%; object-fit: contain; padding: 8px; }
+        .nl-under { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; }
+        .nl-under strong { font-size: 16px; }
+        .nl-under small { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--nl-gold-ink); margin-bottom: 3px; }
+        .nl-under a { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--nl-ink); white-space: nowrap; text-decoration: none; border-bottom: 1px solid currentColor; padding-block: 12px 2px; }
+        .nl-more { margin-top: 36px; text-align: center; }
+
+        /* 3) try a colour */
+        .nl-try { background: var(--nl-charcoal); }
+        .nl-try .nl-in { display: grid; grid-template-columns: .9fr 1.1fr; gap: 56px; align-items: center; }
+        .nl-try .nl-lead { color: var(--nl-muted); margin: 14px 0 26px; }
+        .nl-sw { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+        .nl-sw button { width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(255,255,255,.25); cursor: pointer; box-shadow: inset 0 0 0 3px var(--nl-charcoal); transition: transform .2s; padding: 0; }
+        .nl-sw button:hover { transform: scale(1.08); }
+        .nl-sw button[aria-pressed="true"] { border-color: var(--nl-gold); box-shadow: inset 0 0 0 3px var(--nl-charcoal), 0 0 0 3px rgba(212,175,55,.35); }
+        .nl-fin { font-family: var(--nl-display); font-size: 30px; margin: 0; }
+        .nl-finnote { font-size: 13px; color: var(--nl-muted); margin: 6px 0 0; }
+        .nl-morefin { margin: 22px 0 0; font-size: 14px; color: var(--nl-muted); }
+        .nl-morefin a { color: var(--nl-gold); font-weight: 700; text-decoration: none; }
+        .nl-door { position: relative; justify-self: center; width: min(300px, 70vw); aspect-ratio: 1 / 2; }
+        .nl-door img { position: absolute; inset: 0; width: 100%; height: calc(100% - 34px); object-fit: contain; filter: drop-shadow(0 24px 34px rgba(0,0,0,.5)); transition: opacity .45s ease; }
+        .nl-door img.off { opacity: 0; }
+        .nl-door span { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--nl-muted); }
+
+        /* 4) one photo moment */
+        .nl-moment { position: relative; min-height: 560px; display: flex !important; align-items: flex-end; background: center/cover url(/Assets/Images/full-service-section.webp); }
+        .nl-moment::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.15) 60%); }
+        .nl-moment .nl-in { position: relative; z-index: 1; width: 100%; padding-block: 64px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 24px; }
+        .nl-moment .nl-h2 { max-width: 640px; }
+        .nl-moment .nl-lead { color: rgba(250,248,243,.88); margin-top: 14px; }
+
+        /* 5) the library, on linen */
+        .nl-lib { background: var(--nl-linen-2); color: var(--nl-ink); overflow: hidden; }
+        .nl-lib .nl-kicker { color: var(--nl-gold-ink); }
+        .nl-lib .nl-lead { color: var(--nl-ink-soft); margin: 14px 0 26px; }
+        .nl-lib .nl-in { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+        .nl-fan { position: relative; height: 380px; }
+        .nl-fan img { position: absolute; left: 50%; bottom: 0; width: 210px; border-radius: 4px; box-shadow: 0 24px 44px rgba(0,0,0,.35); transform-origin: 50% 100%; transition: transform .4s ease; }
+        .nl-fan img.c { object-fit: cover; height: 272px; }
+        .nl-fan img:nth-child(1) { transform: translateX(-50%) rotate(-14deg) translateX(-90px); }
+        .nl-fan img:nth-child(2) { transform: translateX(-50%) rotate(-2deg); z-index: 2; }
+        .nl-fan img:nth-child(3) { transform: translateX(-50%) rotate(11deg) translateX(90px); }
+        .nl-fan:hover img:nth-child(1) { transform: translateX(-50%) rotate(-18deg) translateX(-120px); }
+        .nl-fan:hover img:nth-child(3) { transform: translateX(-50%) rotate(15deg) translateX(120px); }
+        .nl-series { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+        .nl-series span { padding: 8px 14px; border-radius: 999px; border: 1px solid currentColor; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: .85; }
+
+        @media (max-width: 900px) {
+            .nl-paths, .nl-deck { grid-template-columns: 1fr; }
+            .nl-path { min-height: 340px; }
+            .nl-cards .nl-top, .nl-try .nl-in, .nl-lib .nl-in { grid-template-columns: 1fr; gap: 28px; }
+            .nl-fan { height: 300px; } .nl-fan img { width: 160px; } .nl-fan img.c { height: 208px; }
+            .nl-fan img:nth-child(1) { transform: translateX(-50%) rotate(-14deg) translateX(-60px); }
+            .nl-fan img:nth-child(3) { transform: translateX(-50%) rotate(11deg) translateX(60px); }
+            section.nl.nl-pad { padding-block: 64px; }
+        }
+        @media (prefers-reduced-motion: reduce) { .nl-card, .nl-path, .nl-fan img, .nl-door img { transition: none; } }
     </style>
 </head>
 <body data-header="overlay">
@@ -337,7 +456,7 @@
                     <div class="hero-actions">
                         <a class="btn-hero" href="/diy-wizard/">DIY Shop Here <span class="arrow" aria-hidden="true">&rarr;</span></a>
                         <a class="btn-hero" href="/collections/">Shop Curated Collections <span class="arrow" aria-hidden="true">&rarr;</span></a>
-                        <a class="btn-hero" href="mailto:hello@shopdesignlab.com?subject=Design%20consultation">Meet with a Designer about my Project <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                        <a class="btn-hero" href="/connect/?topic=designer">Meet with a Designer about my Project <span class="arrow" aria-hidden="true">&rarr;</span></a>
                     </div>
                 </div>
             </div>
@@ -371,63 +490,78 @@
             </div>
         </section>
 
-        <section class="feature on-photo" style="background-image: url('/Assets/Images/diy-section.webp')" aria-labelledby="diy-heading">
-            <p class="feature-kicker">DIY Shop</p>
-            <h2 id="diy-heading">Design it yourself, down to the drawer front.</h2>
-            <p>Every cabinet in the line, filterable by room, type, width and door style. Pick your size, finish and upgrades, and watch your order come together as you go.</p>
-            <a class="btn-pill" href="/diy-wizard/">Shop DIY</a>
-        </section>
-
-        <section class="feature right on-photo" style="background-image: url('/Assets/Images/curated-section.webp')" aria-labelledby="curated-heading">
-            <p class="feature-kicker">Curated Collections</p>
-            <h2 id="curated-heading">Professionally designed in the Lab. Make it yours.</h2>
-            <p>Pre-designed mini-projects for the simple spaces in your home, from galley kitchens and baths to closets and laundry rooms. Flip a Design Card to see every detail, then buy it as is or have a designer make it yours.</p>
-            <a class="btn-pill" href="/collections/">Explore the Design Cards</a>
-        </section>
-
-        <section class="feature on-photo" style="background-image: url('/Assets/Images/full-service-section.webp')" aria-labelledby="service-heading">
-            <p class="feature-kicker">Full Service</p>
-            <h2 id="service-heading">Rather have a designer handle it?</h2>
-            <p>Meet face to face over video, from anywhere. We'll measure, plan and spec your space with you, then build the order for your approval.</p>
-            <div class="feature-actions">
-                <a class="btn-pill" href="mailto:hello@shopdesignlab.com?subject=Design%20consultation">Talk to a Designer</a>
-                <a class="btn-link" href="/consultation/">Have a room code? Join here</a>
-            </div>
-        </section>
-
-        <section class="feature right on-photo" style="background-image: url('/Assets/Images/why-choose-us.webp')" aria-labelledby="why-heading">
-            <p class="feature-kicker">Why Design Lab</p>
-            <h2 id="why-heading">A retail experience, at the source.</h2>
-            <ul class="feature-points">
-                <li>We partner directly with the manufacturers who build your cabinets.</li>
-                <li>Every item number in your cart, so you know exactly what you&rsquo;re getting.</li>
-                <li>No surprises: we review every order before anything is invoiced.</li>
-            </ul>
-            <a class="btn-pill" href="/about/">Our Story</a>
-        </section>
-
-        <footer class="site-footer">
-            <div class="footer-top">
-                <div class="footer-brand">
-                    <span class="footer-brand-mark"><img class="footer-logo" src="/Assets/Logos/dl-mark-gold.svg" alt=""><span class="brand-name">Design Lab</span></span>
-                    <p class="footer-tagline">Online cabinetry. Customer focused. Best flippin' home on the block.</p>
-                    <!-- Social links go here once the accounts exist (Instagram, Facebook, Pinterest). -->
+        <!-- ===== New layout (Linen). Everything above (header, hero, value strip) is the live home's, unchanged. ===== -->
+        <section class="nl nl-start nl-pad" aria-labelledby="nl-start-h">
+            <div class="nl-in">
+                <div class="nl-top">
+                    <div><p class="nl-kicker">Three ways to start</p><h2 class="nl-h2" id="nl-start-h">Where do you want to begin?</h2></div>
+                    <p class="nl-lead">Build it piece by piece, start from a professionally designed card, or hand it to a designer. Every path ends with a designer reviewing your order.</p>
                 </div>
-
-                <ul class="footer-links" aria-label="Sitemap">
-                    <li><a href="/resources/">Resources</a></li>
-                    <li><a href="/about/">About Us</a></li>
-                    <li><a href="/consultation/">Join a Video Call</a></li>
-                    <li><a href="/dashboard/">Employee Login</a></li>
-                    <li><a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a></li>
-                </ul>
+                <div class="nl-paths">
+                    <a class="nl-path" href="/diy-wizard/" style="background-image:url(/Assets/Images/diy-section.webp)"><small>DIY Shop</small><h3>Build it yourself</h3><p>Every cabinet, filtered by room, size and door style.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
+                    <a class="nl-path" href="/collections/" style="background-image:url(/Assets/Images/curated/american-hutch-front.webp)"><small>Curated Collections</small><h3>Pick a Design Card</h3><p>Pre-designed mini-projects. Buy as is or make it yours.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
+                    <a class="nl-path" href="/connect/?topic=designer" style="background-image:url(/Assets/Images/full-service-section.webp)"><small>Full Service</small><h3>Talk to a designer</h3><p>We plan and spec your space with you, from anywhere.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
+                </div>
             </div>
+        </section>
 
-            <div class="footer-bottom">
-                <p>&copy; 2026 Design Lab. All rights reserved.</p>
+        <section class="nl nl-cards nl-pad" aria-labelledby="nl-cards-h">
+            <svg class="nl-rule" viewBox="0 0 1200 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 15H1200" stroke="#24305e" stroke-width="1" vector-effect="non-scaling-stroke"/><path d="M60 5v20M1140 5v20" stroke="#24305e" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
+            <div class="nl-in">
+                <div class="nl-top">
+                    <div><p class="nl-kicker">Curated Collections &middot; The Design Cards</p><h2 class="nl-h2" id="nl-cards-h">Professionally designed in the Lab. <em>Make it yours.</em></h2></div>
+                    <p class="nl-lead">Tap a card to flip it. The back has the drawing. Open a card to see the specs and every note, then buy it as is or have a designer make it yours.</p>
+                </div>
+                <div class="nl-deck" id="nl-deck"></div>
+                <div class="nl-more"><a class="nl-btn" href="/collections/">See every Design Card</a></div>
             </div>
-        </footer>
+        </section>
+
+        <section class="nl nl-try nl-pad" aria-labelledby="nl-try-h">
+            <div class="nl-in">
+                <div>
+                    <p class="nl-kicker">Try a colour</p>
+                    <h2 class="nl-h2" id="nl-try-h">See it in your finish.</h2>
+                    <p class="nl-lead">Tap a finish to see the real door. Shown here: the Luxor shaker door.</p>
+                    <div class="nl-sw" id="nl-sw" role="group" aria-label="Finish"></div>
+                    <p class="nl-fin" id="nl-fin" aria-live="polite"></p>
+                    <p class="nl-finnote" id="nl-finnote"></p>
+                    <p class="nl-morefin">Plus many more finishes across our other door styles. <a href="/diy-wizard/">See every door style &rarr;</a></p>
+                </div>
+                <div class="nl-door">
+                    <img id="nl-door-a" src="/Assets/Images/doors/luxor-harvest.webp" alt="Luxor door in Harvest">
+                    <img id="nl-door-b" src="/Assets/Images/doors/luxor-harvest.webp" alt="" aria-hidden="true" class="off">
+                    <span>Luxor &middot; Shaker &middot; Real door photo</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="nl nl-moment" aria-labelledby="nl-moment-h">
+            <div class="nl-in">
+                <div><p class="nl-kicker">Full service</p><h2 class="nl-h2" id="nl-moment-h">Rather have a designer handle it?</h2><p class="nl-lead">Meet face to face over video, from anywhere. We&rsquo;ll plan and spec your space with you, then build the order for your approval.</p></div>
+                <a class="nl-btn" href="/connect/?topic=designer">Talk to a designer</a>
+            </div>
+        </section>
+
+        <section class="nl nl-lib nl-pad" aria-labelledby="nl-lib-h">
+            <div class="nl-in">
+                <div class="nl-fan" aria-hidden="true">
+                    <img class="c" src="/Assets/Images/curated/american-hutch-front.webp" alt="">
+                    <img src="/resources/docs/closet-structure/cover.webp" alt="">
+                    <img class="c" src="/Assets/Images/curated/laundry-is-done-front.webp" alt="">
+                </div>
+                <div>
+                    <p class="nl-kicker">The Resource Library</p>
+                    <h2 class="nl-h2" id="nl-lib-h">Everything you need to plan, choose and build.</h2>
+                    <p class="nl-lead">Flip through our Field Guides, every Lab Book, and the Lab Notes on the way. Free for homeowners, designers and contractors.</p>
+                    <div class="nl-series"><span>Field Guides</span><span>Lab Books</span><span>Lab Notes</span></div>
+                    <a class="nl-btn" href="/resources/">Open the library</a>
+                </div>
+            </div>
+        </section>
+
     </div>
+
 
     <script>
         (function () {
@@ -474,5 +608,57 @@
             }, 5000);
         })();
     </script>
+    <script>
+        // New layout: the Design Cards, Try a colour, the Field Guide sign-up.
+        (function () {
+            var CARDS = [
+                { slug: 'study-time', title: 'Study Time', front: 'STUDY TIME?', no: '001', img: 'study-time' },
+                { slug: 'american-hutch', title: 'The American Hutch', front: 'THE AMERICAN HUTCH', no: '008', img: 'american-hutch' },
+                { slug: 'laundry-is-done', title: 'Laundry is Done!', front: 'LAUNDRY IS DONE!', no: '009', img: 'laundry-is-done' }
+            ];
+            var P = '/Assets/Images/curated/';
+            document.getElementById('nl-deck').innerHTML = CARDS.map(function (c) {
+                return '<div class="nl-flip"><button type="button" aria-label="Flip ' + c.title + '" aria-pressed="false"><div class="nl-card">' +
+                    '<div class="nl-face nl-front"><img class="ph" src="' + P + c.img + '-front.webp" alt="' + c.title + '" loading="lazy"><div class="glow"></div>' +
+                    '<img class="m" src="' + P + 'dl-mark-white.webp" alt=""><span class="t">' + c.front + '</span><div class="cap"><span>Curated Collection ' + c.no + '</span><span>Designed in the Lab</span></div></div>' +
+                    '<div class="nl-face nl-back"><div class="bh"><b>' + c.title + '</b><span>Lab Book No. ' + c.no + '</span></div><img src="' + P + c.img + '-drawing.webp" alt="' + c.title + ' front elevation drawing" loading="lazy"></div>' +
+                    '</div></button><div class="nl-under"><div><small>Lab Book No. ' + c.no + '</small><strong>' + c.title + '</strong></div>' +
+                    '<a href="/collections/?card=' + c.slug + '&amp;side=back">Open card</a></div></div>';
+            }).join('');
+            document.querySelectorAll('.nl-flip > button').forEach(function (b) {
+                b.addEventListener('click', function () { var on = b.parentNode.classList.toggle('on'); b.setAttribute('aria-pressed', String(on)); });
+            });
+
+            // Try a colour: real Luxor door photos; each swatch colour is sampled from its photo.
+            var FIN = [
+                { n: 'White', f: 'luxor-white', c: '#e6e6e6', note: 'A clean painted white' },
+                { n: 'Misty Grey', f: 'luxor-misty-grey', c: '#b6b2af', note: 'A soft painted grey' },
+                { n: 'Smoky Grey', f: 'luxor-smoky-grey', c: '#4f4b46', note: 'A stained grey with visible grain' },
+                { n: 'Harvest', f: 'luxor-harvest', c: '#aa8f73', note: 'A warm natural stain' },
+                { n: 'Espresso', f: 'luxor-espresso', c: '#34251b', note: 'A deep brown stain' }
+            ];
+            var D = '/Assets/Images/doors/', sw = document.getElementById('nl-sw');
+            sw.innerHTML = FIN.map(function (f, i) { return '<button type="button" data-i="' + i + '" aria-label="' + f.n + '" aria-pressed="false" style="background:' + f.c + '"></button>'; }).join('');
+            FIN.forEach(function (f) { var im = new Image(); im.src = D + f.f + '.webp'; });
+            var front = document.getElementById('nl-door-a'), back = document.getElementById('nl-door-b');
+            function pick(i, first) {
+                var f = FIN[i];
+                if (!first) {
+                    back.src = D + f.f + '.webp'; back.alt = 'Luxor door in ' + f.n; back.removeAttribute('aria-hidden');
+                    back.classList.remove('off'); front.classList.add('off'); front.setAttribute('aria-hidden', 'true'); front.alt = '';
+                    var t = front; front = back; back = t;
+                }
+                document.getElementById('nl-fin').textContent = f.n;
+                document.getElementById('nl-finnote').textContent = f.note;
+                sw.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.i === i)); });
+            }
+            sw.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
+            pick(3, true);
+
+        })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/Assets/dl-core.js"></script>
+    <script src="/Assets/dl-footer.js"></script>
 </body>
 </html>

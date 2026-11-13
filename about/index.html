@@ -7,7 +7,6 @@
     <script src="/Assets/site-gate.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/Assets/dl-theme.css">
-    <script src="/Assets/dl-theme.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
     <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>About Us - Design Lab</title>
@@ -19,7 +18,7 @@
     <meta property="og:url" content="https://shopdesignlab.com/about/">
     <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/why-choose-us.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#2b211b">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
@@ -107,12 +106,42 @@
                     animation-timeline: view();
                     animation-range: entry 0% entry 60%;
                 }
+                /* Starts visible: only a small rise, so nothing is ever blank before it scrolls in. */
                 @keyframes rise-in {
-                    from { opacity: 0; transform: translateY(28px); }
-                    to { opacity: 1; transform: none; }
+                    from { transform: translateY(18px); }
+                    to { transform: none; }
                 }
             }
         }
+
+        /* Alternating section colours, as on the home page */
+        .confidence, .promise { background: var(--bg-2); border-top: 0; }
+        .pillar-card { background: var(--surface); }
+
+        /* Photo band under the opening */
+        .photo-band { padding: 0 5% 90px; }
+        .photo-band .pb { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 14px; }
+        .photo-band figure { margin: 0; position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--sunk); }
+        .photo-band figure:first-child { aspect-ratio: auto; }
+        .photo-band img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .photo-band figcaption {
+            position: absolute; left: 12px; bottom: 12px; padding: 6px 12px; border-radius: 999px;
+            background: rgba(43,33,27,.82); color: #f3ede3; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+        }
+        @media (max-width: 760px) {
+            .photo-band .pb { grid-template-columns: 1fr 1fr; }
+            .photo-band figure:first-child { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+        }
+
+        /* Our promise */
+        .promise-inner { max-width: 1060px; margin: 0 auto; }
+        .promise-head { max-width: 640px; margin: 0 0 40px; }
+        .promise-head h2 { font-family: var(--font-display); font-weight: 400; margin: 0 0 14px; font-size: clamp(24px, 3.5vw, 34px); line-height: 1.2; }
+        .promise-head p { margin: 0; color: rgba(var(--ink),0.65); font-size: 15px; line-height: 1.65; }
+        .promise-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; }
+        .promise-list li { border-top: 2px solid var(--gold); padding-top: 18px; }
+        .promise-list h3 { margin: 0 0 8px; font-family: var(--font-display); font-weight: 400; font-size: 22px; }
+        .promise-list p { margin: 0; color: rgba(var(--ink),0.7); font-size: 14.5px; line-height: 1.65; }
 
         /* Closing CTA */
         .closing { border-top: 1px solid var(--border); text-align: center; }
@@ -132,10 +161,6 @@
         .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--border); }
         .btn-secondary:hover, .btn-secondary:focus-visible { border-color: var(--gold); color: var(--gold); }
 
-        .shop-footer { border-top: 1px solid var(--border); padding: 28px 5% 36px; display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; font-size: 13px; color: rgba(var(--ink),0.5); }
-        .shop-footer nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
-        .shop-footer a { color: rgba(var(--ink),0.7); text-decoration: none; }
-        .shop-footer a:hover { color: var(--gold); }
 
         @media (max-width: 640px) {
             section { padding: 64px 7%; }
@@ -154,6 +179,14 @@
         <h1>Thoughtfully Designed. <em>Expertly Guided.</em></h1>
         <p>Design Lab exists because thoughtfully designed spaces make everyday life more enjoyable. We combine thoughtful design with experienced guidance to create spaces people love to live in — starting with cabinetry, and extending to complete living environments.</p>
     </section>
+
+    <div class="photo-band" aria-label="Spaces designed in the Lab">
+        <div class="pb">
+            <figure><img src="/Assets/Images/hero-section-i1.webp" alt="A kitchen with dark wood cabinets and a long island" loading="lazy"><figcaption>Kitchens</figcaption></figure>
+            <figure><img src="/Assets/Images/structure3/walk-in-island.webp" alt="A Structure | 3 walk-in closet with an island" loading="lazy"><figcaption>Closets</figcaption></figure>
+            <figure><img src="/Assets/Images/curated/laundry-is-done-front.webp" alt="A laundry room with a full wall of cabinets" loading="lazy"><figcaption>Laundry</figcaption></figure>
+        </div>
+    </div>
 
     <section class="story">
         <div class="story-inner">
@@ -214,27 +247,31 @@
         <p class="pillar-footnote">Small details eventually add up to <strong>something big.</strong></p>
     </section>
 
+    <section class="promise">
+        <div class="promise-inner">
+            <div class="promise-head">
+                <p class="kicker">Our Promise</p>
+                <h2>Straight answers, from the first quote to the last cabinet.</h2>
+                <p>A big project shouldn't come with surprises. This is how we work with every customer.</p>
+            </div>
+            <ul class="promise-list">
+                <li><h3>Honest pricing</h3><p>You see what things cost, including premium materials, before you commit. No low first number that grows later.</p></li>
+                <li><h3>No upselling</h3><p>We recommend what your space needs and nothing more. If something cheaper will do the job, we'll tell you.</p></li>
+                <li><h3>A designer checks every order</h3><p>Before anything is built, one of our designers reviews your plan and parts list, so what arrives is what you meant.</p></li>
+            </ul>
+        </div>
+    </section>
+
     <section class="closing">
         <p class="kicker">Meet Us</p>
         <h2>Sit down with a designer — from anywhere.</h2>
         <p>No showroom visit required. Tell us about your project and we&rsquo;ll set up a private video call, or start with a Design Card or the DIY Shop right now.</p>
-        <a class="btn-pill" href="mailto:hello@shopdesignlab.com?subject=Design%20consultation">Talk to a Designer</a>
+        <a class="btn-pill" href="/connect/?topic=designer">Talk to a Designer</a>
         <a class="btn-secondary" href="/collections/">See the Design Cards</a>
         <a class="btn-secondary" href="/diy-wizard/">Shop DIY</a>
     </section>
 
-    <footer class="shop-footer">
-        <nav aria-label="Site">
-            <a href="/home/">Home</a>
-            <a href="/diy-wizard/">DIY Shop</a>
-            <a href="/collections/">Curated Collections</a>
-            <a href="/resources/">Resources</a>
-            <a href="/about/">About Us</a>
-            <a href="/consultation/">Join a Video Call</a>
-            <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>
-        </nav>
-        <span>&copy; 2026 Design Lab</span>
-    </footer>
+    <script src="/Assets/dl-footer.js"></script>
 
 </body>
 </html>

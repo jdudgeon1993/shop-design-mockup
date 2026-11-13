@@ -16,11 +16,9 @@ DLDash.register({
                     '</div></section>' +
                     '<section class="card"><div class="card-head"><h2>Open</h2></div><ul class="list">' +
                         link('/diy-wizard/', 'DIY Shop', 'What customers see, step by step') +
-                        link('/collections/', 'Curated Collections', 'The Denver, The Aspen…') +
+                        link('/collections/', 'Curated Collections', 'The Design Cards') +
                         link('/cart/', 'Cart', 'Your own test cart in this browser') +
                         link('https://supabase.com/dashboard/project/nutgbxgnkvvruaoloqch/editor', 'Supabase tables', 'Products, prices, finishes and collections are edited here') +
-                        link('/proto/diy-wizard/index.html', 'Prototype: DIY Wizard', 'Early sandbox, for reference') +
-                        link('/proto/vendors/index.html', 'Prototype: Vendor showcase', 'Early sandbox, for reference') +
                     '</ul></section>' +
                 '</div>' +
             '</div>';
