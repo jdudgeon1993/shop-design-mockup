@@ -21,5 +21,6 @@ spec book with dealer list prices) is kept privately, because this repository is
 
 `0006_backfill_employee_profiles_MANUAL.sql` was run by hand in the Supabase SQL Editor.
 
-**Not applied yet:** `0026_lock_vendor_snapshot.sql` (waiting on an OK) and
-`0031_contact_messages.sql` (the Connect page's messages; waiting on an OK).
+`0031_contact_messages.sql` was run by hand in the Supabase SQL Editor on 2026-11-13.
+
+**Not applied yet:** `0026_lock_vendor_snapshot.sql` (waiting on an OK).

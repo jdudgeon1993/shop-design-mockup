@@ -38,7 +38,13 @@
         .intro h1 em { font-style: normal; color: var(--gold); }
         .intro > p { margin: 0 0 34px; max-width: 54ch; color: rgba(var(--ink), .68); font-size: 16px; line-height: 1.65; }
 
+        [hidden] { display: none !important; }
         form { display: grid; gap: 20px; }
+        /* After sending: the form stays visible but locked, and the button says it's done. */
+        form.is-sent input, form.is-sent select, form.is-sent textarea { opacity: .65; }
+        form.is-sent .chips span { cursor: default; }
+        .btn.is-sent, .btn.is-sent[disabled] { background: var(--espresso); color: #f3ede3; opacity: 1; cursor: default; filter: none; transform: none; }
+        .btn.is-sent svg { width: 16px; height: 16px; }
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .field { display: grid; gap: 7px; min-width: 0; }
         label, legend { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(var(--ink), .8); }
@@ -78,7 +84,7 @@
         .status:empty { display: none; }
         .status.bad { color: var(--danger); }
 
-        .done { background: var(--surface); border: 1px solid rgba(var(--ink), .14); border-radius: 16px; padding: 34px; }
+        .done { margin-top: 24px; background: var(--surface); border: 1px solid rgba(var(--ink), .14); border-radius: 16px; padding: 34px; }
         .done h2 { font-size: 32px; margin: 6px 0 10px; }
         .done p { margin: 0 0 18px; color: rgba(var(--ink), .7); line-height: 1.6; }
         .done a { color: var(--gold); font-weight: 700; }
@@ -184,6 +190,7 @@
     (function () {
         var form = document.getElementById('form'), send = document.getElementById('send'), status = document.getElementById('status');
         var $ = function (id) { return document.getElementById(id); };
+        var sent = false;
 
         // ?topic=designer (from "Meet with a designer" buttons) picks the topic for them.
         try {
@@ -212,6 +219,7 @@
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();
+            if (sent || send.disabled) return;   // one message per visit; reload the page to send another
             status.className = 'status'; status.textContent = '';
             if (!check()) return;
             var prefer = form.querySelector('input[name="prefer"]:checked').value;
@@ -231,7 +239,12 @@
                 if (r.error) throw r.error;
                 $('d-name').textContent = row.name.split(' ')[0];
                 $('d-how').textContent = prefer === 'phone' ? 'phone' : 'email';
-                form.hidden = true; $('done').hidden = false; $('done').focus();
+                sent = true;
+                form.classList.add('is-sent');
+                form.querySelectorAll('input, select, textarea').forEach(function (x) { x.disabled = true; });
+                send.classList.add('is-sent');
+                send.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Sent \u00b7 Talk soon';
+                $('done').hidden = false; $('done').focus();
             }).catch(function () {
                 status.className = 'status bad';
                 status.innerHTML = 'Your message didn’t send. Please try again, or email us at <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>.';
