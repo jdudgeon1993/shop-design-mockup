@@ -66,6 +66,7 @@
                 <span class="count" id="count" aria-live="polite"></span>
                 <button class="btn" id="next" type="button" aria-label="Next page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
                 <a class="btn" id="zoom" href="#" target="_blank" rel="noopener" aria-label="Open this page full size"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4M11 8v6M8 11h6"/></svg><span class="label">Zoom</span></a>
+                <button class="btn" id="share" type="button" hidden aria-label="Share this guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span class="label">Share</span></button>
                 <a class="btn" id="download" href="#" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="label">PDF</span></a>
             </div>
         </div>
@@ -91,6 +92,17 @@
         titleEl.textContent = d.title;
         document.getElementById('kind').textContent = R.label(d) + ' · ' + d.pages + ' pages';
         document.getElementById('download').href = R.pdf(d.slug);
+        // Field Guides have a public short link to share (shopdesignlab.com/guide/<name>/): the phone's share sheet, or copy it
+        if (d.share) {
+            var shareBtn = document.getElementById('share'), shareUrl = location.origin + '/guide/' + d.share + '/';
+            shareBtn.hidden = false;
+            shareBtn.addEventListener('click', function () {
+                if (navigator.share) { navigator.share({ title: d.title + ' · Design Lab', url: shareUrl }).catch(function () {}); return; }
+                var done = function () { var l = shareBtn.querySelector('.label'); l.textContent = 'Link copied'; setTimeout(function () { l.textContent = 'Share'; }, 2200); };
+                if (navigator.clipboard) navigator.clipboard.writeText(shareUrl).then(done, function () { prompt('Copy this link:', shareUrl); });
+                else prompt('Copy this link:', shareUrl);
+            });
+        }
         var urls = []; for (var i = 1; i <= d.pages; i++) urls.push(R.page(d.slug, i));
         var count = document.getElementById('count'), prev = document.getElementById('prev'), next = document.getElementById('next');
 
