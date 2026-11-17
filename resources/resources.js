@@ -6,6 +6,7 @@
 // items: one per resource.
 //   kind 'pdf'  -> pages in resources/docs/<slug>/ (p01.webp..., cover.webp, <slug>.pdf); w/h = page size
 //                  text: true -> resources/docs/<slug>/text.json holds each page's words (screen readers, search)
+//                  sizes: true -> pNN.webp is 2200 wide and pNN-s.webp 1100 wide; each screen loads the one it needs
 //   kind 'link' -> opens href (e.g. a Design Card); cover = any image
 //   audience: any of 'homeowners', 'pros' (designers, contractors). featured: shown big at the top.
 // Only material Design Lab made itself (no manufacturer catalogs for now), and never a price list:
@@ -26,7 +27,7 @@ window.DL_RESOURCES = {
     items: [
         { slug: 'dream-book', kind: 'pdf', category: 'field-guides', no: '02', title: 'The Dream Book',
           blurb: 'Kitchens, baths, wet bars, closets and garages: finished spaces in every line we offer, to spark your own.',
-          pages: 18, w: 1600, h: 1200, text: true, audience: ['homeowners', 'pros'],
+          pages: 18, w: 1600, h: 1200, text: true, sizes: true, audience: ['homeowners', 'pros'],
           tags: ['inspiration', 'kitchen', 'bathroom', 'bar', 'closet', 'garage', 'structure 3', 'cnc'], featured: true },
         { slug: 'closet-structure', kind: 'pdf', category: 'field-guides', no: '01', title: 'Closets',
           blurb: 'Walk-in closets, reach-ins and storage by Structure | 3, plus the engineered materials behind them.',
