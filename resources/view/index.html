@@ -41,6 +41,9 @@
         .stage { position: relative; display: flex; justify-content: center; align-items: center; min-height: 60vh; }
         #book { margin: 0 auto; }
         #book .stf__item img, .plain img { box-shadow: 0 18px 40px rgba(0,0,0,0.5); }
+        #book .page { background: #fff; overflow: hidden; }
+        #book .page img { display: block; width: 100%; height: 100%; object-fit: cover; box-shadow: none; }
+        .stage { max-width: 100%; overflow: hidden; }
         .hint { text-align: center; font-size: 12.5px; color: var(--muted); margin: 0; }
         .plain { display: flex; flex-direction: column; gap: 18px; align-items: center; }
         .plain img { max-width: 100%; height: auto; }
@@ -62,6 +65,7 @@
                 <button class="btn" id="prev" type="button" aria-label="Previous page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
                 <span class="count" id="count" aria-live="polite"></span>
                 <button class="btn" id="next" type="button" aria-label="Next page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+                <a class="btn" id="zoom" href="#" target="_blank" rel="noopener" aria-label="Open this page full size"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4M11 8v6M8 11h6"/></svg><span class="label">Zoom</span></a>
                 <a class="btn" id="download" href="#" download><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="label">PDF</span></a>
             </div>
         </div>
@@ -102,7 +106,8 @@
         // Size the book to the screen: a two-page spread when there's room, one page on phones.
         var wide = d.w > d.h;                       // fold-out sheets: always one page at a time
         var stage = document.querySelector('.stage');
-        var maxW = stage.clientWidth, maxH = Math.max(420, window.innerHeight - 220);
+        // the screen's own width (the stage can measure wider before the header settles or a scrollbar appears), less the page margins
+        var maxW = Math.floor(Math.min(stage.clientWidth, window.innerWidth * 0.92) - 16), maxH = Math.max(320, window.innerHeight - 300);
         var spread = !wide && maxW >= 900;
         var pageH = Math.min(maxH, (spread ? maxW / 2 : maxW) * d.h / d.w);
         var pageW = Math.round(pageH * d.w / d.h); pageH = Math.round(pageH);
@@ -114,7 +119,17 @@
             showCover: true, usePortrait: !spread, autoSize: false,
             maxShadowOpacity: 0.45, mobileScrollSupport: false, flippingTime: 700
         });
-        flip.loadFromImages(urls);
+        // Real <img> pages (HTML mode) so the browser draws them at the screen's true sharpness; the canvas mode
+        // painted at 1x and went blurry on phones. Books with two sizes (sizes: true) let each screen pick.
+        var dpr = window.devicePixelRatio || 1;
+        var pages = urls.map(function (u, n) {
+            var el = document.createElement('div'); el.className = 'page';
+            var im = document.createElement('img'); im.alt = 'Page ' + (n + 1); im.decoding = 'async'; if (n > 2) im.loading = 'lazy';
+            if (d.sizes) { im.srcset = u.replace('.webp', '-s.webp') + ' 1100w, ' + u + ' 2200w'; im.sizes = pageW + 'px'; }
+            im.src = d.sizes && pageW * dpr <= 1100 ? u.replace('.webp', '-s.webp') : u;
+            el.appendChild(im); book.appendChild(el); return el;
+        });
+        flip.loadFromHTML(pages);
 
         // Each page's words (when the item has them): under the book for anyone, and read out to screen readers as pages turn.
         var texts = null, ptext = document.getElementById('ptext');
@@ -124,6 +139,7 @@
             if (texts) { var two = flip.getOrientation && flip.getOrientation() === 'landscape' && i > 0 && i < n - 1; ptext.textContent = 'Page ' + (i + 1) + ': ' + (texts[i] || '') + (two && texts[i + 1] ? '  Page ' + (i + 2) + ': ' + texts[i + 1] : ''); }
             var shown = flip.getOrientation && flip.getOrientation() === 'landscape' && i > 0 && i < n - 1 ? (i + 1) + '–' + Math.min(n, i + 2) : String(i + 1);
             count.textContent = 'Page ' + shown + ' of ' + n;
+            document.getElementById('zoom').href = urls[i];
             prev.disabled = i <= 0; next.disabled = i >= n - (spread && n % 2 === 0 ? 2 : 1);
         }
         flip.on('flip', paint); flip.on('changeOrientation', paint); flip.on('init', paint);
