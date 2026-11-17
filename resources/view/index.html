@@ -45,6 +45,9 @@
         .plain { display: flex; flex-direction: column; gap: 18px; align-items: center; }
         .plain img { max-width: 100%; height: auto; }
         .missing { text-align: center; padding: 80px 0; color: var(--muted); }
+        .pagetext { max-width: 760px; margin: 0 auto; color: var(--muted); font-size: 15px; line-height: 1.6; }
+        .pagetext summary { cursor: pointer; font-weight: 600; color: var(--gold); min-height: 44px; display: flex; align-items: center; justify-content: center; }
+        .pagetext p { margin: 6px 0 0; color: var(--text); }
         @media (max-width: 640px) { .tools .label { display: none; } .btn { padding: 0 12px; } }
         [hidden] { display: none !important; }
     </style>
@@ -64,6 +67,7 @@
         </div>
         <div class="stage"><div id="book"></div><div class="plain" id="plain" hidden></div></div>
         <p class="hint" id="hint">Drag a corner, swipe, or use the arrow keys to turn the page.</p>
+        <details class="pagetext" id="pagetext" hidden><summary>Read this page as text</summary><p id="ptext" aria-live="polite"></p></details>
     </main>
 
     <script>
@@ -90,6 +94,7 @@
         if (!window.St || !St.PageFlip) {
             var plain = document.getElementById('plain'); plain.hidden = false;
             plain.innerHTML = urls.map(function (u, n) { return '<img src="' + u + '" alt="Page ' + (n + 1) + '" loading="lazy">'; }).join('');
+            if (d.text) fetch(R.dir(d.slug) + 'text.json').then(function (r) { return r.json(); }).then(function (t) { plain.querySelectorAll('img').forEach(function (im, n) { if (t[n]) im.alt = 'Page ' + (n + 1) + ': ' + t[n]; }); }).catch(function () {});
             document.querySelector('.tools').hidden = true; document.getElementById('hint').hidden = true;
             return;
         }
@@ -111,8 +116,12 @@
         });
         flip.loadFromImages(urls);
 
+        // Each page's words (when the item has them): under the book for anyone, and read out to screen readers as pages turn.
+        var texts = null, ptext = document.getElementById('ptext');
+        if (d.text) fetch(R.dir(d.slug) + 'text.json').then(function (r) { return r.json(); }).then(function (t) { texts = t; document.getElementById('pagetext').hidden = false; paint(); }).catch(function () {});
         function paint() {
             var i = flip.getCurrentPageIndex(), n = flip.getPageCount();
+            if (texts) { var two = flip.getOrientation && flip.getOrientation() === 'landscape' && i > 0 && i < n - 1; ptext.textContent = 'Page ' + (i + 1) + ': ' + (texts[i] || '') + (two && texts[i + 1] ? '  Page ' + (i + 2) + ': ' + texts[i + 1] : ''); }
             var shown = flip.getOrientation && flip.getOrientation() === 'landscape' && i > 0 && i < n - 1 ? (i + 1) + '–' + Math.min(n, i + 2) : String(i + 1);
             count.textContent = 'Page ' + shown + ' of ' + n;
             prev.disabled = i <= 0; next.disabled = i >= n - (spread && n % 2 === 0 ? 2 : 1);
