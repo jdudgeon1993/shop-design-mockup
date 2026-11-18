@@ -30,7 +30,7 @@ only thing that ever touches the key.
    service's Variables tab (not in a file — Railway injects them directly).
 4. Once deployed, Railway gives you a public URL like
    `https://your-service.up.railway.app`. That's the `TOKEN_ENDPOINT` value
-   `dashboard/index.html` (and the `proto/` copy) need.
+   Design Lab PRO (live/help.js, views/consult.js) and /consultation/ need.
 
 ## Local testing
 
