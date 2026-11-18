@@ -383,6 +383,14 @@
         .buy-btns { display: grid; gap: 10px; }
         .btn-talk { background: none; cursor: pointer; font-family: inherit; }
         .d-help { margin-top: 14px; }
+        .d-callback { margin-top: 14px; padding: 18px; border: 1px solid rgba(var(--gold-rgb),0.35); border-radius: 14px; display: grid; gap: 6px; }
+        .d-callback h3 { margin: 0; font-size: 16px; }
+        .d-callback p { margin: 0 0 6px; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+        .d-callback label { font-size: 13px; font-weight: 600; margin-top: 4px; }
+        .d-callback .opt { font-weight: 400; color: var(--muted); }
+        .d-callback input, .d-callback textarea { font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(var(--gold-rgb),0.35); background: transparent; color: inherit; }
+        .d-callback .cb-status { margin: 4px 0 0; min-height: 1em; }
+        .d-callback .cb-status.bad { color: #c0392b; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
         .buy-hint { margin: 10px 0 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
         .btn-talk {
@@ -497,6 +505,16 @@
                         <button class="btn-talk" id="d-talk" type="button" aria-expanded="false" aria-controls="d-help">Speak with a designer to edit</button>
                     </div>
                     <div class="d-help" id="d-help" hidden></div>
+                    <form class="d-callback" id="d-callback" hidden novalidate>
+                        <h3>Prefer a call back?</h3>
+                        <p>Leave your details and a Design Lab designer will call you about this design.</p>
+                        <label for="cb-name">Name</label><input id="cb-name" autocomplete="name" required>
+                        <label for="cb-phone">Phone</label><input id="cb-phone" type="tel" autocomplete="tel" required>
+                        <label for="cb-email">Email</label><input id="cb-email" type="email" autocomplete="email" required>
+                        <label for="cb-msg">What would you like changed? <span class="opt">(optional)</span></label><textarea id="cb-msg" rows="3"></textarea>
+                        <p class="cb-status" id="cb-status" role="status"></p>
+                        <button class="btn-primary" id="cb-send" type="submit">Request a call</button>
+                    </form>
                     <p class="buy-hint" id="d-buy-hint">Want a different size, color or style? A designer will adjust it with you, free.</p>
                     <p class="soon-note" id="d-soon-note" hidden>Coming soon to order online. Speak with a designer and we'll price it and make it yours.</p>
                 </div>
@@ -1079,9 +1097,10 @@
         // ---------- detail ----------
         // "Speak with a designer to edit" opens the live Help request (dl-help.js) right here,
         // with the collection already written in, so the designer knows what they want changed.
-        var talkFor = '';
-        function resetTalk(label) {
-            talkFor = label;
+        var talkFor = '', talkSlug = '';
+        function resetTalk(label, slug) {
+            talkFor = label; talkSlug = slug || '';
+            document.getElementById('d-callback').hidden = true;
             document.getElementById('d-help').hidden = true;
             document.getElementById('d-talk').setAttribute('aria-expanded', 'false');
         }
@@ -1093,6 +1112,7 @@
             var box = document.getElementById('d-help'), btn = this;
             if (!window.DL || !DL.help) { location.href = '/connect/?topic=designer'; return; }
             box.hidden = !box.hidden;
+            document.getElementById('d-callback').hidden = box.hidden;
             btn.setAttribute('aria-expanded', String(!box.hidden));
             if (box.hidden) return;
             DL.help.mount(box, { title: 'Want this design changed?', text: 'A Design Lab designer will adjust the size, color or style with you, live. Add a video call if it helps.', button: 'Speak with a designer' });
@@ -1101,6 +1121,30 @@
             if (!box._watch) { box._watch = new MutationObserver(function () { prefill(box); }); box._watch.observe(box, { childList: true }); }
             var n = box.querySelector('input[name="name"]');
             if (n) n.focus();
+        });
+        // "Prefer a call back?": saved as a Connect message tagged with this design, so it reaches Design Lab PRO
+        // as a lead even when no designer is online for live help.
+        document.getElementById('d-callback').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var st = document.getElementById('cb-status'), send = document.getElementById('cb-send');
+            var name = document.getElementById('cb-name').value.trim(), phone = document.getElementById('cb-phone').value.trim(),
+                email = document.getElementById('cb-email').value.trim(), msg = document.getElementById('cb-msg').value.trim();
+            st.className = 'cb-status';
+            if (!name || !phone || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { st.className = 'cb-status bad'; st.textContent = 'Please add your name, a phone number and a full email address.'; return; }
+            var sb = window.DL && DL.supabase;
+            send.disabled = true; send.textContent = 'Sending…';
+            (sb ? sb.from('contact_messages').insert({ name: name, email: email, phone: phone, role: 'homeowner', topic: 'project', prefer: 'phone',
+                message: 'Call back about ' + talkFor + (msg ? ': ' + msg : '.'), source: ('collection:' + talkSlug).slice(0, 120) }) : Promise.reject(new Error('offline')))
+            .then(function (r) {
+                if (r.error) throw r.error;
+                st.textContent = 'Thank you, ' + name.split(' ')[0] + '. A Design Lab designer will call you soon.';
+                send.textContent = 'Request sent';
+                document.querySelectorAll('#d-callback input, #d-callback textarea').forEach(function (x) { x.disabled = true; });
+            }).catch(function () {
+                st.className = 'cb-status bad';
+                st.innerHTML = 'That didn’t send. Please try again, or email <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>.';
+                send.disabled = false; send.textContent = 'Request a call';
+            });
         });
         // Detail parts that a hand-made card (no catalog yet) hides.
         function staticMode(on) {
@@ -1129,7 +1173,7 @@
             addBtn.disabled = true; addBtn.textContent = 'Coming soon';
             document.getElementById('d-soon-note').hidden = false;
             document.getElementById('d-buy-hint').hidden = true;
-            resetTalk(k.name + (k.no ? ' (No. ' + k.no + ')' : ''));
+            resetTalk(k.name + (k.no ? ' (No. ' + k.no + ')' : ''), k.slug);
             document.getElementById('d-inc-count').textContent = 'From the back of the card. A designer will turn these into your cabinet list.';
             document.getElementById('d-notes').innerHTML = k.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('');
             document.title = k.name + ' - Design Lab';
@@ -1212,7 +1256,7 @@
             addBtn.textContent = o.soon ? 'Coming soon' : 'Buy as is';
             document.getElementById('d-soon-note').hidden = !o.soon;
             document.getElementById('d-buy-hint').hidden = o.soon;
-            resetTalk(c.name + (c.card && c.card.no ? ' (No. ' + c.card.no + ')' : ''));
+            resetTalk(c.name + (c.card && c.card.no ? ' (No. ' + c.card.no + ')' : ''), c.slug);
             document.getElementById('d-flat').textContent = DL.prices.text(o.flat);
             document.getElementById('d-flat').classList.toggle('is-soon', o.flat == null);
             document.getElementById('d-compare').innerHTML = o.flat != null && o.individual != null

@@ -82,6 +82,7 @@
         .fine { margin: 0; font-size: 13px; color: rgba(var(--ink), .55); }
         .status { margin: 0; font-size: 14.5px; }
         .status:empty { display: none; }
+        .designer-note { margin: 4px 0 0; padding: 12px 14px; border-radius: 12px; background: rgba(var(--gold-rgb),0.12); font-size: 14px; line-height: 1.5; }
         .status.bad { color: var(--danger); }
 
         .done { margin-top: 24px; background: var(--surface); border: 1px solid rgba(var(--ink), .14); border-radius: 16px; padding: 34px; }
@@ -144,6 +145,7 @@
                         <label><input type="radio" name="role" value="contractor"><span>Contractor</span></label>
                         <label><input type="radio" name="role" value="other"><span>Other</span></label>
                     </div>
+                    <p class="designer-note" id="designer-note" hidden>Are you a designer? <a href="https://app-production-968816c2.up.railway.app/#/apply">Become a Design Lab Studio Partner</a> to quote and order through Design Lab PRO.</p>
                 </fieldset>
                 <div class="field"><label for="c-msg">Your message</label>
                     <textarea id="c-msg" maxlength="4000" required placeholder="Which room, rough size, the look you're after, and when you'd like it done."></textarea><p class="err" id="e-msg"></p></div>
@@ -216,6 +218,11 @@
             if (first) first.focus();
             return ok;
         }
+
+        // Designers: point them to the Studio Partner application (their messages don't become customer leads).
+        form.querySelectorAll('input[name="role"]').forEach(function (x) {
+            x.addEventListener('change', function () { document.getElementById('designer-note').hidden = form.querySelector('input[name="role"]:checked').value !== 'designer'; });
+        });
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();
