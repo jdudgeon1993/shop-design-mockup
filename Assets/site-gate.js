@@ -18,7 +18,7 @@
     var IDLE_MINUTES = 5;
     var IDLE_MS = IDLE_MINUTES * 60 * 1000;
     // Field Guide flipbooks are shared by link (Jordan, Nov 17): the viewer is open to anyone; the rest of the site stays gated.
-    var OPEN_PATHS = /^\/(proto\/)?(consultation|dashboard|help-desk|resources\/view|guide)\//;
+    var OPEN_PATHS = /^\/(proto\/)?(consultation|dashboard|help-desk|concierge|resources\/view|guide)\//;
 
     if (OPEN_PATHS.test(location.pathname)) return;
 
