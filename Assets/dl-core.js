@@ -54,7 +54,7 @@
     // ---------- prices ----------
     // No prices for the public yet ("Pricing coming soon"). The database only returns
     // them to signed-in employees, and even then they stay hidden until the employee
-    // turns on "Show pricing" in the dashboard (a per-browser switch).
+    // turns on "Show pricing" (a per-browser switch: Design Lab PRO › Catalog, or ?prices=on).
     var PRICES_KEY = 'dl_show_prices_v1';
     var prices = {
         COMING_SOON: 'Pricing coming soon',
@@ -64,6 +64,15 @@
         read: function (v) { return prices.shown() && v != null && v !== '' && !isNaN(Number(v)) ? Number(v) : null; },
         text: function (n) { return n != null && !isNaN(n) ? formatMoney(n) : prices.COMING_SOON; }
     };
+    // Design Lab PRO's Catalog page links here with ?prices=on or ?prices=off to flip the switch for this browser
+    // (the old dashboard's "Show pricing" switch). The database still only sends prices to accounts with Pricing.
+    try {
+        var pq = new URLSearchParams(location.search).get('prices');
+        if (pq === 'on' || pq === 'off') {
+            prices.set(pq === 'on');
+            var u = new URL(location.href); u.searchParams.delete('prices'); history.replaceState(null, '', u.pathname + u.search + u.hash);
+        }
+    } catch (e) {}
 
     function escapeHtml(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
