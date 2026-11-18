@@ -1,7 +1,7 @@
 // Live quote help, customer side. Load after dl-core.js.
 //
 // A customer asks for help -> they wait in the lobby (Supabase Realtime presence on
-// 'dl-help-lobby') -> an agent accepts from /help-desk/ -> both join the session
+// 'dl-help-lobby') -> an agent accepts in Design Lab PRO (Live help) -> both join the session
 // channel 'dl-help-s-<sid>'. The customer's cart is sent on every change; the agent
 // sends edits back ('op'), which go through DL.cart like any other edit, so the
 // one-look rule still applies. Nothing is stored in the database: when the session

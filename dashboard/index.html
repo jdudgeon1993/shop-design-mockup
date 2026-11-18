@@ -1,102 +1,16 @@
-<!-- Employee dashboard. Employee-only (profiles.role employee/admin), linked from the
-     site footer, not the main nav, and not behind the pre-launch gate (it has its own
-     sign-in).
-
-     Structure: this page is the shell (sign-in, sidebar, top bar). dash.js runs it:
-     auth, routing (#overview, #orders, ...), alerts and the shared helpers. Each section
-     is one file in modules/ that registers itself with DLDash.register({...}); to add a
-     section, add a file there and a <script> line below. See modules/README.md. -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Dashboard - Design Lab</title>
-    <meta name="description" content="Design Lab team dashboard.">
-    <meta name="theme-color" content="#141414">
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/Assets/dl-core.js"></script>
-    <link rel="stylesheet" href="/dashboard/dash.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Moved to Design Lab PRO</title>
+<meta http-equiv="refresh" content="0; url=https://app-production-968816c2.up.railway.app/">
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f4efe6;color:#2b211b;font:16px/1.5 Montserrat,system-ui,sans-serif;padding:16px;box-sizing:border-box}a{color:#866224;font-weight:600}</style>
 </head>
 <body>
-    <!-- Sign in -->
-    <main class="signin" id="signin" hidden>
-        <form class="signin-card" id="signin-form">
-            <img src="/Assets/Logos/apple-touch-icon.png" alt="" class="signin-logo" width="56" height="56">
-            <p class="kicker">Design Lab Team</p>
-            <h1>Sign in</h1>
-            <label class="field">Work email<input type="email" id="si-email" autocomplete="username" required></label>
-            <label class="field">Password<input type="password" id="si-password" autocomplete="current-password" required></label>
-            <p class="form-error" id="si-error" role="alert" hidden></p>
-            <button class="btn btn-primary btn-block" type="submit" id="si-submit">Sign in</button>
-            <p class="muted small">Employees only. <a href="/home/">Back to the storefront</a></p>
-        </form>
-    </main>
-
-    <!-- First sign-in after an admin added you: choose a password -->
-    <main class="signin" id="pw" hidden>
-        <form class="signin-card" id="pw-form">
-            <img src="/Assets/Logos/apple-touch-icon.png" alt="" class="signin-logo" width="56" height="56">
-            <p class="kicker">Design Lab Team</p>
-            <h1>Choose your password</h1>
-            <p class="muted small" id="pw-hello"></p>
-            <label class="field">New password<input type="password" id="pw-new" autocomplete="new-password" minlength="10" required></label>
-            <label class="field">Type it again<input type="password" id="pw-again" autocomplete="new-password" minlength="10" required></label>
-            <p class="form-error" id="pw-error" role="alert" hidden></p>
-            <button class="btn btn-primary btn-block" type="submit" id="pw-submit">Save and continue</button>
-        </form>
-    </main>
-
-    <!-- The app -->
-    <div class="app" id="app" hidden>
-        <aside class="sidebar" aria-label="Sections">
-            <a class="brand" href="#overview"><img src="/Assets/Logos/apple-touch-icon.png" alt="" width="30" height="30"><span>Design Lab<small>Team</small></span></a>
-            <nav class="nav" id="nav"></nav>
-            <div class="side-foot">
-                <a href="/home/" target="_blank" rel="noopener">Storefront ↗</a>
-                <button type="button" id="signout">Sign out</button>
-            </div>
-        </aside>
-        <div class="main-col">
-            <header class="topbar">
-                <h1 class="page-title" id="page-title"></h1>
-                <span class="sp"></span>
-                <label class="avail" title="Customers see an agent is available, and you get an alert when someone asks for help">
-                    <input type="checkbox" id="avail"><span class="switch" aria-hidden="true"></span><span class="avail-text">Available for live help</span>
-                </label>
-                <div class="bell-wrap">
-                    <button class="icon-btn" id="bell" type="button" aria-label="Notifications" aria-expanded="false">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                        <span class="badge" id="bell-count" hidden></span>
-                    </button>
-                    <div class="bell-menu" id="bell-menu" hidden>
-                        <div class="bell-head"><strong>Notifications</strong><button type="button" id="bell-clear">Clear</button></div>
-                        <ul id="bell-list"></ul>
-                    </div>
-                </div>
-                <div class="me" id="me"></div>
-            </header>
-            <main class="content" id="content"></main>
-        </div>
-    </div>
-    <div class="toasts" id="toasts" aria-live="polite"></div>
-
-    <script src="/dashboard/dash.js"></script>
-    <!-- Sections, in sidebar order. -->
-    <script src="/dashboard/modules/overview.js"></script>
-    <script src="/dashboard/modules/live-help.js"></script>
-    <script src="/dashboard/modules/orders.js"></script>
-    <script src="/dashboard/modules/video.js"></script>
-    <script src="/dashboard/modules/meet.js"></script>
-    <script src="/dashboard/modules/catalog.js"></script>
-    <script src="/dashboard/modules/messages.js"></script>
-    <script src="/dashboard/modules/signups.js"></script>
-    <script src="/dashboard/modules/team.js"></script>
-    <script src="/dashboard/modules/tags.js"></script>
-    <script>DLDash.start();</script>
+<!-- Retired 11/18: the old employee dashboard moved into Design Lab PRO. This page only forwards old bookmarks. -->
+<p>This moved to <a href="https://app-production-968816c2.up.railway.app/">Design Lab PRO</a>.</p>
+<script>location.replace('https://app-production-968816c2.up.railway.app/');</script>
 </body>
 </html>

@@ -10,7 +10,7 @@ Static site served by GitHub Pages from `main`, backed by Supabase.
 | `/collections/` | Curated Collections (flat price per door style) |
 | `/cart/` | Cart and order submission (`place_order()`, no payment; invoiced later) |
 | `/consultation/` | Client video consultation (join by room code) |
-| `/dashboard/` | Employee dashboard: sign in, video rooms, recent orders, team calendar |
+| `/dashboard/`, `/help-desk/` | Retired 11/18: forward to Design Lab PRO (the team works there now) |
 | `/about/` | About us |
 
 - `Assets/dl-core.js` — shared Supabase client, money formatting and the localStorage cart.

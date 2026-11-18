@@ -18,11 +18,9 @@
     var IDLE_MINUTES = 5;
     var IDLE_MS = IDLE_MINUTES * 60 * 1000;
     // Field Guide flipbooks are shared by link (Jordan, Nov 17): the viewer is open to anyone; the rest of the site stays gated.
-    var OPEN_PATHS = /^\/(proto\/)?(consultation|dashboard|resources\/view|guide)\//;
+    var OPEN_PATHS = /^\/(proto\/)?(consultation|dashboard|help-desk|resources\/view|guide)\//;
 
     if (OPEN_PATHS.test(location.pathname)) return;
-    // The DIY Shop inside the Help Desk (agent mode): the Help Desk has its own employee sign-in.
-    try { if (window !== window.top && window.parent.location.pathname.indexOf('/help-desk/') === 0) return; } catch (e) {}
 
     function lastActive() {
         try { return parseInt(localStorage.getItem(ACCESS_KEY), 10) || 0; } catch (e) { return 0; }
