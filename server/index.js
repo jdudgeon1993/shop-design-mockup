@@ -56,7 +56,9 @@ const GATE_COOKIE = 'dl_session';
 const GATE_SESSION_MAX_AGE = 60 * 60; // matches Supabase's default access token lifetime
 
 const app = express();
-app.use(cors({ origin: ALLOWED_ORIGIN }));
+// ALLOWED_ORIGIN may list several sites, comma-separated (the storefront and Design Lab PRO both start video calls).
+const ALLOWED_ORIGINS = ALLOWED_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean);
+app.use(cors({ origin: ALLOWED_ORIGINS.length > 1 ? ALLOWED_ORIGINS : ALLOWED_ORIGINS[0] }));
 app.use(express.json());
 
 async function getSupabaseUser(accessToken) {
