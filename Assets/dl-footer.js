@@ -38,7 +38,7 @@
                     '<p class="df-msg" aria-live="polite"></p></div>' +
             '</div>' +
             '<div class="df-base"><span>&copy; ' + year + ' Design Lab. All rights reserved.</span>' +
-                '<span class="df-base-r">Designed in the Lab &middot; <a href="https://app-production-968816c2.up.railway.app/">Design Lab PRO sign-in</a></span></div>' +
+                '<span class="df-base-r">Designed in the Lab &middot; <a href="https://pro.shopdesignlab.com/">Design Lab PRO sign-in</a></span></div>' +
         '</div>';
     body.appendChild(foot);
 
