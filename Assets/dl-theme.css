@@ -24,7 +24,7 @@
     --bg: #f3ede3; --bg-rgb: 243,237,227; --bg-2: #e9e0d2;
     --surface: #fbf8f3; --surface-2: #e9e0d2; --sunk: #e6dccd;
     --ink: 43,33,27; --text: #2b211b;
-    --gold: #866224; --gold-rgb: 134,98,36; --on-gold: #fbf8f3;
+    --gold: #7a591f; --gold-rgb: 122,89,31; --on-gold: #fbf8f3; /* a touch deeper than #866224 so gold text passes 4.5:1 on every beige (11/18) */
     --espresso: #2b211b;
     --line-art: rgba(var(--ink), .7);   /* DIY catalog line drawings */
     color-scheme: light;
@@ -42,7 +42,7 @@
    to be re-declared too, or they'd keep the page colors. */
 :is(.site-header, .top-bar, .navbar, .shop-footer, .site-footer, .dl-footer, .on-photo) {
     --white: var(--text); --black: var(--bg); --panel: var(--surface);
-    --border: rgba(var(--ink), .15); --muted: rgba(var(--ink), .58);
+    --border: rgba(var(--ink), .15); --muted: rgba(var(--ink), .72);
 }
 /* Text that sits on a photo or a dark scrim stays white in every scheme. */
 .on-photo {

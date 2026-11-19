@@ -22,7 +22,7 @@
     <script src="/Assets/dl-core.js"></script>
     <script src="/Assets/dl-help.js" defer></script>
     <style>
-        :root { --white: var(--text); --black: var(--bg); --panel: var(--surface); --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),0.58); }
+        :root { --white: var(--text); --black: var(--bg); --panel: var(--surface); --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),.72); }
         *, *::before, *::after { box-sizing: border-box; }
         html, body { min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); }
         button, input, textarea { font-family: inherit; }
@@ -84,10 +84,10 @@
         .badge { display: inline-block; margin-bottom: 6px; padding: 2px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
         .badge.diy { background: rgba(var(--ink),0.08); color: rgba(var(--ink),0.75); }
         .badge.coll { background: rgba(var(--gold-rgb),0.18); color: var(--gold); }
-        .remove { appearance: none; background: none; border: none; color: rgba(var(--ink),0.4); cursor: pointer; font-size: 13px; padding: 2px 0; white-space: nowrap; }
+        .remove { appearance: none; background: none; border: none; color: rgba(var(--ink),.72); cursor: pointer; font-size: 13px; padding: 2px 0; white-space: nowrap; }
         .remove:hover { color: var(--danger); }
         .specs { list-style: none; margin: 8px 0 0; padding: 0; font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
-        .specs li::before { content: '–'; margin-right: 6px; color: rgba(var(--ink),0.3); }
+        .specs li::before { content: '–'; margin-right: 6px; color: rgba(var(--ink),.72); }
         .specs .sku { color: rgba(var(--ink),0.8); }
         .includes { margin-top: 10px; border-top: 1px solid rgba(var(--ink),0.08); padding-top: 10px; }
         .includes summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--gold); list-style: none; }
@@ -100,7 +100,7 @@
         .inc-list .q { color: var(--gold); font-weight: 700; font-variant-numeric: tabular-nums; }
         .inc-list .n { color: rgba(var(--ink),0.85); }
         .inc-list .d { display: block; color: var(--muted); font-size: 12px; }
-        .inc-list .s { color: rgba(var(--ink),0.7); white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .inc-list .s { color: rgba(var(--ink),.72); white-space: nowrap; font-variant-numeric: tabular-nums; }
         .line-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
         .qty { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 999px; }
         .qty button { appearance: none; background: none; border: none; color: var(--white); width: 34px; height: 34px; font-size: 17px; cursor: pointer; }
@@ -140,7 +140,7 @@
         .sum-total strong { color: var(--gold); font-size: 26px; font-variant-numeric: tabular-nums; }
         .fine { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 10px 0 18px; }
         .form { display: flex; flex-direction: column; gap: 10px; }
-        .form label { font-size: 12px; font-weight: 600; color: rgba(var(--ink),0.7); display: flex; flex-direction: column; gap: 5px; }
+        .form label { font-size: 12px; font-weight: 600; color: rgba(var(--ink),.72); display: flex; flex-direction: column; gap: 5px; }
         .form input, .form textarea {
             font-size: 14px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--sunk); color: var(--white);
         }
