@@ -29,11 +29,11 @@
         main { width: min(1100px, 90vw); margin: 0 auto; padding: clamp(36px, 6vw, 72px) 0 80px; }
         .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2.4px; text-transform: uppercase; color: var(--gold); margin: 0 0 12px; }
         h1 { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: clamp(36px, 5vw, 58px); line-height: 1.08; margin: 0; }
-        .lede { color: rgba(var(--ink), .7); font-size: 17px; max-width: 600px; margin: 16px 0 0; }
+        .lede { color: rgba(var(--ink), .72); font-size: 17px; max-width: 600px; margin: 16px 0 0; }
         .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(24px, 4vw, 48px); margin-top: 40px; align-items: start; }
         .panel { background: var(--surface); border: 1px solid rgba(var(--ink), .12); border-radius: 18px; padding: clamp(22px, 3vw, 34px); }
         .panel h2 { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 28px; margin: 0 0 6px; }
-        .muted { color: rgba(var(--ink), .65); font-size: 14.5px; margin: 0; }
+        .muted { color: rgba(var(--ink), .72); font-size: 14.5px; margin: 0; }
         .btn {
             appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
             height: 54px; padding: 0 30px; border-radius: 999px; border: 1px solid transparent; cursor: pointer;
@@ -54,7 +54,7 @@
         .tips .ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: rgba(var(--gold-rgb), .14); color: var(--gold); }
         .tips .ic svg { width: 20px; height: 20px; }
         .tips b { display: block; font-size: 15px; }
-        .tips span { color: rgba(var(--ink), .68); }
+        .tips span { color: rgba(var(--ink), .72); }
         .after { display: none; margin-top: 18px; padding: 16px 18px; border-radius: 12px; background: rgba(var(--gold-rgb), .1); border: 1px solid rgba(var(--gold-rgb), .35); font-size: 14.5px; }
         .after.show { display: block; }
         .after a { color: var(--gold); font-weight: 700; }
@@ -72,7 +72,7 @@
         .err { color: var(--danger); font-size: 13.5px; margin: 8px 0 0; min-height: 1.2em; }
         .out { display: none; margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--sunk); border: 1px dashed rgba(var(--ink), .25); word-break: break-all; font-size: 14px; }
         .out.show { display: block; }
-        .note { margin-top: 26px; font-size: 13px; color: rgba(var(--ink), .6); }
+        .note { margin-top: 26px; font-size: 13px; color: rgba(var(--ink), .72); }
         @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -125,20 +125,20 @@
             <div class="grid">
                 <div class="panel">
                     <ol class="steps">
-                        <li><div><h3>Start a Meet</h3>
+                        <li><div><h3 aria-level="2">Start a Meet</h3>
                             <p class="muted">It opens with your work Google account, even if your personal Gmail is signed in too. Leave the call open; you'll admit your client when they knock.</p>
                             <label for="work-email" style="margin-top:14px">Your work email</label>
                             <input type="text" id="work-email" inputmode="email" autocomplete="email" placeholder="you@shopdesignlab.com">
                             <p class="err" id="email-err" role="alert"></p>
                             <div class="row"><a class="btn btn-gold" id="start-meet" href="https://meet.google.com/new" target="_blank" rel="noopener">Start a new Meet</a></div>
                             <p class="muted" style="margin-top:10px;font-size:13px">Wrong account? <a id="choose-acct" href="https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Fmeet.google.com%2Fnew" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600">Choose a different Google account</a></p></div></li>
-                        <li><div><h3>Paste the Meet link</h3>
+                        <li><div><h3 aria-level="2">Paste the Meet link</h3>
                             <label for="meet-in">Meet link or code</label>
                             <input type="text" id="meet-in" placeholder="https://meet.google.com/abc-defg-hij" autocomplete="off">
                             <label for="name-in" style="margin-top:12px">Client first name (optional)</label>
                             <input type="text" id="name-in" placeholder="e.g. Sarah" autocomplete="off" maxlength="40">
                             <p class="err" id="err" role="alert"></p></div></li>
-                        <li><div><h3>Send your client this link</h3>
+                        <li><div><h3 aria-level="2">Send your client this link</h3>
                             <div class="row">
                                 <button class="btn btn-gold" id="make" type="button">Create client link</button>
                             </div>

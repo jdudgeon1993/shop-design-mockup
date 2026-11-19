@@ -39,7 +39,7 @@
         }
         .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
         .back-link:hover { text-decoration: underline; }
-        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(var(--ink),0.7); }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(var(--ink),.72); }
 
         /* The call frame takes all remaining space — this is the whole point */
         .call-frame {
@@ -81,7 +81,7 @@
         .consult-photo figcaption b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 19px; margin-bottom: 2px; }
         #stage-choice .intro-hero { margin: 0 0 30px; max-width: none; }
         #stage-choice .intro-heading { font-size: clamp(32px, 4.4vw, 48px); line-height: 1.1; }
-        #stage-choice .intro-line { margin: 0; max-width: 52ch; font-size: 15.5px; color: rgba(var(--ink),0.68); }
+        #stage-choice .intro-line { margin: 0; max-width: 52ch; font-size: 15.5px; color: rgba(var(--ink),.72); }
         #stage-choice .how-it-works { margin: 0 0 34px; max-width: none; gap: 0; position: relative; }
         #stage-choice .how-it-works li { padding: 0 0 18px; position: relative; font-size: 14.5px; }
         #stage-choice .how-it-works li:not(:last-child)::before { content: ""; position: absolute; left: 13px; top: 28px; bottom: 2px; width: 1px; background: rgba(var(--gold-rgb), .45); }
@@ -91,7 +91,7 @@
         #stage-choice .join-row { display: flex; gap: 10px; flex-wrap: wrap; }
         #stage-choice .room-input { flex: 1 1 200px; margin: 0; text-align: left; min-height: 48px; font-size: 16px; border-radius: 999px; padding: 0 18px; background: var(--bg); }
         #stage-choice .join-row .btn-pill { margin: 0; min-height: 48px; }
-        #stage-choice .no-code { margin: 14px 0 0; font-size: 13.5px; color: rgba(var(--ink),0.6); }
+        #stage-choice .no-code { margin: 14px 0 0; font-size: 13.5px; color: rgba(var(--ink),.72); }
         #stage-choice .no-code a { color: var(--gold); font-weight: 700; }
         #stage-choice .employee-link { margin: 30px 0 0; }
         @media (max-width: 860px) {
@@ -99,8 +99,8 @@
             .consult-photo { aspect-ratio: 16 / 10; }
             #stage-choice { padding-top: 32px; }
         }
-        .stage p { color: rgba(var(--ink),0.6); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
-        .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(var(--ink),0.55); font-size: 14px; line-height: 1.5; }
+        .stage p { color: rgba(var(--ink),.72); max-width: 380px; margin: 0 auto 20px; font-size: 14px; }
+        .intro-line { max-width: 420px; margin: 0 auto 28px; color: rgba(var(--ink),.72); font-size: 14px; line-height: 1.5; }
 
         .kicker { color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; font-size: 12px; margin: 0 0 10px; }
 
@@ -129,7 +129,7 @@
             margin-bottom: 14px; text-align: center;
         }
 
-        .room-label { color: rgba(var(--ink),0.5); text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin: 0 0 6px; }
+        .room-label { color: rgba(var(--ink),.72); text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin: 0 0 6px; }
         .room-code { color: var(--gold); font-size: 20px; font-weight: 700; margin: 0 0 20px; word-break: break-all; }
 
         .btn-pill, .btn-secondary {
@@ -153,14 +153,14 @@
 
         .employee-link {
             appearance: none; background: none; border: none; cursor: pointer;
-            color: rgba(var(--ink),0.4); font-family: inherit; font-size: 12px;
+            color: rgba(var(--ink),.72); font-family: inherit; font-size: 12px;
             text-decoration: underline; margin: 44px auto 0; display: block; width: fit-content;
         }
         .employee-link:hover, .employee-link:focus-visible { color: var(--gold); }
 
         .privacy-caption {
             flex-shrink: 0; padding: 8px 5% 12px; font-size: 12px; text-align: center;
-            color: rgba(var(--ink),0.4);
+            color: rgba(var(--ink),.72);
         }
         .privacy-caption strong { color: var(--gold); font-weight: 600; }
 
@@ -175,7 +175,7 @@
 <body>
     <script src="/Assets/dl-header.js"></script>
 
-    <div class="page">
+    <main class="page" id="main">
         <div class="call-frame" id="call-frame">
             <!-- Step 1: the immersive client-facing intro (the only path clients ever see) -->
             <div class="stage" id="stage-choice">
@@ -199,7 +199,7 @@
                 </ol>
 
                 <div class="join-panel">
-                    <h3>Have Your Room Code?</h3>
+                    <h3 aria-level="2">Have Your Room Code?</h3>
                     <label for="join-input" class="sr-only">Room code</label>
                     <div class="join-row">
                         <input type="text" id="join-input" class="room-input" placeholder="e.g. dl-amber-oak-482" autocomplete="off" autocapitalize="none" spellcheck="false">
@@ -223,7 +223,7 @@
         </div>
 
         <p class="privacy-caption" id="privacy-note">Every consultation room is created fresh with a <strong>private, unlisted code</strong> — never listed publicly, never reused.</p>
-    </div>
+    </main>
 
     <script>
         (function () {

@@ -219,7 +219,7 @@
         .hero-stat-icon svg { width: 100%; height: 100%; }
         .hero-stat:hover .hero-stat-icon { color: var(--gold); }
         .hero-stat h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text); }
-        .hero-stat p { margin: 0; font-size: 12.5px; line-height: 1.5; color: rgba(var(--ink),0.6); }
+        .hero-stat p { margin: 0; font-size: 12.5px; line-height: 1.5; color: rgba(var(--ink),.72); }
 
 
         /* Footer: sized to its own content now (no more min-height:100dvh) —
@@ -236,7 +236,7 @@
         .footer-brand-mark { margin-bottom: 16px; }
         .footer-logo { height: 36px; width: auto; display: block; }
         .footer-brand-mark .brand-name { font-size: 26px; }
-        .footer-tagline { color: rgba(var(--ink),0.6); margin: 0 0 20px; line-height: 1.5; }
+        .footer-tagline { color: rgba(var(--ink),.72); margin: 0 0 20px; line-height: 1.5; }
         .footer-social { display: flex; gap: 16px; }
         .footer-social a { color: var(--text); display: inline-flex; transition: color 0.2s; }
         .footer-social a:hover { color: var(--gold); }
@@ -251,7 +251,7 @@
 
         .footer-bottom {
             margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(var(--ink),0.1);
-            color: rgba(var(--ink),0.5); font-size: 13px;
+            color: rgba(var(--ink),.72); font-size: 13px;
         }
 
         /* Feature sections (DIY / Curated / Full Service / Why) — full-screen
@@ -332,7 +332,7 @@
         .nl {
             /* The site's Linen & Espresso tokens (Assets/dl-theme.css), so the home matches every other page. */
             --nl-charcoal: #2b211b; --nl-surface: #352a22; --nl-line: rgba(243,237,227,0.14);
-            --nl-gold: #d9b56a; --nl-gold-ink: #866224; --nl-white: #f3ede3; --nl-muted: rgba(243,237,227,0.72);
+            --nl-gold: #d9b56a; --nl-gold-ink: #7a591f; --nl-white: #f3ede3; --nl-muted: rgba(243,237,227,0.72);
             --nl-linen: #f3ede3; --nl-linen-2: #e9e0d2; --nl-ink: #2b211b; --nl-ink-soft: #5e5047;
             --nl-display: 'Libre Caslon Display', Georgia, serif;
         }
@@ -445,7 +445,7 @@
 <body data-header="overlay">
     <script src="/Assets/dl-header.js"></script>
 
-    <div class="scroll-container">
+    <main class="scroll-container" id="main">
         <section class="hero">
             <div class="hero-photo on-photo">
                 <div class="hero-slide"></div>
@@ -464,27 +464,27 @@
             <div class="hero-stats">
                 <div class="hero-stat">
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.9 6.4 6.9.6-5.2 4.6 1.6 6.8L12 17l-6.2 3.4 1.6-6.8L2.2 9l6.9-.6Z"></path></svg></div>
-                    <h3>Nearly 90 Years of Experience</h3>
+                    <h3 aria-level="2">Nearly 90 Years of Experience</h3>
                     <p>Three industry veterans. One shared standard.</p>
                 </div>
                 <div class="hero-stat">
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"></path></svg></div>
-                    <h3>Thoughtful Design</h3>
+                    <h3 aria-level="2">Thoughtful Design</h3>
                     <p>Beautiful, functional, organized... happiness.</p>
                 </div>
                 <div class="hero-stat">
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
-                    <h3>Customer Confidence</h3>
+                    <h3 aria-level="2">Customer Confidence</h3>
                     <p>Clarity. Guidance. Review. Approval. Every step.</p>
                 </div>
                 <div class="hero-stat">
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg></div>
-                    <h3>Built for Real Life</h3>
+                    <h3 aria-level="2">Built for Real Life</h3>
                     <p>Quality cabinetry for every room, every style, every budget.</p>
                 </div>
                 <div class="hero-stat">
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6Z"></path></svg></div>
-                    <h3>We're With You</h3>
+                    <h3 aria-level="2">We're With You</h3>
                     <p>From inspiration to installation and beyond.</p>
                 </div>
             </div>
@@ -560,7 +560,7 @@
             </div>
         </section>
 
-    </div>
+    </main>
 
 
     <script>

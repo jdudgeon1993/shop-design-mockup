@@ -34,7 +34,7 @@
     <script src="/Assets/dl-help.js" defer></script>
     <script src="/collections/editor/blueprint.js"></script>
     <style>
-        :root { --white: var(--text); --black: var(--bg); --panel: var(--surface); --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),0.58); }
+        :root { --white: var(--text); --black: var(--bg); --panel: var(--surface); --border: rgba(var(--ink),0.15); --muted: rgba(var(--ink),.72); }
         *, *::before, *::after { box-sizing: border-box; }
         html, body { min-height: 100%; margin: 0; font-family: 'Montserrat', sans-serif; background: var(--black); color: var(--white); }
         button { font-family: inherit; }
@@ -45,7 +45,7 @@
         }
         .back-link { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 14px; }
         .back-link:hover { text-decoration: underline; }
-        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(var(--ink),0.7); }
+        .page-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(var(--ink),.72); }
         @media (max-width: 640px) { .page-title { display: none; } }
         .cart-link {
             display: inline-flex; align-items: center; gap: 8px; color: var(--white); text-decoration: none;
@@ -338,7 +338,7 @@
         .buy .tagline { margin: 0 0 16px; color: var(--gold); font-size: 15px; font-weight: 600; }
         .buy .desc { margin: 0 0 24px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
         .opt { margin-bottom: 22px; }
-        .opt h3 { margin: 0 0 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(var(--ink),0.55); }
+        .opt h3 { margin: 0 0 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: rgba(var(--ink),.72); }
         .opt h3 span { text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--white); margin-left: 6px; }
         .chips { display: flex; flex-wrap: wrap; gap: 8px; }
         .chip {
@@ -372,7 +372,7 @@
         .price-box { border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin: 6px 0 18px; background: rgba(var(--ink),0.03); }
         .price-box .flat { font-size: 32px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
         .price-box .compare { margin-top: 4px; font-size: 13px; color: var(--muted); }
-        .price-box .compare s { color: rgba(var(--ink),0.45); }
+        .price-box .compare s { color: rgba(var(--ink),.72); }
         .btn-primary {
             appearance: none; width: 100%; background: var(--gold); border: none; color: var(--black); padding: 15px 28px; border-radius: 999px;
             font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
@@ -406,7 +406,7 @@
         .included h2 { margin: 0 0 6px; font-size: 26px; }
         .included p { margin: 0 0 16px; font-size: 14px; color: var(--muted); }
         .inc-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .inc-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(var(--ink),0.5); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        .inc-table th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(var(--ink),.72); padding: 10px 12px; border-bottom: 1px solid var(--border); }
         .inc-table td { padding: 12px; border-bottom: 1px solid rgba(var(--ink),0.08); vertical-align: top; }
         .inc-table td.qty { width: 60px; font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
         .inc-table td.sku { white-space: nowrap; color: rgba(var(--ink),0.75); font-variant-numeric: tabular-nums; }

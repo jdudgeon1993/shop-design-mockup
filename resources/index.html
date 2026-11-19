@@ -24,7 +24,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
     <script src="/resources/resources.js"></script>
     <style>
-        :root { --border: rgba(var(--ink),0.14); --muted: rgba(var(--ink),0.62); --soft: rgba(var(--ink),0.04); }
+        :root { --border: rgba(var(--ink),0.14); --muted: rgba(var(--ink),.72); --soft: rgba(var(--ink),0.04); }
         *, *::before, *::after { box-sizing: border-box; }
         html, body { margin: 0; min-height: 100%; font-family: var(--font-body); background: var(--bg); color: var(--text); }
         .wrap { max-width: 1240px; margin: 0 auto; padding: 0 5%; }
@@ -64,7 +64,7 @@
         .seg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
         /* ---------- featured ---------- */
-        main { padding: 40px 0 80px; }
+        .listwrap { padding-top: 40px; padding-bottom: 80px; }
         .featured { display: grid; grid-template-columns: 300px 1fr; gap: 44px; align-items: center; padding: 36px; margin-bottom: 64px;
             border: 1px solid var(--border); border-radius: 20px; background: linear-gradient(135deg, rgba(var(--gold-rgb),0.10), transparent 55%), var(--surface); }
         .featured img { width: 100%; height: auto; display: block; border-radius: 4px; box-shadow: 0 20px 44px rgba(0,0,0,0.45); }
@@ -93,7 +93,7 @@
         .item h3 { margin: 0; font-size: 17px; font-weight: 700; }
         .item p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
         .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-        .tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--soft); border: 1px solid var(--border); color: rgba(var(--ink),0.7); }
+        .tag { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--soft); border: 1px solid var(--border); color: rgba(var(--ink),.72); }
         .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
         .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border);
             color: var(--text); text-decoration: none; font-size: 12px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
@@ -127,7 +127,7 @@
 </head>
 <body>
     <script src="/Assets/dl-header.js"></script>
-
+<main id="main">
     <section class="hero">
         <div class="wrap">
             <div>
@@ -154,7 +154,7 @@
         </div>
     </div>
 
-    <main class="wrap">
+    <div class="wrap listwrap">
         <div id="featured"></div>
         <div id="shelves"></div>
         <p class="empty" id="empty" hidden><b>Nothing matches that yet.</b>Try another word, or ask a designer: we’re adding to the library all the time.</p>
@@ -168,7 +168,8 @@
             <div><h2>Can’t find what you need?</h2><p>Tell us what you’re working on and a designer will send it over.</p></div>
             <a class="btn btn-gold" href="/connect/?topic=designer">Ask a designer</a>
         </div>
-    </main>
+    </div>
+</main>
 
     <script src="/Assets/dl-footer.js"></script>
 

@@ -89,12 +89,28 @@ async function verifyEmployeeSession(accessToken) {
   return (await isEmployee(accessToken, user.id)) ? user : null;
 }
 
+// The gate checks every request (each page pulls in a dozen images, styles and scripts). Remember a session's answer
+// for a minute so a page load is one check with Supabase, not two dozen. Expired or signed-out sessions drop out
+// within that minute; the cookie itself only lives an hour.
+const GATE_CACHE_MS = 60 * 1000;
+const gateCache = new Map();
+async function gateUser(token) {
+  if (!token) return null;
+  const hit = gateCache.get(token);
+  if (hit && hit.until > Date.now()) return hit.user;
+  let user = null;
+  try { user = await verifyEmployeeSession(token); } catch (err) { console.error('Gate check failed:', err.message); return null; }
+  if (gateCache.size > 500) gateCache.clear();
+  gateCache.set(token, { user, until: Date.now() + GATE_CACHE_MS });
+  return user;
+}
+
 function parseCookies(header) {
   const out = {};
   (header || '').split(';').forEach((part) => {
     const i = part.indexOf('=');
     if (i === -1) return;
-    out[part.slice(0, i).trim()] = decodeURIComponent(part.slice(i + 1).trim());
+    try { out[part.slice(0, i).trim()] = decodeURIComponent(part.slice(i + 1).trim()); } catch (e) { /* skip a malformed cookie */ }
   });
   return out;
 }
@@ -172,7 +188,11 @@ app.get('/healthz', (req, res) => res.send('ok'));
 // checks. A JS-disabled visitor just never reaches this step; they were
 // never going to get past the gate either way.
 app.post('/api/session', async (req, res) => {
-  const user = await verifyEmployeeSession(req.body && req.body.access_token);
+  let user = null;
+  try { user = await verifyEmployeeSession(req.body && req.body.access_token); } catch (err) {
+    console.error('Session check failed:', err.message);
+    return res.status(502).json({ error: 'Could not verify the session. Try again in a moment.' });
+  }
   if (!user) {
     return res.status(401).json({ error: "Not an employee account, or session expired." });
   }
@@ -187,6 +207,8 @@ app.post('/api/session', async (req, res) => {
 });
 
 app.post('/api/logout', (req, res) => {
+  const cookies = parseCookies(req.headers.cookie);
+  if (cookies[GATE_COOKIE]) gateCache.delete(cookies[GATE_COOKIE]);
   res.clearCookie(GATE_COOKIE, { path: '/' });
   res.json({ ok: true });
 });
@@ -199,7 +221,7 @@ app.post('/api/logout', (req, res) => {
 app.use(async (req, res, next) => {
   if (req.path.startsWith('/server')) return res.status(404).end(); // never serve our own source
   const cookies = parseCookies(req.headers.cookie);
-  const user = await verifyEmployeeSession(cookies[GATE_COOKIE]);
+  const user = await gateUser(cookies[GATE_COOKIE]); // a Supabase hiccup shows coming-soon instead of hanging the request
   if (user) return next();
   res.sendFile(path.join(SITE_ROOT, 'coming-soon', 'index.html'));
 });

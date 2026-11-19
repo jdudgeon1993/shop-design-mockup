@@ -22,7 +22,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
     <style>
         :root {
-            --muted: rgba(var(--ink),0.62); --border: rgba(var(--ink),0.16);
+            --muted: rgba(var(--ink),.72); --border: rgba(var(--ink),0.16);
             --sheet-ink: #1f2a5c; --sheet-blue: #1f3fd1; --sheet-gold: #e0a43a; --sheet-line: #1f2a5c; --sheet-soft: #5b6385;
             --ok: #2e8b57; --warn: #c0392b;
         }
@@ -310,8 +310,8 @@
         <span class="badge">Mockup</span>
         <span class="status" id="status"><span class="dot"></span><span id="status-text"></span></span>
     </header>
-    <p class="mock-note">Mockup: nothing here reaches the website or the database. Your changes stay in this browser so you can try everything.
-        <button class="linkish" id="reset" type="button">Start the mockup over</button></p>
+    <aside aria-label="About this mockup"><p class="mock-note">Mockup: nothing here reaches the website or the database. Your changes stay in this browser so you can try everything.
+        <button class="linkish" id="reset" type="button">Start the mockup over</button></p></aside>
 
     <main class="wrap">
         <div class="picker" id="picker" aria-label="Cards"></div>
@@ -330,12 +330,12 @@
         <section id="back-side" hidden></section>
     </main>
 
-    <div class="bottom-bar">
+    <footer class="bottom-bar">
         <span class="saved" id="saved">All changes saved</span>
         <button class="btn danger" type="button" id="unpublish" hidden>Take off the site</button>
         <button class="btn" type="button" id="save-draft">Save draft</button>
         <button class="btn gold" type="button" id="publish">Publish to site</button>
-    </div>
+    </footer>
 
     <input type="file" id="file-front" accept="image/*" hidden>
     <input type="file" id="file-drawing" accept="image/*" hidden>
