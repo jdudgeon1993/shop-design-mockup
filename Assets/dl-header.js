@@ -25,6 +25,9 @@
         { href: '/about/', label: 'About Us' }
     ];
     var CONNECT = { href: '/connect/', label: 'Connect' };
+    // Customers with a Design Lab project (a DL number) open it in Design Lab Concierge. The rest of the doors
+    // (Studio Partners, the Design Lab team) are in the footer's Sign in column.
+    var PROJECT = { href: '/concierge/', label: 'My project' };
 
     var body = document.body;
     if (!body) return;
@@ -46,10 +49,12 @@
             '<img src="/Assets/Logos/dl-mark-gold.svg" alt="" width="40" height="53"><span class="sh-name">Design Lab</span></a>' +
         '<nav class="sh-nav" aria-label="Main">' + links + '</nav>' +
         '<div class="sh-right">' +
+            '<a class="sh-proj" href="' + PROJECT.href + '">' + PROJECT.label + '</a>' +
             '<a class="sh-cart" href="/cart/" aria-label="Cart">' + cartIcon + '<span class="sh-count" data-cart-count hidden>0</span></a>' +
             '<a class="sh-connect" href="' + CONNECT.href + '"' + connectCur + '>' + CONNECT.label + '</a>' +
         '</div>' +
         '<div class="sh-menu" id="sh-menu" hidden>' + links +
+            '<a href="' + PROJECT.href + '">' + PROJECT.label + '</a>' +
             '<a class="sh-connect" href="' + CONNECT.href + '">' + CONNECT.label + '</a></div>';
     body.insertBefore(header, body.firstChild);
     if (!overlay) {
