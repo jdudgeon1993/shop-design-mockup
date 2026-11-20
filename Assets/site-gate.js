@@ -11,14 +11,16 @@
 // Pages has no server, so the page files themselves are still public.
 //
 // Never gated: the video consultation pages (clients join calls by link and
-// will never have the code), the employee dashboard (has its own login), and the
-// Field Guide flipbooks (/resources/view/ and the short /guide/<name>/ links) so they can be shared.
+// will never have the code), the doors to the Design Lab apps (/concierge/ for
+// customers, /pro/ and the old /dashboard/ and /help-desk/ for PRO, /partners/ for
+// the Studio Partner application: each has its own sign-in), and the Field Guide
+// flipbooks (/resources/view/ and the short /guide/<name>/ links) so they can be shared.
 (function () {
     var ACCESS_KEY = 'dl_access_v2';
     var IDLE_MINUTES = 5;
     var IDLE_MS = IDLE_MINUTES * 60 * 1000;
     // Field Guide flipbooks are shared by link (Jordan, Nov 17): the viewer is open to anyone; the rest of the site stays gated.
-    var OPEN_PATHS = /^\/(proto\/)?(consultation|dashboard|help-desk|concierge|resources\/view|guide)\//;
+    var OPEN_PATHS = /^\/(proto\/)?(consultation|dashboard|help-desk|concierge|pro|partners|resources\/view|guide)\//;
 
     if (OPEN_PATHS.test(location.pathname)) return;
 

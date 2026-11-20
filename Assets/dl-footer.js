@@ -31,6 +31,11 @@
                     '<li><a href="/connect/">Send us a message</a></li>' +
                     '<li><a href="/consultation/">Join a video call</a></li>' +
                     '<li><a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a></li></ul></div>' +
+                // The doors: customers to Concierge, Studio Partners and the Design Lab team to PRO, designers to the application.
+                '<div><h2>Sign in</h2><ul>' +
+                    '<li><a href="/concierge/">My project<small>Design Lab Concierge</small></a></li>' +
+                    '<li><a href="https://pro.shopdesignlab.com/">Studio Partners &amp; team<small>Design Lab PRO</small></a></li>' +
+                    '<li><a href="/partners/">Become a Studio Partner</a></li></ul></div>' +
                 '<div class="df-news"><h2>New Field Guides</h2><p>Get each new Field Guide and Lab Book when it&rsquo;s published.</p>' +
                     '<form class="df-signup" novalidate><label for="df-email" class="df-sr">Email</label>' +
                     '<input id="df-email" type="email" autocomplete="email" placeholder="Your email" required>' +
@@ -38,7 +43,7 @@
                     '<p class="df-msg" aria-live="polite"></p></div>' +
             '</div>' +
             '<div class="df-base"><span>&copy; ' + year + ' Design Lab. All rights reserved.</span>' +
-                '<span class="df-base-r">Designed in the Lab &middot; <a href="https://pro.shopdesignlab.com/">Design Lab PRO sign-in</a></span></div>' +
+                '<span class="df-base-r">Designed in the Lab</span></div>' +
         '</div>';
     body.appendChild(foot);
 

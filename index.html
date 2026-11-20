@@ -19,8 +19,9 @@
     <!-- Temporary pre-launch gate. Always shows the coming-soon page. Enter the
          4-digit access code to reach the site; access lapses after 5 idle
          minutes (Assets/site-gate.js), which sends visitors back here.
-         Employees sign in separately via the footer's "Employee Login" link
-         (Design Lab PRO). -->
+         The doors under it stay open before launch: customers to their project
+         (Concierge), Studio Partners and the team to Design Lab PRO, designers to
+         the Studio Partner application. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Libre+Caslon+Display&display=swap" rel="stylesheet">
@@ -83,6 +84,9 @@
             color: rgba(255,255,255,0.6);
         }
         .access-toggle:hover, .access-toggle:focus-visible { color: var(--gold); outline: none; }
+        .doors { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; margin-top: 6px; padding: 0 16px; font: 400 12.5px 'Montserrat', sans-serif; letter-spacing: .5px; color: rgba(255,255,255,0.45); }
+        .doors a { color: rgba(255,255,255,0.7); text-decoration: none; padding: 6px 2px; }
+        .doors a:hover, .doors a:focus-visible { color: var(--gold); outline: none; }
         .access-form { display: flex; align-items: center; gap: 8px; }
         .code-input {
             width: 108px; box-sizing: border-box; padding: 9px 8px;
@@ -131,6 +135,11 @@
             <button class="code-submit" type="submit">Enter</button>
         </form>
         <p class="code-error" id="code-error" role="alert"></p>
+        <nav class="doors" aria-label="Sign in">
+            <a href="/concierge/">My project</a><span aria-hidden="true">&middot;</span>
+            <a href="https://pro.shopdesignlab.com/">Studio Partners &amp; team</a><span aria-hidden="true">&middot;</span>
+            <a href="/partners/">Become a Studio Partner</a>
+        </nav>
     </div>
 
     <script>
