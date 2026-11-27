@@ -8,115 +8,416 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
     <link rel="stylesheet" href="/Assets/dl-header.css">
     <title>Order Samples - Design Lab</title>
-    <meta name="description" content="See Design Lab door finishes up close, and order door samples.">
+    <meta name="description" content="Order finish chips and sample doors from every Design Lab line: Structure | 3 and our partner lines.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Design Lab">
     <meta property="og:title" content="Order Samples | Design Lab">
-    <meta property="og:description" content="See Design Lab door finishes up close, and order door samples.">
+    <meta property="og:description" content="Order finish chips and sample doors from every Design Lab line.">
     <meta property="og:url" content="https://shopdesignlab.com/samples/">
     <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/doors/luxor-harvest.webp">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#2b211b">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/Assets/dl-core.js"></script>
+    <!--
+      Order Samples (11/27). Every brand, line, door style and finish comes from the catalog (vendors, product_lines,
+      door_styles, finishes), so a new line or colour shows up here by itself. Real door-sample photos
+      (product_images kind 'door_sample') are used where we have them; otherwise the door is drawn in the finish colour.
+      Two sample types, set in TYPES below (add a type, a price or a limit there). A request is a contact_messages row
+      with topic 'samples', which PRO turns into a New lead (private.pro_contact_to_lead). Nothing is charged online:
+      the team confirms cost and shipping first.
+    -->
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         html, body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); }
         img { max-width: 100%; display: block; }
-        .pg { --gold-ink: var(--gold); }
-        .pg-in { max-width: 1200px; margin: 0 auto; padding: 0 max(16px, 4%); }
+        .pg-in { max-width: 1280px; margin: 0 auto; padding: 0 max(16px, 4%); }
         .kicker { font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin: 0 0 12px; color: var(--gold); }
-        .pg h1, .pg h2 { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; line-height: 1.06; margin: 0; text-wrap: balance; }
-        .pg h1 { font-size: clamp(36px, 5vw, 60px); }
-        .pg h2 { font-size: clamp(26px, 3.2vw, 38px); }
-        .lead { font-size: 17px; line-height: 1.65; color: rgba(var(--ink), .78); max-width: 56ch; margin: 16px 0 0; }
-        .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 13px 24px; border-radius: 999px; font: 700 12px 'Montserrat', sans-serif; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; background: var(--gold); color: var(--on-gold); border: 1px solid var(--gold); transition: transform .2s; }
-        .btn:hover { transform: scale(1.04); }
+        h1, h2, h3 { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; line-height: 1.08; margin: 0; text-wrap: balance; }
+        h1 { font-size: clamp(36px, 5vw, 58px); }
+        .lead { font-size: 17px; line-height: 1.65; color: rgba(var(--ink), .78); max-width: 60ch; margin: 16px 0 0; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; padding: 13px 24px; border-radius: 999px; font: 700 12px 'Montserrat', sans-serif; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; background: var(--gold); color: var(--on-gold); border: 1px solid var(--gold); cursor: pointer; transition: transform .2s, opacity .2s; }
+        .btn:hover { transform: scale(1.03); }
+        .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
         .btn.ghost { background: transparent; color: var(--gold); }
-        .btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
-        .pg a:focus-visible, .pg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
-        .soon { display: inline-block; margin-top: 22px; padding: 6px 14px; border: 1px solid rgba(var(--ink), .25); border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(var(--ink), .7); }
-        .s-try { padding-block: 88px; }
-        .s-try .pg-in { display: grid; grid-template-columns: .9fr 1.1fr; gap: 56px; align-items: center; }
-        .s-try .lead { margin: 14px 0 26px; }
-        .s-sw { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
-        .s-sw button { width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(var(--ink), .25); cursor: pointer; box-shadow: inset 0 0 0 3px var(--bg); transition: transform .2s; }
-        .s-sw button:hover { transform: scale(1.08); }
-        .s-sw button[aria-pressed="true"] { border-color: var(--gold); box-shadow: inset 0 0 0 3px var(--bg), 0 0 0 3px rgba(212,175,55,.35); }
-        .s-fin { font-family: 'Libre Caslon Display', Georgia, serif; font-size: 30px; margin: 0; }
-        .s-finnote { font-size: 13px; color: rgba(var(--ink), .7); margin: 6px 0 0; }
-        .s-door { position: relative; justify-self: center; width: min(300px, 70vw); aspect-ratio: 1 / 2; }
-        .s-door img { position: absolute; inset: 0; width: 100%; height: calc(100% - 34px); object-fit: contain; filter: drop-shadow(0 24px 34px rgba(0,0,0,.45)); transition: opacity .45s ease; }
-        .s-door img.off { opacity: 0; }
-        .s-door span { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(var(--ink), .7); }
-        .s-order { padding-block: 0 88px; }
-        .s-box { border: 1px solid rgba(var(--gold-rgb), .4); border-radius: 18px; padding: 34px clamp(20px, 4vw, 44px); background: rgba(var(--gold-rgb), .06); }
-        @media (max-width: 860px) { .s-try .pg-in { grid-template-columns: 1fr; gap: 28px; } }
-        @media (prefers-reduced-motion: reduce) { .s-door img { transition: none; } }
+        a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+        /* intro + the two kinds of sample */
+        .intro { padding-block: 64px 28px; }
+        .kinds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 30px; max-width: 900px; }
+        .kind { display: flex; gap: 18px; align-items: center; padding: 18px 20px; border: 1px solid rgba(var(--ink), .14); border-radius: 16px; background: var(--surface); }
+        .kind .art { flex: 0 0 auto; width: 56px; display: flex; justify-content: center; }
+        .kind .art svg { width: 100%; height: auto; }
+        .kind h2 { font-size: 22px; }
+        .kind p { margin: 4px 0 0; font-size: 13.5px; line-height: 1.55; color: rgba(var(--ink), .75); }
+        .fine { font-size: 13px; color: rgba(var(--ink), .7); margin: 18px 0 0; }
+
+        /* layout: catalog + tray */
+        .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 32px; align-items: start; padding-bottom: 90px; }
+        .bar { position: sticky; top: var(--sh-stick, 66px); z-index: 5; background: var(--bg); padding: 14px 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid rgba(var(--ink), .1); }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chips button { font: 600 13px 'Montserrat', sans-serif; padding: 9px 16px; min-height: 40px; border-radius: 999px; border: 1px solid rgba(var(--ink), .22); background: transparent; color: inherit; cursor: pointer; }
+        .chips button[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+        .search { flex: 1 1 200px; max-width: 320px; margin-left: auto; font: inherit; font-size: 15px; padding: 10px 16px; min-height: 42px; border-radius: 999px; border: 1px solid rgba(var(--ink), .22); background: var(--surface); color: inherit; }
+
+        .brand { margin-top: 34px; }
+        .brand > h2 { font-size: 30px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+        .brand > h2 small { font: 700 11px 'Montserrat', sans-serif; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+        .line-h { font: 700 12px 'Montserrat', sans-serif; letter-spacing: 2px; text-transform: uppercase; color: rgba(var(--ink), .6); margin: 22px 0 10px; }
+        .styles { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .style { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; padding: 18px; border: 1px solid rgba(var(--ink), .13); border-radius: 16px; background: var(--surface); }
+        .door { width: 112px; height: 168px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--sunk); overflow: hidden; }
+        .door svg { width: 78%; height: auto; }
+        .door.has-photo { background-color: #fff; }
+        .door.painted svg { display: none; }
+        .style h3 { font-size: 24px; }
+        .meta { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(var(--ink), .55); margin: 4px 0 2px; }
+        .tag { font-size: 13px; color: rgba(var(--ink), .7); margin: 2px 0 10px; line-height: 1.45; }
+        .fins { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px 22px; }
+        .fin { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 4px 0; }
+        .fin .sw { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(0,0,0,.18); cursor: pointer; padding: 0; }
+        .fin .sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--gold); }
+        .fin .nm { font-size: 14px; line-height: 1.25; overflow-wrap: anywhere; }
+        .add { display: flex; gap: 6px; }
+        .add button { font: 700 11px 'Montserrat', sans-serif; letter-spacing: .6px; text-transform: uppercase; min-height: 36px; min-width: 62px; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(var(--gold-rgb), .55); background: transparent; color: var(--gold); cursor: pointer; }
+        .add button[aria-pressed="true"] { background: var(--gold); color: var(--on-gold); border-color: var(--gold); }
+        .add button:disabled { opacity: .35; cursor: not-allowed; }
+        .empty { padding: 40px 0; color: rgba(var(--ink), .7); }
+
+        /* tray */
+        .tray { position: sticky; top: calc(var(--sh-stick, 66px) + 14px); margin-top: 14px; border: 1px solid rgba(var(--gold-rgb), .45); border-radius: 18px; background: var(--surface); padding: 20px; max-height: calc(100vh - var(--sh-stick, 66px) - 28px); overflow-y: auto; }
+        .tray h2 { font-size: 26px; }
+        .count { font: 700 11px 'Montserrat', sans-serif; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); }
+        .picked { list-style: none; margin: 14px 0; padding: 0; display: grid; gap: 8px; }
+        .picked li { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: 13.5px; line-height: 1.3; }
+        .picked .dot { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,.18); }
+        .picked small { display: block; color: rgba(var(--ink), .6); font-size: 11.5px; }
+        .picked .x { border: 0; background: transparent; color: rgba(var(--ink), .6); font-size: 20px; line-height: 1; width: 36px; height: 36px; cursor: pointer; border-radius: 50%; }
+        .picked .x:hover { color: var(--text); background: rgba(var(--ink), .06); }
+        .none { font-size: 14px; color: rgba(var(--ink), .65); margin: 12px 0; line-height: 1.5; }
+        form { display: grid; gap: 10px; margin-top: 6px; }
+        form[hidden] { display: none; }
+        label { font-size: 12px; font-weight: 700; letter-spacing: .5px; display: grid; gap: 5px; }
+        input, select, textarea { font: inherit; font-size: 15px; font-weight: 400; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(var(--ink), .22); background: var(--bg); color: inherit; width: 100%; }
+        textarea { min-height: 70px; resize: vertical; }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .row3 { display: grid; grid-template-columns: 1.4fr .7fr .9fr; gap: 10px; }
+        .roles { display: flex; flex-wrap: wrap; gap: 6px; border: 0; padding: 0; margin: 0; }
+        .roles legend { font-size: 12px; font-weight: 700; margin-bottom: 5px; padding: 0; }
+        .roles label { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; padding: 8px 12px; border: 1px solid rgba(var(--ink), .22); border-radius: 999px; cursor: pointer; }
+        .roles input { width: auto; margin: 0; }
+        .status { font-size: 13px; min-height: 1em; margin: 0; }
+        .status.bad { color: var(--danger); }
+        .done { text-align: center; padding: 10px 0; }
+        .done h3 { font-size: 26px; margin-bottom: 8px; }
+        .done p { font-size: 14px; line-height: 1.6; color: rgba(var(--ink), .75); }
+
+        .tray .close { display: none; float: right; border: 0; background: transparent; color: inherit; font: 600 13px 'Montserrat', sans-serif; padding: 8px; cursor: pointer; }
+        /* phones: the tray becomes a bar at the bottom that opens a sheet */
+        .traybar { display: none; }
+        @media (max-width: 980px) {
+            .wrap { grid-template-columns: 1fr; }
+            .tray { position: fixed; left: 0; right: 0; bottom: 0; top: auto; margin: 0; z-index: 40; border-radius: 18px 18px 0 0; max-height: 86vh; transform: translateY(105%); transition: transform .3s ease; box-shadow: 0 -10px 40px rgba(0,0,0,.25); }
+            .tray.open { transform: none; }
+            .traybar { display: flex; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 30; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 10px 10px 20px; border-radius: 999px; background: var(--espresso); color: #f3ede3; box-shadow: 0 8px 28px rgba(0,0,0,.3); }
+            .traybar[hidden] { display: none; }
+            .traybar .btn { background: #d9b56a; color: #2b211b; border-color: #d9b56a; min-height: 42px; }
+            .tray .close { display: block; }
+        }
+        @media (max-width: 640px) {
+            .kinds { grid-template-columns: 1fr; }
+            .fins { grid-template-columns: 1fr; }
+            .style { grid-template-columns: 84px minmax(0, 1fr); padding: 14px; gap: 12px; }
+            .door { width: 84px; height: 126px; }
+            .fin { grid-template-columns: 28px minmax(0, 1fr); }
+            .fin .add { grid-column: 2; }
+            .search { max-width: none; margin-left: 0; }
+            .row3 { grid-template-columns: 1fr 1fr; }
+            .row3 label:first-child { grid-column: 1 / -1; }
+        }
+        @media (prefers-reduced-motion: reduce) { .tray, .btn { transition: none; } }
     </style>
 </head>
 <body>
     <script src="/Assets/dl-header.js"></script>
-<main id="main" class="pg">
-    <section class="s-try" aria-labelledby="s-try-h">
-        <div class="pg-in">
-            <div>
-                <p class="kicker">Order Samples &middot; Try a colour</p>
-                <h1 id="s-try-h">See it in your finish.</h1>
-                <p class="lead">Tap a finish to see the real door. Shown here: the Luxor shaker door.</p>
-                <div class="s-sw" id="s-sw" role="group" aria-label="Finish"></div>
-                <p class="s-fin" id="s-fin" aria-live="polite"></p>
-                <p class="s-finnote" id="s-finnote"></p>
-                <p class="lead" style="font-size:14px">Plus many more finishes across our other door styles. <a href="/diy-wizard/" style="color:var(--gold);font-weight:700">See every door style &rarr;</a></p>
-            </div>
-            <div class="s-door">
-                <img id="s-door-a" src="/Assets/Images/doors/luxor-harvest.webp" alt="Luxor door in Harvest">
-                <img id="s-door-b" src="/Assets/Images/doors/luxor-harvest.webp" alt="" aria-hidden="true" class="off">
-                <span>Luxor &middot; Shaker &middot; Real door photo</span>
-            </div>
-        </div>
+<main id="main">
+    <section class="intro pg-in" aria-labelledby="h1">
+        <p class="kicker">Order Samples</p>
+        <h1 id="h1">Hold the real thing.</h1>
+        <p class="lead">Every door style and finish from every line we carry. Pick a finish chip to compare colours, or a sample door to see the profile, edge and quality up close.</p>
+        <div class="kinds" id="kinds"></div>
+        <p class="fine">Nothing is charged online. Our team confirms your samples, any cost and shipping with you before anything ships.</p>
     </section>
-    <section class="s-order">
-        <div class="pg-in">
-            <div class="s-box">
-                <p class="kicker">Order samples</p>
-                <h2>Hold the real door in your hands.</h2>
-                <p class="lead">Our samples program is on its way. Until then, tell us which door styles and finishes you&rsquo;d like to see and we&rsquo;ll take care of it.</p>
-                <div class="btns"><a class="btn" href="/connect/?topic=samples">Request a sample</a></div>
+
+    <div class="pg-in wrap">
+        <section aria-label="Door styles and finishes">
+            <div class="bar">
+                <div class="chips" id="brands" role="group" aria-label="Brand"></div>
+                <label class="sr" for="q">Search finishes</label>
+                <input class="search" id="q" type="search" placeholder="Search a colour or style…" autocomplete="off">
             </div>
-        </div>
-    </section>
+            <div id="catalog"><p class="empty" id="loading">Loading every line…</p></div>
+        </section>
+
+        <aside class="tray" id="tray" aria-labelledby="tray-h">
+            <button class="close" type="button" id="tray-close">Close</button>
+            <p class="count" id="tray-count">0 samples</p>
+            <h2 id="tray-h">Your samples</h2>
+            <ul class="picked" id="picked"></ul>
+            <p class="none" id="none">Nothing picked yet. Tap <b>Chip</b> or <b>Door</b> next to any finish.</p>
+            <form id="form" hidden novalidate>
+                <div class="row2">
+                    <label>Name<input id="f-name" autocomplete="name" required maxlength="120"></label>
+                    <label>Phone <span style="font-weight:400">(optional)</span><input id="f-phone" type="tel" autocomplete="tel" maxlength="40"></label>
+                </div>
+                <label>Email<input id="f-email" type="email" autocomplete="email" required maxlength="254"></label>
+                <label>Ship to (street)<input id="f-street" autocomplete="street-address" required maxlength="160"></label>
+                <div class="row3">
+                    <label>City<input id="f-city" autocomplete="address-level2" required maxlength="80"></label>
+                    <label>State<input id="f-state" autocomplete="address-level1" required maxlength="30"></label>
+                    <label>ZIP<input id="f-zip" autocomplete="postal-code" required maxlength="12" inputmode="numeric"></label>
+                </div>
+                <fieldset class="roles"><legend>I’m a</legend>
+                    <label><input type="radio" name="role" value="homeowner" checked>Homeowner</label>
+                    <label><input type="radio" name="role" value="contractor">Contractor</label>
+                    <label><input type="radio" name="role" value="designer">Designer</label>
+                </fieldset>
+                <label>Anything we should know? <span style="font-weight:400">(optional)</span><textarea id="f-notes" maxlength="800" placeholder="Your project, timing, what you’re comparing…"></textarea></label>
+                <p class="status" id="status" role="status"></p>
+                <button class="btn" id="send" type="submit">Request samples</button>
+            </form>
+            <div class="done" id="done" hidden tabindex="-1">
+                <h3>Thanks, <span id="d-name"></span>.</h3>
+                <p>We have your sample request. Someone from our team will reach out by email to confirm your samples and shipping.</p>
+                <button class="btn ghost" type="button" id="again">Start a new request</button>
+            </div>
+        </aside>
+    </div>
+    <div class="traybar" id="traybar" hidden><span id="traybar-t">0 samples</span><button class="btn" type="button" id="traybar-open">Review &amp; request</button></div>
 </main>
     <script src="/Assets/dl-footer.js"></script>
-    <script>
-        (function () {
-            // Real Luxor door photos; each swatch colour is sampled from its photo. (Moved from the home page, Corbin 11/25.)
-            var FIN = [
-                { n: 'White', f: 'luxor-white', c: '#e6e6e6', note: 'A clean painted white' },
-                { n: 'Misty Grey', f: 'luxor-misty-grey', c: '#b6b2af', note: 'A soft painted grey' },
-                { n: 'Smoky Grey', f: 'luxor-smoky-grey', c: '#4f4b46', note: 'A stained grey with visible grain' },
-                { n: 'Harvest', f: 'luxor-harvest', c: '#aa8f73', note: 'A warm natural stain' },
-                { n: 'Espresso', f: 'luxor-espresso', c: '#34251b', note: 'A deep brown stain' }
-            ];
-            var D = '/Assets/Images/doors/', sw = document.getElementById('s-sw');
-            sw.innerHTML = FIN.map(function (f, i) { return '<button type="button" data-i="' + i + '" aria-label="' + f.n + '" aria-pressed="false" style="background:' + f.c + '"></button>'; }).join('');
-            FIN.forEach(function (f) { var im = new Image(); im.src = D + f.f + '.webp'; });
-            var front = document.getElementById('s-door-a'), back = document.getElementById('s-door-b');
-            function pick(i, first) {
-                var f = FIN[i];
-                if (!first) {
-                    back.src = D + f.f + '.webp'; back.alt = 'Luxor door in ' + f.n; back.removeAttribute('aria-hidden');
-                    back.classList.remove('off'); front.classList.add('off'); front.setAttribute('aria-hidden', 'true'); front.alt = '';
-                    var t = front; front = back; back = t;
-                }
-                document.getElementById('s-fin').textContent = f.n;
-                document.getElementById('s-finnote').textContent = f.note;
-                sw.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.i === i)); });
-            }
-            sw.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
-            pick(3, true);
-        })();
-    </script>
+<script>
+(function () {
+    // ---------- settings: the sample program lives here ----------
+    // Add a type, a limit or (later) a price here; every list and the request pick it up.
+    var TYPES = {
+        chip: { label: 'Chip', name: 'Finish chip', blurb: 'A small piece of the real finish. Best for comparing colours side by side.' },
+        door: { label: 'Door', name: 'Sample door', blurb: 'A full door in the style and finish. Best for feeling the profile, edge and quality.' }
+    };
+    var MAX = 12;                       // samples per request
+    var KEY = 'dl_samples_v1';          // what's picked, kept in this browser
+    // Which types a style offers. Today: every type for every style. Later this can read a catalog column.
+    function offers(style, type) { return true; }
+
+    var DL = window.DL, esc = DL.escapeHtml, sb = DL.supabase;
+    var $ = function (id) { return document.getElementById(id); };
+    var data = { vendors: [], lines: {}, styles: [], styleById: {}, fins: {}, finById: {} };
+    var picked = [];   // [{ s: styleId, f: finishId, t: 'chip'|'door' }]
+    var brand = 'all', query = '', photoRows = [], shown = {};   // shown[styleId] = finishId on the door
+
+    try { picked = JSON.parse(localStorage.getItem(KEY) || '[]').filter(function (p) { return p && p.s && p.f && TYPES[p.t]; }); } catch (e) { picked = []; }
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(picked)); } catch (e) {} }
+
+    // ---------- the two kinds, explained ----------
+    $('kinds').innerHTML = Object.keys(TYPES).map(function (k) {
+        var art = k === 'door' ? DL.doorSvg('shaker', 'shaker', '#b08d68', { label: '' })
+            : '<svg viewBox="0 0 60 60" aria-hidden="true"><rect x="10" y="10" width="40" height="40" rx="6" fill="#b08d68" stroke="rgba(0,0,0,.35)"/><circle cx="20" cy="20" r="3" fill="rgba(255,255,255,.7)"/></svg>';
+        return '<div class="kind"><div class="art" aria-hidden="true">' + art + '</div><div><h2>' + esc(TYPES[k].name) + '</h2><p>' + esc(TYPES[k].blurb) + '</p></div></div>';
+    }).join('');
+
+    // ---------- catalog ----------
+    function load() {
+        return Promise.all([
+            sb.from('vendors').select('id,code,name').order('id'),
+            sb.from('product_lines').select('id,code,name,vendor_id'),
+            sb.from('door_styles').select('id,code,name,line_id,door_profile,drawer_profile,tagline,sort_order').eq('is_active', true).order('sort_order'),
+            sb.from('finishes').select('id,door_style_id,code,name,swatch_hex,sort_order').eq('is_active', true).order('sort_order')
+        ]).then(function (r) {
+            r.forEach(function (x) { if (x.error) throw x.error; });
+            data.vendors = r[0].data;
+            r[1].data.forEach(function (l) { data.lines[l.id] = l; });
+            data.styles = r[2].data.filter(function (s) { return data.lines[s.line_id]; });
+            data.styles.forEach(function (s) { data.styleById[s.id] = s; data.fins[s.id] = []; });
+            r[3].data.forEach(function (f) { if (data.fins[f.door_style_id]) { data.fins[f.door_style_id].push(f); data.finById[f.id] = f; } });
+            data.styles = data.styles.filter(function (s) { return data.fins[s.id].length; });
+            // Design Lab's own line first, then the partner lines.
+            data.vendors.sort(function (a, b) { return (a.code === 'S3' ? -1 : 0) - (b.code === 'S3' ? -1 : 0) || a.id - b.id; });
+            picked = picked.filter(function (p) { return data.finById[p.f] && data.styleById[p.s]; });
+        });
+    }
+    function vendorOf(s) { return data.lines[s.line_id].vendor_id; }
+    function isPicked(s, f, t) { return picked.some(function (p) { return p.s === s && p.f === f && p.t === t; }); }
+
+    function renderBrands() {
+        var list = [{ id: 'all', name: 'All lines' }].concat(data.vendors.filter(function (v) {
+            return data.styles.some(function (s) { return vendorOf(s) === v.id; });
+        }));
+        $('brands').innerHTML = list.map(function (v) {
+            return '<button type="button" data-brand="' + v.id + '" aria-pressed="' + (String(brand) === String(v.id)) + '">' + esc(v.name) + '</button>';
+        }).join('');
+    }
+
+    function doorHtml(s) {
+        var f = data.finById[shown[s.id]] || data.fins[s.id][0];
+        var row = photoRows.length ? DL.photos.pickRow(photoRows, { doorSample: true, styleId: s.id, finishId: f.id, strictFinish: true }) : null;
+        return '<div class="door' + (row ? ' has-photo is-loading' : '') + '"' + (row ? ' data-photo="' + esc(row.storage_path) + '"' : '') +
+            ' role="img" aria-label="' + esc(s.name + ' door in ' + f.name) + '">' +
+            DL.doorSvg(s.door_profile, s.drawer_profile, f.swatch_hex, { label: '' }) + '</div>';
+    }
+
+    function render() {
+        var q = query.trim().toLowerCase(), out = '', any = false;
+        data.vendors.forEach(function (v) {
+            if (brand !== 'all' && String(brand) !== String(v.id)) return;
+            var byLine = {};
+            data.styles.forEach(function (s) {
+                if (vendorOf(s) !== v.id) return;
+                var line = data.lines[s.line_id];
+                var fins = data.fins[s.id].filter(function (f) {
+                    return !q || (s.name + ' ' + f.name + ' ' + line.name + ' ' + v.name + ' ' + (s.door_profile || '')).toLowerCase().indexOf(q) >= 0;
+                });
+                if (!fins.length) return;
+                (byLine[line.id] = byLine[line.id] || []).push({ s: s, fins: fins });
+            });
+            var lines = Object.keys(byLine);
+            if (!lines.length) return;
+            any = true;
+            out += '<section class="brand" aria-label="' + esc(v.name) + '"><h2>' + esc(v.name) + (v.code === 'S3' ? ' <small>Exclusively by Design Lab</small>' : '') + '</h2>';
+            lines.forEach(function (lid) {
+                out += '<p class="line-h">' + esc(data.lines[lid].name) + '</p><div class="styles">';
+                byLine[lid].forEach(function (x) {
+                    var s = x.s;
+                    out += '<article class="style" data-style="' + s.id + '">' + doorHtml(s) + '<div>' +
+                        '<h3>' + esc(s.name) + '</h3><p class="meta">' + esc([s.door_profile, data.fins[s.id].length + ' finish' + (data.fins[s.id].length > 1 ? 'es' : '')].filter(Boolean).join(' · ')) + '</p>' +
+                        (s.tagline ? '<p class="tag">' + esc(s.tagline) + '</p>' : '') +
+                        '<ul class="fins">' + x.fins.map(function (f) {
+                            return '<li class="fin"><button type="button" class="sw" data-show="' + f.id + '" aria-pressed="' + (shown[s.id] === f.id) + '" aria-label="Show ' + esc(f.name) + '" style="background:' + esc(f.swatch_hex || '#999') + '"></button>' +
+                                '<span class="nm">' + esc(f.name) + '</span><span class="add">' + Object.keys(TYPES).map(function (t) {
+                                    var on = isPicked(s.id, f.id, t);
+                                    return '<button type="button" data-add="' + t + '" data-f="' + f.id + '" aria-pressed="' + on + '"' + (offers(s, t) ? '' : ' disabled') +
+                                        ' aria-label="' + esc(TYPES[t].name + ': ' + s.name + ' ' + f.name) + '">' + (on ? '✓ ' : '+ ') + esc(TYPES[t].label) + '</button>';
+                                }).join('') + '</span></li>';
+                        }).join('') + '</ul></div></article>';
+                });
+                out += '</div>';
+            });
+            out += '</section>';
+        });
+        $('catalog').innerHTML = any ? out : '<p class="empty">No finishes match “' + esc(query) + '”.</p>';
+        if (photoRows.length) DL.photos.paint($('catalog'));
+    }
+
+    function renderTray() {
+        var n = picked.length;
+        $('tray-count').textContent = n + ' sample' + (n === 1 ? '' : 's') + (n >= MAX ? ' · the most per request' : '');
+        $('traybar-t').textContent = n + ' sample' + (n === 1 ? '' : 's');
+        $('traybar').hidden = !n || !$('done').hidden;
+        $('none').hidden = !!n;
+        $('form').hidden = !n || !$('done').hidden;
+        $('picked').innerHTML = picked.map(function (p, i) {
+            var s = data.styleById[p.s], f = data.finById[p.f], v = data.vendors.filter(function (x) { return x.id === vendorOf(s); })[0];
+            return '<li><span class="dot" style="background:' + esc(f.swatch_hex || '#999') + '"></span><span><b>' + esc(s.name) + ' · ' + esc(f.name) + '</b><small>' +
+                esc(TYPES[p.t].name + (v ? ' · ' + v.name : '')) + '</small></span><button class="x" type="button" data-rm="' + i + '" aria-label="Remove ' + esc(s.name + ' ' + f.name + ' ' + TYPES[p.t].name) + '">×</button></li>';
+        }).join('');
+    }
+
+    function toggle(s, f, t) {
+        var i = picked.findIndex(function (p) { return p.s === s && p.f === f && p.t === t; });
+        if (i >= 0) picked.splice(i, 1);
+        else if (picked.length >= MAX) { $('status').className = 'status bad'; $('status').textContent = 'Up to ' + MAX + ' samples per request. Remove one to add another.'; openTray(); return; }
+        else picked.push({ s: s, f: f, t: t });
+        save(); render(); renderTray();
+    }
+
+    // ---------- events ----------
+    $('brands').addEventListener('click', function (e) {
+        var b = e.target.closest('[data-brand]'); if (!b) return;
+        brand = b.getAttribute('data-brand'); brand = brand === 'all' ? 'all' : Number(brand);
+        renderBrands(); render();
+    });
+    var qt = 0;
+    $('q').addEventListener('input', function () { clearTimeout(qt); qt = setTimeout(function () { query = $('q').value; render(); }, 120); });
+    $('catalog').addEventListener('dl-photo-painted', function (e) { e.target.classList.add('painted'); });
+    // Re-rendering replaces the buttons; put keyboard focus back on the one that was pressed.
+    function refocus(sel) { var el = sel && document.querySelector(sel); if (el) el.focus(); }
+    $('catalog').addEventListener('click', function (e) {
+        var card = e.target.closest('[data-style]'); if (!card) return;
+        var sid = Number(card.getAttribute('data-style'));
+        var sh = e.target.closest('[data-show]');
+        if (sh) { shown[sid] = Number(sh.getAttribute('data-show')); render(); refocus('[data-style="' + sid + '"] [data-show="' + shown[sid] + '"]'); return; }
+        var ad = e.target.closest('[data-add]');
+        if (ad) {
+            var fid = Number(ad.getAttribute('data-f')), t = ad.getAttribute('data-add'); shown[sid] = fid; toggle(sid, fid, t);
+            refocus('[data-style="' + sid + '"] [data-add="' + t + '"][data-f="' + fid + '"]');
+        }
+    });
+    $('picked').addEventListener('click', function (e) {
+        var x = e.target.closest('[data-rm]'); if (!x) return;
+        picked.splice(Number(x.getAttribute('data-rm')), 1); save(); render(); renderTray();
+        $('status').textContent = '';
+    });
+    function openTray() { $('tray').classList.add('open'); }
+    $('traybar-open').addEventListener('click', openTray);
+    $('tray-close').addEventListener('click', function () { $('tray').classList.remove('open'); });
+
+    // ---------- the request ----------
+    $('form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var st = $('status'), send = $('send');
+        st.className = 'status'; st.textContent = '';
+        var need = ['f-name', 'f-email', 'f-street', 'f-city', 'f-state', 'f-zip'].filter(function (id) { return !$(id).value.trim(); });
+        var email = $('f-email').value.trim();
+        if (need.length) { st.className = 'status bad'; st.textContent = 'Please fill in your name, email and shipping address.'; $(need[0]).focus(); return; }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { st.className = 'status bad'; st.textContent = 'That email doesn’t look right.'; $('f-email').focus(); return; }
+        if (!picked.length) return;
+        var lines = picked.map(function (p) {
+            var s = data.styleById[p.s], f = data.finById[p.f], v = data.vendors.filter(function (x) { return x.id === vendorOf(s); })[0];
+            var ln = data.lines[s.line_id].name, parts = (v && ln.indexOf(v.name) === 0) ? [ln] : [v && v.name, ln];
+            return '- ' + TYPES[p.t].name + ': ' + parts.concat([s.name, f.name]).filter(Boolean).join(' · ') + ' (' + s.code + ' / ' + f.code + ')';
+        });
+        var msg = ['Sample request (' + picked.length + '):'].concat(lines, ['',
+            'Ship to: ' + [$('f-street').value.trim(), $('f-city').value.trim(), $('f-state').value.trim() + ' ' + $('f-zip').value.trim()].join(', '),
+            $('f-notes').value.trim() ? 'Notes: ' + $('f-notes').value.trim() : '']).join('\n').trim().slice(0, 4000);
+        var row = {
+            name: $('f-name').value.trim(), email: email, phone: $('f-phone').value.trim() || null,
+            role: document.querySelector('input[name="role"]:checked').value, topic: 'samples', message: msg, prefer: 'email',
+            source: 'samples'
+        };
+        send.disabled = true; send.textContent = 'Sending…';
+        sb.from('contact_messages').insert(row).then(function (r) {
+            if (r.error) throw r.error;
+            $('d-name').textContent = row.name.split(' ')[0];
+            picked = []; save();
+            $('done').hidden = false; render(); renderTray(); openTray(); $('done').focus();
+            send.disabled = false; send.textContent = 'Request samples';
+        }).catch(function () {
+            st.className = 'status bad';
+            st.innerHTML = 'Your request didn’t send. Please try again, or email us at <a href="mailto:hello@shopdesignlab.com">hello@shopdesignlab.com</a>.';
+            send.disabled = false; send.textContent = 'Request samples';
+        });
+    });
+    $('again').addEventListener('click', function () { $('done').hidden = true; $('form').reset(); renderTray(); });
+
+    // ---------- start ----------
+    load().then(function () {
+        // ?style=CODE&finish=CODE (from a DIY door style, a Design Card...) shows that finish and scrolls to it.
+        var p = new URLSearchParams(location.search), sc = p.get('style'), fc = p.get('finish'), jump = null;
+        if (sc) {
+            var s = data.styles.filter(function (x) { return x.code === sc; })[0];
+            if (s) { jump = s.id; var f = data.fins[s.id].filter(function (x) { return x.code === fc; })[0]; if (f) shown[s.id] = f.id; }
+        }
+        renderBrands(); render(); renderTray();
+        if (jump) { var el = document.querySelector('[data-style="' + jump + '"]'); if (el) el.scrollIntoView({ block: 'center' }); }
+        DL.photos.load().then(function (rows) { photoRows = rows.filter(function (r) { return r.kind === 'door_sample'; }); if (photoRows.length) render(); });
+    }).catch(function (err) {
+        $('catalog').innerHTML = '<p class="empty">Sorry, the samples could not be loaded. Please refresh the page, or <a href="/connect/?topic=samples">send us a message</a>.</p>';
+        console.error(err);
+    });
+})();
+</script>
 </body>
 </html>
