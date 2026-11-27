@@ -77,15 +77,19 @@
         .style h3 { font-size: 24px; }
         .meta { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(var(--ink), .55); margin: 4px 0 2px; }
         .tag { font-size: 13px; color: rgba(var(--ink), .7); margin: 2px 0 10px; line-height: 1.45; }
-        .fins { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px 22px; }
-        .fin { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 4px 0; }
-        .fin .sw { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(0,0,0,.18); cursor: pointer; padding: 0; }
-        .fin .sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--gold); }
-        .fin .nm { font-size: 14px; line-height: 1.25; overflow-wrap: anywhere; }
-        .add { display: flex; gap: 6px; }
-        .add button { font: 700 11px 'Montserrat', sans-serif; letter-spacing: .6px; text-transform: uppercase; min-height: 36px; min-width: 62px; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(var(--gold-rgb), .55); background: transparent; color: var(--gold); cursor: pointer; }
-        .add button[aria-pressed="true"] { background: var(--gold); color: var(--on-gold); border-color: var(--gold); }
-        .add button:disabled { opacity: .35; cursor: not-allowed; }
+        /* one Chip / Door switch per card, then tap any number of colours */
+        .stype { display: inline-flex; border: 1px solid rgba(var(--ink), .22); border-radius: 999px; padding: 3px; margin: 6px 0 4px; }
+        .stype button { display: inline-flex; align-items: center; gap: 7px; font: 600 13px 'Montserrat', sans-serif; min-height: 36px; padding: 6px 14px; border-radius: 999px; border: 0; background: transparent; color: inherit; cursor: pointer; }
+        .stype button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+        .stype svg { width: 13px; height: 17px; }
+        .hint { font-size: 12.5px; color: rgba(var(--ink), .62); margin: 6px 0 10px; }
+        .cols { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 6px; }
+        .cols button { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 80px; padding: 4px 2px; border: 0; background: none; color: inherit; font: 500 12px/1.2 'Montserrat', sans-serif; text-align: center; cursor: pointer; border-radius: 10px; }
+        .cols .c { position: relative; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); transition: box-shadow .15s; }
+        .cols button:hover .c { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px rgba(var(--gold-rgb), .35); }
+        .cols button[aria-pressed="true"] .c { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--gold); }
+        .cols button[aria-pressed="true"] .c::after { content: "✓"; position: absolute; right: -6px; top: -6px; width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: var(--on-gold); font: 700 13px/22px 'Montserrat', sans-serif; text-align: center; }
+        .cols .also { display: block; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
         .empty { padding: 40px 0; color: rgba(var(--ink), .7); }
 
         /* tray */
@@ -130,11 +134,9 @@
         }
         @media (max-width: 640px) {
             .kinds { grid-template-columns: 1fr; }
-            .fins { grid-template-columns: 1fr; }
             .style { grid-template-columns: 84px minmax(0, 1fr); padding: 14px; gap: 12px; }
             .door { width: 84px; height: 126px; }
-            .fin { grid-template-columns: 28px minmax(0, 1fr); }
-            .fin .add { grid-column: 2; }
+            .cols button { width: 72px; }
             .search { max-width: none; margin-left: 0; }
             .row3 { grid-template-columns: 1fr 1fr; }
             .row3 label:first-child { grid-column: 1 / -1; }
@@ -218,13 +220,18 @@
     var data = { vendors: [], lines: {}, styles: [], styleById: {}, fins: {}, finById: {} };
     var picked = [];   // [{ s: styleId, f: finishId, t: 'chip'|'door' }]
     var brand = 'all', query = '', photoRows = [], shown = {};   // shown[styleId] = finishId on the door
+    var typeFor = {};   // typeFor[styleId] = the sample type that card's colours add ('chip' unless switched)
+    var ICON = {
+        chip: '<svg viewBox="0 0 13 17" aria-hidden="true"><rect x="1" y="3" width="11" height="11" rx="2" fill="currentColor"/></svg>',
+        door: '<svg viewBox="0 0 13 17" aria-hidden="true"><rect x="1" y="1" width="11" height="15" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.5" y="3.5" width="6" height="10" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>'
+    };
 
     try { picked = JSON.parse(localStorage.getItem(KEY) || '[]').filter(function (p) { return p && p.s && p.f && TYPES[p.t]; }); } catch (e) { picked = []; }
     function save() { try { localStorage.setItem(KEY, JSON.stringify(picked)); } catch (e) {} }
 
     // ---------- the two kinds, explained ----------
     $('kinds').innerHTML = Object.keys(TYPES).map(function (k) {
-        var art = k === 'door' ? DL.doorSvg('shaker', 'shaker', '#b08d68', { label: '' })
+        var art = k === 'door' ? DL.doorSvg('shaker', 'shaker', '#b08d68', { label: '', doorOnly: true })
             : '<svg viewBox="0 0 60 60" aria-hidden="true"><rect x="10" y="10" width="40" height="40" rx="6" fill="#b08d68" stroke="rgba(0,0,0,.35)"/><circle cx="20" cy="20" r="3" fill="rgba(255,255,255,.7)"/></svg>';
         return '<div class="kind"><div class="art" aria-hidden="true">' + art + '</div><div><h2>' + esc(TYPES[k].name) + '</h2><p>' + esc(TYPES[k].blurb) + '</p></div></div>';
     }).join('');
@@ -266,7 +273,7 @@
         var row = photoRows.length ? DL.photos.pickRow(photoRows, { doorSample: true, styleId: s.id, finishId: f.id, strictFinish: true }) : null;
         return '<div class="door' + (row ? ' has-photo is-loading' : '') + '"' + (row ? ' data-photo="' + esc(row.storage_path) + '"' : '') +
             ' role="img" aria-label="' + esc(s.name + ' door in ' + f.name) + '">' +
-            DL.doorSvg(s.door_profile, s.drawer_profile, f.swatch_hex, { label: '' }) + '</div>';
+            DL.doorSvg(s.door_profile, s.drawer_profile, f.swatch_hex, { label: '', doorOnly: true }) + '</div>';
     }
 
     function render() {
@@ -294,14 +301,20 @@
                     out += '<article class="style" data-style="' + s.id + '">' + doorHtml(s) + '<div>' +
                         '<h3>' + esc(s.name) + '</h3><p class="meta">' + esc([s.door_profile, data.fins[s.id].length + ' finish' + (data.fins[s.id].length > 1 ? 'es' : '')].filter(Boolean).join(' · ')) + '</p>' +
                         (s.tagline ? '<p class="tag">' + esc(s.tagline) + '</p>' : '') +
-                        '<ul class="fins">' + x.fins.map(function (f) {
-                            return '<li class="fin"><button type="button" class="sw" data-show="' + f.id + '" aria-pressed="' + (shown[s.id] === f.id) + '" aria-label="Show ' + esc(f.name) + '" style="background:' + esc(f.swatch_hex || '#999') + '"></button>' +
-                                '<span class="nm">' + esc(f.name) + '</span><span class="add">' + Object.keys(TYPES).map(function (t) {
-                                    var on = isPicked(s.id, f.id, t);
-                                    return '<button type="button" data-add="' + t + '" data-f="' + f.id + '" aria-pressed="' + on + '"' + (offers(s, t) ? '' : ' disabled') +
-                                        ' aria-label="' + esc(TYPES[t].name + ': ' + s.name + ' ' + f.name) + '">' + (on ? '✓ ' : '+ ') + esc(TYPES[t].label) + '</button>';
-                                }).join('') + '</span></li>';
-                        }).join('') + '</ul></div></article>';
+                        (function () {
+                            var types = Object.keys(TYPES).filter(function (t) { return offers(s, t); }), cur = typeFor[s.id] || types[0];
+                            return '<div class="stype" role="group" aria-label="Sample type for ' + esc(s.name) + '">' + types.map(function (t) {
+                                    return '<button type="button" data-type="' + t + '" aria-pressed="' + (t === cur) + '" aria-label="' + esc(TYPES[t].name) + '">' + (ICON[t] || '') + esc(TYPES[t].label) + '</button>';
+                                }).join('') + '</div>' +
+                                '<p class="hint">Tap the colours you want as ' + esc(TYPES[cur].name.toLowerCase()) + 's.</p>' +
+                                '<ul class="cols">' + x.fins.map(function (f) {
+                                    var on = isPicked(s.id, f.id, cur);
+                                    var also = types.filter(function (t) { return t !== cur && isPicked(s.id, f.id, t); }).map(function (t) { return TYPES[t].label; });
+                                    return '<li><button type="button" data-pick="' + f.id + '" aria-pressed="' + on + '" aria-label="' + esc(f.name + ', ' + TYPES[cur].name) + '">' +
+                                        '<span class="c" style="background:' + esc(f.swatch_hex || '#999') + '"></span><span>' + esc(f.name) +
+                                        (also.length ? '<span class="also">+ ' + esc(also.join(', ')) + '</span>' : '') + '</span></button></li>';
+                                }).join('') + '</ul>';
+                        })() + '</div></article>';
                 });
                 out += '</div>';
             });
@@ -347,12 +360,13 @@
     $('catalog').addEventListener('click', function (e) {
         var card = e.target.closest('[data-style]'); if (!card) return;
         var sid = Number(card.getAttribute('data-style'));
-        var sh = e.target.closest('[data-show]');
-        if (sh) { shown[sid] = Number(sh.getAttribute('data-show')); render(); refocus('[data-style="' + sid + '"] [data-show="' + shown[sid] + '"]'); return; }
-        var ad = e.target.closest('[data-add]');
-        if (ad) {
-            var fid = Number(ad.getAttribute('data-f')), t = ad.getAttribute('data-add'); shown[sid] = fid; toggle(sid, fid, t);
-            refocus('[data-style="' + sid + '"] [data-add="' + t + '"][data-f="' + fid + '"]');
+        var ty = e.target.closest('[data-type]');
+        if (ty) { typeFor[sid] = ty.getAttribute('data-type'); render(); refocus('[data-style="' + sid + '"] [data-type="' + typeFor[sid] + '"]'); return; }
+        var pk = e.target.closest('[data-pick]');
+        if (pk) {
+            var fid = Number(pk.getAttribute('data-pick')), t = typeFor[sid] || Object.keys(TYPES)[0];
+            shown[sid] = fid; toggle(sid, fid, t);
+            refocus('[data-style="' + sid + '"] [data-pick="' + fid + '"]');
         }
     });
     $('picked').addEventListener('click', function (e) {

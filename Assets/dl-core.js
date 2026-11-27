@@ -271,6 +271,10 @@
             svg += '<rect x="40" y="18.5" width="20" height="3" rx="1.5" fill="' + pull + '" stroke="rgba(0,0,0,0.35)" stroke-width="0.5"/>';
             return svg + '</svg>';
         }
+        if (opts.doorOnly) {   // a sample door: just the door, no drawer front and no hardware
+            svg += panel(5, 5, 90, 140, 11, door, base, edge);
+            return svg + '</svg>';
+        }
         svg += panel(5, 5, 90, 32, 6, drawer, base, edge);
         svg += '<rect x="40" y="19.5" width="20" height="3" rx="1.5" fill="' + pull + '" stroke="rgba(0,0,0,0.35)" stroke-width="0.5"/>';
         svg += panel(5, 42, 90, 103, 11, door, base, edge);
