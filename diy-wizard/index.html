@@ -135,6 +135,9 @@
         .s3[aria-current="true"] { border-color: var(--gold); }
         .s3-link { font-size: 13px; color: rgba(var(--ink),0.75); }
         .s3-link:hover { color: var(--gold); }
+        .resume { margin: 0 0 18px; padding: 12px 16px; border: 1px solid rgba(var(--gold-rgb),0.35); border-radius: 10px; font-size: 14px; color: var(--muted); }
+        .resume a { color: var(--gold); font-weight: 600; text-decoration: none; margin-left: 4px; }
+        .resume a:hover, .resume a:focus-visible { text-decoration: underline; }
         .partner-label { margin: 0 0 12px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
         .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
@@ -374,6 +377,7 @@
         <p class="intro-sub" id="step-sub"></p>
 
         <section class="step" id="step-mfr" hidden aria-label="Choose your manufacturer">
+            <p class="resume" id="mfr-resume" hidden>Pick up where you left off: <a href="#" id="mfr-resume-link"></a></p>
             <!-- Structure | 3: Design Lab's own line. Featured above the partner lines. -->
             <article class="s3" aria-labelledby="s3-name">
                 <div class="s3-photos" aria-hidden="true">
@@ -1476,6 +1480,12 @@
         }
         function showStep(name, how) {
             step = name;
+            var rs = document.getElementById('mfr-resume');
+            if (name === 'mfr' && look && data.styleById[look.styleId]) {
+                var lf = finishById(look.styleId, look.finishId);
+                document.getElementById('mfr-resume-link').textContent = lookName(data.styleById[look.styleId].name, lf && lf.name) + ' \u2192';
+                rs.hidden = false;
+            } else rs.hidden = true;
             ['mfr', 'style', 'shop'].forEach(function (n) { document.getElementById('step-' + n).hidden = n !== name; });
             var t = STEP_TEXT[name];
             document.getElementById('step-kicker').textContent = 'DIY Shop · ' + t[0];
@@ -1657,6 +1667,10 @@
             }
         })();
         document.getElementById('step-guide-link').addEventListener('click', openGuide);
+        document.getElementById('mfr-resume-link').addEventListener('click', function (e) {
+            e.preventDefault();
+            if (look) showStep('shop', 'push');
+        });
         document.getElementById('p-look-change').addEventListener('click', function () {
             closePanel();
             pendingVendor = vendorOfStyle(look.styleId); pickStyleId = look.styleId;
@@ -1674,7 +1688,8 @@
             }
             if (want === 'mfr') return showStep('mfr', how && 'replace');
             if (want === 'style' && (pendingVendor || look)) return showStep('style', how && 'replace');
-            if (!want && look) return showStep('shop', 'replace');
+            // A plain /diy-wizard/ always starts at step 1 (Corbin 11/25: coming from the homepage landed on step 3);
+            // a remembered look is offered there as "Pick up where you left off".
             showStep('mfr', 'replace');
         }
         window.addEventListener('popstate', function () {

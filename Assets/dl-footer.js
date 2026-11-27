@@ -23,9 +23,12 @@
                 '<div><h2>Shop</h2><ul>' +
                     '<li><a href="/diy-wizard/">DIY Shop</a></li>' +
                     '<li><a href="/collections/">Curated Collections</a></li>' +
+                    '<li><a href="/closets/">Closets</a></li>' +
+                    '<li><a href="/samples/">Order Samples</a></li>' +
                     '<li><a href="/cart/">Your Cart</a></li></ul></div>' +
                 '<div><h2>Learn</h2><ul>' +
                     '<li><a href="/resources/">Resource Library</a></li>' +
+                    '<li><a href="/inside-the-lab/">Inside the Lab</a></li>' +
                     '<li><a href="/about/">About Us</a></li></ul></div>' +
                 '<div><h2>Talk to us</h2><ul>' +
                     '<li><a href="/connect/">Send us a message</a></li>' +

@@ -21,6 +21,9 @@
         { href: '/home/', label: 'Home' },
         { href: '/diy-wizard/', label: 'DIY Shop' },
         { href: '/collections/', label: 'Curated Collections' },
+        { href: '/closets/', label: 'Closets' },
+        { href: '/samples/', label: 'Order Samples' },
+        { href: '/inside-the-lab/', label: 'Inside the Lab' },
         { href: '/resources/', label: 'Resources' },
         { href: '/about/', label: 'About Us' }
     ];
