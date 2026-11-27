@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/Assets/site-gate.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
+    <title>Order Samples - Design Lab</title>
+    <meta name="description" content="See Design Lab door finishes up close, and order door samples.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Design Lab">
+    <meta property="og:title" content="Order Samples | Design Lab">
+    <meta property="og:description" content="See Design Lab door finishes up close, and order door samples.">
+    <meta property="og:url" content="https://shopdesignlab.com/samples/">
+    <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/doors/luxor-harvest.webp">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#2b211b">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); }
+        img { max-width: 100%; display: block; }
+        .pg { --gold-ink: var(--gold); }
+        .pg-in { max-width: 1200px; margin: 0 auto; padding: 0 max(16px, 4%); }
+        .kicker { font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin: 0 0 12px; color: var(--gold); }
+        .pg h1, .pg h2 { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; line-height: 1.06; margin: 0; text-wrap: balance; }
+        .pg h1 { font-size: clamp(36px, 5vw, 60px); }
+        .pg h2 { font-size: clamp(26px, 3.2vw, 38px); }
+        .lead { font-size: 17px; line-height: 1.65; color: rgba(var(--ink), .78); max-width: 56ch; margin: 16px 0 0; }
+        .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 13px 24px; border-radius: 999px; font: 700 12px 'Montserrat', sans-serif; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; background: var(--gold); color: var(--on-gold); border: 1px solid var(--gold); transition: transform .2s; }
+        .btn:hover { transform: scale(1.04); }
+        .btn.ghost { background: transparent; color: var(--gold); }
+        .btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+        .pg a:focus-visible, .pg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+        .soon { display: inline-block; margin-top: 22px; padding: 6px 14px; border: 1px solid rgba(var(--ink), .25); border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(var(--ink), .7); }
+        .s-try { padding-block: 88px; }
+        .s-try .pg-in { display: grid; grid-template-columns: .9fr 1.1fr; gap: 56px; align-items: center; }
+        .s-try .lead { margin: 14px 0 26px; }
+        .s-sw { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+        .s-sw button { width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(var(--ink), .25); cursor: pointer; box-shadow: inset 0 0 0 3px var(--bg); transition: transform .2s; }
+        .s-sw button:hover { transform: scale(1.08); }
+        .s-sw button[aria-pressed="true"] { border-color: var(--gold); box-shadow: inset 0 0 0 3px var(--bg), 0 0 0 3px rgba(212,175,55,.35); }
+        .s-fin { font-family: 'Libre Caslon Display', Georgia, serif; font-size: 30px; margin: 0; }
+        .s-finnote { font-size: 13px; color: rgba(var(--ink), .7); margin: 6px 0 0; }
+        .s-door { position: relative; justify-self: center; width: min(300px, 70vw); aspect-ratio: 1 / 2; }
+        .s-door img { position: absolute; inset: 0; width: 100%; height: calc(100% - 34px); object-fit: contain; filter: drop-shadow(0 24px 34px rgba(0,0,0,.45)); transition: opacity .45s ease; }
+        .s-door img.off { opacity: 0; }
+        .s-door span { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(var(--ink), .7); }
+        .s-order { padding-block: 0 88px; }
+        .s-box { border: 1px solid rgba(var(--gold-rgb), .4); border-radius: 18px; padding: 34px clamp(20px, 4vw, 44px); background: rgba(var(--gold-rgb), .06); }
+        @media (max-width: 860px) { .s-try .pg-in { grid-template-columns: 1fr; gap: 28px; } }
+        @media (prefers-reduced-motion: reduce) { .s-door img { transition: none; } }
+    </style>
+</head>
+<body>
+    <script src="/Assets/dl-header.js"></script>
+<main id="main" class="pg">
+    <section class="s-try" aria-labelledby="s-try-h">
+        <div class="pg-in">
+            <div>
+                <p class="kicker">Order Samples &middot; Try a colour</p>
+                <h1 id="s-try-h">See it in your finish.</h1>
+                <p class="lead">Tap a finish to see the real door. Shown here: the Luxor shaker door.</p>
+                <div class="s-sw" id="s-sw" role="group" aria-label="Finish"></div>
+                <p class="s-fin" id="s-fin" aria-live="polite"></p>
+                <p class="s-finnote" id="s-finnote"></p>
+                <p class="lead" style="font-size:14px">Plus many more finishes across our other door styles. <a href="/diy-wizard/" style="color:var(--gold);font-weight:700">See every door style &rarr;</a></p>
+            </div>
+            <div class="s-door">
+                <img id="s-door-a" src="/Assets/Images/doors/luxor-harvest.webp" alt="Luxor door in Harvest">
+                <img id="s-door-b" src="/Assets/Images/doors/luxor-harvest.webp" alt="" aria-hidden="true" class="off">
+                <span>Luxor &middot; Shaker &middot; Real door photo</span>
+            </div>
+        </div>
+    </section>
+    <section class="s-order">
+        <div class="pg-in">
+            <div class="s-box">
+                <p class="kicker">Order samples</p>
+                <h2>Hold the real door in your hands.</h2>
+                <p class="lead">Our samples program is on its way. Until then, tell us which door styles and finishes you&rsquo;d like to see and we&rsquo;ll take care of it.</p>
+                <div class="btns"><a class="btn" href="/connect/?topic=samples">Request a sample</a></div>
+            </div>
+        </div>
+    </section>
+</main>
+    <script src="/Assets/dl-footer.js"></script>
+    <script>
+        (function () {
+            // Real Luxor door photos; each swatch colour is sampled from its photo. (Moved from the home page, Corbin 11/25.)
+            var FIN = [
+                { n: 'White', f: 'luxor-white', c: '#e6e6e6', note: 'A clean painted white' },
+                { n: 'Misty Grey', f: 'luxor-misty-grey', c: '#b6b2af', note: 'A soft painted grey' },
+                { n: 'Smoky Grey', f: 'luxor-smoky-grey', c: '#4f4b46', note: 'A stained grey with visible grain' },
+                { n: 'Harvest', f: 'luxor-harvest', c: '#aa8f73', note: 'A warm natural stain' },
+                { n: 'Espresso', f: 'luxor-espresso', c: '#34251b', note: 'A deep brown stain' }
+            ];
+            var D = '/Assets/Images/doors/', sw = document.getElementById('s-sw');
+            sw.innerHTML = FIN.map(function (f, i) { return '<button type="button" data-i="' + i + '" aria-label="' + f.n + '" aria-pressed="false" style="background:' + f.c + '"></button>'; }).join('');
+            FIN.forEach(function (f) { var im = new Image(); im.src = D + f.f + '.webp'; });
+            var front = document.getElementById('s-door-a'), back = document.getElementById('s-door-b');
+            function pick(i, first) {
+                var f = FIN[i];
+                if (!first) {
+                    back.src = D + f.f + '.webp'; back.alt = 'Luxor door in ' + f.n; back.removeAttribute('aria-hidden');
+                    back.classList.remove('off'); front.classList.add('off'); front.setAttribute('aria-hidden', 'true'); front.alt = '';
+                    var t = front; front = back; back = t;
+                }
+                document.getElementById('s-fin').textContent = f.n;
+                document.getElementById('s-finnote').textContent = f.note;
+                sw.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.i === i)); });
+            }
+            sw.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
+            pick(3, true);
+        })();
+    </script>
+</body>
+</html>

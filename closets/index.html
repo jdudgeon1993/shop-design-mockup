@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/Assets/site-gate.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Assets/dl-theme.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&display=swap">
+    <link rel="stylesheet" href="/Assets/dl-header.css">
+    <title>Closets - Design Lab</title>
+    <meta name="description" content="Walk-in and reach-in closets from Design Lab, including Structure | 3, our own modular closet system.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Design Lab">
+    <meta property="og:title" content="Closets | Design Lab">
+    <meta property="og:description" content="Walk-in and reach-in closets from Design Lab, including Structure | 3, our own modular closet system.">
+    <meta property="og:url" content="https://shopdesignlab.com/closets/">
+    <meta property="og:image" content="https://shopdesignlab.com/Assets/Images/closet-teaser.webp">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#2b211b">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/Assets/Logos/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); }
+        img { max-width: 100%; display: block; }
+        .pg { --gold-ink: var(--gold); }
+        .pg-in { max-width: 1200px; margin: 0 auto; padding: 0 max(16px, 4%); }
+        .kicker { font-size: 12px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin: 0 0 12px; color: var(--gold); }
+        .pg h1, .pg h2 { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; line-height: 1.06; margin: 0; text-wrap: balance; }
+        .pg h1 { font-size: clamp(36px, 5vw, 60px); }
+        .pg h2 { font-size: clamp(26px, 3.2vw, 38px); }
+        .lead { font-size: 17px; line-height: 1.65; color: rgba(var(--ink), .78); max-width: 56ch; margin: 16px 0 0; }
+        .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 13px 24px; border-radius: 999px; font: 700 12px 'Montserrat', sans-serif; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; background: var(--gold); color: var(--on-gold); border: 1px solid var(--gold); transition: transform .2s; }
+        .btn:hover { transform: scale(1.04); }
+        .btn.ghost { background: transparent; color: var(--gold); }
+        .btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+        .pg a:focus-visible, .pg button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+        .soon { display: inline-block; margin-top: 22px; padding: 6px 14px; border: 1px solid rgba(var(--ink), .25); border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(var(--ink), .7); }
+        .c-hero { position: relative; min-height: 62vh; display: flex; align-items: flex-end; isolation: isolate; overflow: hidden; }
+        .c-hero::before { content: ""; position: absolute; inset: 0; z-index: -2; background: url('/Assets/Images/closet-teaser.webp') center 40% / cover; }
+        .c-hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(22,16,12,.92) 0%, rgba(22,16,12,.45) 45%, rgba(22,16,12,.1) 80%); }
+        .c-hero .pg-in { width: 100%; padding-block: 56px; }
+        .c-hero .lead { color: rgba(255,255,255,.85); }
+        .c-ways { padding-block: 80px; }
+        .c-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 34px; }
+        .c-card { display: flex; flex-direction: column; border: 1px solid rgba(var(--ink), .14); border-radius: 16px; overflow: hidden; text-decoration: none; color: inherit; background: rgba(var(--ink), .03); transition: transform .25s; }
+        .c-card:hover { transform: translateY(-5px); }
+        .c-card img { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+        .c-card div { padding: 20px 22px 24px; }
+        .c-card small { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+        .c-card h3 { font-family: 'Libre Caslon Display', Georgia, serif; font-weight: 400; font-size: 26px; margin: 6px 0 8px; }
+        .c-card p { margin: 0; font-size: 14px; line-height: 1.6; color: rgba(var(--ink), .75); }
+        @media (max-width: 860px) { .c-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <script src="/Assets/dl-header.js"></script>
+<main id="main" class="pg">
+    <section class="c-hero on-photo">
+        <div class="pg-in">
+            <p class="kicker">Closets</p>
+            <h1>A place for everything.</h1>
+            <p class="lead">Walk-in, reach-in and everything in between, designed around how you actually get dressed. Choose a system yourself, or let one of our designers plan it with you.</p>
+            <div class="btns"><a class="btn" href="/connect/?topic=designer">Work with a designer</a><a class="btn ghost" href="/resources/view/?doc=closet-structure">Closets Field Guide</a></div>
+        </div>
+    </section>
+    <section class="c-ways">
+        <div class="pg-in">
+            <p class="kicker">Three ways to start</p>
+            <h2>Your closet, your way.</h2>
+            <div class="c-grid">
+                <a class="c-card" href="/diy-wizard/"><img src="/Assets/Images/structure3/walk-in-island.webp" alt="A Structure | 3 walk-in closet with an island" loading="lazy"><div><small>Structure | 3</small><h3>Our own closet system</h3><p>Modular closets by Design Lab: walk-ins, reach-ins and islands in Quick Ship colours. Start in the DIY Shop.</p></div></a>
+                <a class="c-card" href="/resources/view/?doc=closet-structure"><img src="/Assets/Images/structure3/reach-in-beach.webp" alt="A Structure | 3 reach-in closet" loading="lazy"><div><small>Field Guide</small><h3>Flip through the guide</h3><p>Every closet piece, finish and option in one place, before you plan.</p></div></a>
+                <a class="c-card" href="/connect/?topic=designer"><img src="/Assets/Images/structure3/walk-in-slate.webp" alt="A walk-in closet in a slate finish" loading="lazy"><div><small>Full service</small><h3>Work with a designer</h3><p>Tell us about your space and we&rsquo;ll plan the closet with you, over video, from anywhere.</p></div></a>
+            </div>
+        </div>
+    </section>
+</main>
+    <script src="/Assets/dl-footer.js"></script>
+
+</body>
+</html>

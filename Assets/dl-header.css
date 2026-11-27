@@ -118,10 +118,18 @@
 .sh-menu a[aria-current="page"] { color: var(--gold); }
 .sh-menu .sh-connect { margin-top: 16px; height: 48px; }
 
-@media (min-width: 1121px) and (max-width: 1320px) {
-    .sh-nav { gap: 28px; }
-    .site-header.is-slim .sh-nav { gap: 20px; }
-    .site-header.is-slim .sh-name { font-size: 16px; }
+/* Eight links (Closets, Order Samples, Inside the Lab added 11/27): tighter as the screen narrows. In the slim row
+   the wordmark gives way to the DL mark, and under 1440px "My project" waits in the tall header and footer. */
+@media (min-width: 1121px) and (max-width: 1600px) {
+    .sh-nav { gap: 30px; }
+    .site-header.is-slim .sh-name { display: none; }
+}
+@media (min-width: 1121px) and (max-width: 1440px) {
+    .sh-nav { gap: 22px; }
+    .sh-nav a { font-size: 12px; letter-spacing: .1em; }
+    .site-header.is-slim .sh-nav { gap: 18px; }
+    .site-header.is-slim .sh-nav a { font-size: 11px; letter-spacing: .08em; }
+    .site-header.is-slim .sh-proj { display: none; }
 }
 @media (max-width: 1120px) {
     .site-header, .site-header.is-slim {

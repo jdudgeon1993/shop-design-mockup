@@ -179,8 +179,9 @@
         .hero-heading {
             font-family: var(--font-serif); font-weight: 400;
             font-size: clamp(24px, 3.4vw, 38px); line-height: 1.15;
-            max-width: 500px; margin: 0 0 22px;
+            max-width: 560px; margin: 0 0 8px;
         }
+        .hero-sub { font-family: var(--font-serif); font-size: clamp(17px, 1.9vw, 22px); line-height: 1.3; color: #e8c983; margin: 0 0 24px; max-width: 560px; text-shadow: 0 1px 3px rgba(0,0,0,.9), 0 2px 16px rgba(0,0,0,.75); }
 
         /* Fixed width so all three read as one deliberate set instead of
            each pill sizing to its own text — the longest label just wraps
@@ -355,7 +356,7 @@
         .nl-path { position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 440px; padding: 26px; border-radius: 18px; overflow: hidden; color: var(--nl-white); text-decoration: none; background: center/cover; isolation: isolate; transition: transform .3s ease; }
         .nl-path::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(10,10,10,.86) 0%, rgba(10,10,10,.25) 55%, rgba(10,10,10,.05) 100%); }
         .nl-path:hover { transform: translateY(-6px); }
-        .nl-path small { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--nl-gold); }
+        .nl-path small { font-size: 14px; font-weight: 700; letter-spacing: 2.4px; text-transform: uppercase; color: var(--nl-gold); }
         .nl-path h3 { font-family: var(--nl-display); font-weight: 400; font-size: 32px; line-height: 1.05; margin: 8px 0; }
         .nl-path p { margin: 0 0 18px; font-size: 14px; line-height: 1.55; color: rgba(250,248,243,.85); }
         .nl-go { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--nl-gold); color: #1a1a1a; font-size: 18px; transition: transform .3s; }
@@ -390,22 +391,13 @@
         .nl-under a { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--nl-ink); white-space: nowrap; text-decoration: none; border-bottom: 1px solid currentColor; padding-block: 12px 2px; }
         .nl-more { margin-top: 36px; text-align: center; }
 
-        /* 3) try a colour */
-        .nl-try { background: var(--nl-charcoal); }
-        .nl-try .nl-in { display: grid; grid-template-columns: .9fr 1.1fr; gap: 56px; align-items: center; }
-        .nl-try .nl-lead { color: var(--nl-muted); margin: 14px 0 26px; }
-        .nl-sw { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
-        .nl-sw button { width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(255,255,255,.25); cursor: pointer; box-shadow: inset 0 0 0 3px var(--nl-charcoal); transition: transform .2s; padding: 0; }
-        .nl-sw button:hover { transform: scale(1.08); }
-        .nl-sw button[aria-pressed="true"] { border-color: var(--nl-gold); box-shadow: inset 0 0 0 3px var(--nl-charcoal), 0 0 0 3px rgba(212,175,55,.35); }
-        .nl-fin { font-family: var(--nl-display); font-size: 30px; margin: 0; }
-        .nl-finnote { font-size: 13px; color: var(--nl-muted); margin: 6px 0 0; }
-        .nl-morefin { margin: 22px 0 0; font-size: 14px; color: var(--nl-muted); }
-        .nl-morefin a { color: var(--nl-gold); font-weight: 700; text-decoration: none; }
-        .nl-door { position: relative; justify-self: center; width: min(300px, 70vw); aspect-ratio: 1 / 2; }
-        .nl-door img { position: absolute; inset: 0; width: 100%; height: calc(100% - 34px); object-fit: contain; filter: drop-shadow(0 24px 34px rgba(0,0,0,.5)); transition: opacity .45s ease; }
-        .nl-door img.off { opacity: 0; }
-        .nl-door span { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--nl-muted); }
+        /* 3) closets teaser (Corbin 11/25: the finish picker moved to /samples/) */
+        .nl-closet { position: relative; background: var(--nl-charcoal); min-height: 520px; display: flex !important; align-items: center; overflow: hidden; isolation: isolate; }
+        .nl-closet-photo { position: absolute; inset: 0; z-index: -1; background: url('/Assets/Images/closet-teaser.webp') center 40% / cover; }
+        .nl-closet-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(22,16,12,.88) 0%, rgba(22,16,12,.6) 38%, rgba(22,16,12,0) 70%); }
+        .nl-closet .nl-in { width: 100%; padding-block: 88px; }
+        .nl-closet-txt { max-width: 440px; }
+        .nl-closet .nl-lead { color: var(--nl-muted); margin: 14px 0 26px; }
 
         /* 4) one photo moment */
         .nl-moment { position: relative; min-height: 560px; display: flex !important; align-items: flex-end; background: center/cover url(/Assets/Images/full-service-section.webp); }
@@ -430,16 +422,24 @@
         .nl-series { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
         .nl-series span { padding: 8px 14px; border-radius: 999px; border: 1px solid currentColor; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: .85; }
 
+        @media (max-width: 760px) {
+            /* Phones: the photo on top, the words below it on espresso (text over the photo was hard to read). */
+            .nl-closet { display: block !important; min-height: 0; }
+            .nl-closet-photo { position: relative; inset: auto; z-index: 0; height: 280px; background-position: 62% 40%; }
+            .nl-closet-photo::after { content: none; }
+            .nl-closet .nl-in { padding-block: 36px 48px; }
+            .hero-sub { color: #f3ede3; }
+        }
         @media (max-width: 900px) {
             .nl-paths, .nl-deck { grid-template-columns: 1fr; }
             .nl-path { min-height: 340px; }
-            .nl-cards .nl-top, .nl-try .nl-in, .nl-lib .nl-in { grid-template-columns: 1fr; gap: 28px; }
+            .nl-cards .nl-top, .nl-lib .nl-in { grid-template-columns: 1fr; gap: 28px; }
             .nl-fan { height: 300px; } .nl-fan img { width: 160px; } .nl-fan img.c { height: 208px; }
             .nl-fan img:nth-child(1) { transform: translateX(-50%) rotate(-14deg) translateX(-60px); }
             .nl-fan img:nth-child(3) { transform: translateX(-50%) rotate(11deg) translateX(60px); }
             section.nl.nl-pad { padding-block: 64px; }
         }
-        @media (prefers-reduced-motion: reduce) { .nl-card, .nl-path, .nl-fan img, .nl-door img { transition: none; } }
+        @media (prefers-reduced-motion: reduce) { .nl-card, .nl-path, .nl-fan img { transition: none; } }
     </style>
 </head>
 <body data-header="overlay">
@@ -452,7 +452,8 @@
                 <div class="hero-slide"></div>
 
                 <div class="hero-content">
-                    <h1 class="hero-heading">Cabinetry for Every Room of the House</h1>
+                    <h1 class="hero-heading">Your Online Cabinetry Showroom.</h1>
+                    <p class="hero-sub">Our Extraordinary Experience = Your Confidence.</p>
                     <div class="hero-actions">
                         <a class="btn-hero" href="/diy-wizard/">DIY Shop Here <span class="arrow" aria-hidden="true">&rarr;</span></a>
                         <a class="btn-hero" href="/collections/">Shop Curated Collections <span class="arrow" aria-hidden="true">&rarr;</span></a>
@@ -464,8 +465,8 @@
             <div class="hero-stats">
                 <div class="hero-stat">
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.9 6.4 6.9.6-5.2 4.6 1.6 6.8L12 17l-6.2 3.4 1.6-6.8L2.2 9l6.9-.6Z"></path></svg></div>
-                    <h3 aria-level="2">Nearly 90 Years of Experience</h3>
-                    <p>Three industry veterans. One shared standard.</p>
+                    <h3 aria-level="2">Over 100 Years of Experience</h3>
+                    <p>Collective veteran industry experience, by your side.</p>
                 </div>
                 <div class="hero-stat">
                     <div class="hero-stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"></path></svg></div>
@@ -494,13 +495,13 @@
         <section class="nl nl-start nl-pad" aria-labelledby="nl-start-h">
             <div class="nl-in">
                 <div class="nl-top">
-                    <div><p class="nl-kicker">Three ways to start</p><h2 class="nl-h2" id="nl-start-h">Where do you want to begin?</h2></div>
+                    <div><p class="nl-kicker">Three ways to start</p><h2 class="nl-h2" id="nl-start-h">Which one are you?</h2></div>
                     <p class="nl-lead">Build it piece by piece, start from a professionally designed card, or hand it to a designer. Every path ends with a designer reviewing your order.</p>
                 </div>
                 <div class="nl-paths">
                     <a class="nl-path" href="/diy-wizard/" style="background-image:url(/Assets/Images/diy-section.webp)"><small>DIY Shop</small><h3>Build it yourself</h3><p>Every cabinet, filtered by room, size and door style.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
-                    <a class="nl-path" href="/collections/" style="background-image:url(/Assets/Images/curated/american-hutch-front.webp)"><small>Curated Collections</small><h3>Pick a Design Card</h3><p>Pre-designed mini-projects. Buy as is or make it yours.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
-                    <a class="nl-path" href="/connect/?topic=designer" style="background-image:url(/Assets/Images/full-service-section.webp)"><small>Full Service</small><h3>Talk to a designer</h3><p>We plan and spec your space with you, from anywhere.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
+                    <a class="nl-path" href="/collections/" style="background-image:url(/Assets/Images/curated/american-hutch-front.webp)"><small>Curated Collections</small><h3>Pick a Design Card</h3><p>Pre-designed mini-projects. Buy as is or make it yours. Each design can be customized to your space.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
+                    <a class="nl-path" href="/connect/?topic=designer" style="background-image:url(/Assets/Images/full-service-section.webp)"><small>Full Service</small><h3>Work with a designer</h3><p>We plan and spec your space with you, from anywhere.</p><span class="nl-go" aria-hidden="true">&rarr;</span></a>
                 </div>
             </div>
         </section>
@@ -517,29 +518,22 @@
             </div>
         </section>
 
-        <section class="nl nl-try nl-pad" aria-labelledby="nl-try-h">
+        <section class="nl nl-closet" aria-labelledby="nl-closet-h">
+            <div class="nl-closet-photo" role="img" aria-label="A walk-in closet with dark cabinetry, shoe shelves and a marble-topped island"></div>
             <div class="nl-in">
-                <div>
-                    <p class="nl-kicker">Try a colour</p>
-                    <h2 class="nl-h2" id="nl-try-h">See it in your finish.</h2>
-                    <p class="nl-lead">Tap a finish to see the real door. Shown here: the Luxor shaker door.</p>
-                    <div class="nl-sw" id="nl-sw" role="group" aria-label="Finish"></div>
-                    <p class="nl-fin" id="nl-fin" aria-live="polite"></p>
-                    <p class="nl-finnote" id="nl-finnote"></p>
-                    <p class="nl-morefin">Plus many more finishes across our other door styles. <a href="/diy-wizard/">See every door style &rarr;</a></p>
-                </div>
-                <div class="nl-door">
-                    <img id="nl-door-a" src="/Assets/Images/doors/luxor-harvest.webp" alt="Luxor door in Harvest">
-                    <img id="nl-door-b" src="/Assets/Images/doors/luxor-harvest.webp" alt="" aria-hidden="true" class="off">
-                    <span>Luxor &middot; Shaker &middot; Real door photo</span>
+                <div class="nl-closet-txt">
+                    <p class="nl-kicker">Closets</p>
+                    <h2 class="nl-h2" id="nl-closet-h">Closets, too.</h2>
+                    <p class="nl-lead">Walk-in, reach-in and everything in between. A place for everything, made to fit your space.</p>
+                    <a class="nl-btn" href="/closets/">Explore closets <span aria-hidden="true">&rarr;</span></a>
                 </div>
             </div>
         </section>
 
         <section class="nl nl-moment" aria-labelledby="nl-moment-h">
             <div class="nl-in">
-                <div><p class="nl-kicker">Full service</p><h2 class="nl-h2" id="nl-moment-h">Rather have a designer handle it?</h2><p class="nl-lead">Meet face to face over video, from anywhere. We&rsquo;ll plan and spec your space with you, then build the order for your approval.</p></div>
-                <a class="nl-btn" href="/connect/?topic=designer">Talk to a designer</a>
+                <div><p class="nl-kicker">Full service</p><h2 class="nl-h2" id="nl-moment-h">Work with an industry veteran and schedule a meeting.</h2><p class="nl-lead">Great design begins with listening. Our experienced Design Team combines your vision with decades of real-world kitchen and bath expertise to create a beautiful, functional space uniquely yours.</p></div>
+                <a class="nl-btn" href="/connect/?topic=designer">Schedule Meeting with Designer</a>
             </div>
         </section>
 
@@ -629,31 +623,6 @@
                 b.addEventListener('click', function () { var on = b.parentNode.classList.toggle('on'); b.setAttribute('aria-pressed', String(on)); });
             });
 
-            // Try a colour: real Luxor door photos; each swatch colour is sampled from its photo.
-            var FIN = [
-                { n: 'White', f: 'luxor-white', c: '#e6e6e6', note: 'A clean painted white' },
-                { n: 'Misty Grey', f: 'luxor-misty-grey', c: '#b6b2af', note: 'A soft painted grey' },
-                { n: 'Smoky Grey', f: 'luxor-smoky-grey', c: '#4f4b46', note: 'A stained grey with visible grain' },
-                { n: 'Harvest', f: 'luxor-harvest', c: '#aa8f73', note: 'A warm natural stain' },
-                { n: 'Espresso', f: 'luxor-espresso', c: '#34251b', note: 'A deep brown stain' }
-            ];
-            var D = '/Assets/Images/doors/', sw = document.getElementById('nl-sw');
-            sw.innerHTML = FIN.map(function (f, i) { return '<button type="button" data-i="' + i + '" aria-label="' + f.n + '" aria-pressed="false" style="background:' + f.c + '"></button>'; }).join('');
-            FIN.forEach(function (f) { var im = new Image(); im.src = D + f.f + '.webp'; });
-            var front = document.getElementById('nl-door-a'), back = document.getElementById('nl-door-b');
-            function pick(i, first) {
-                var f = FIN[i];
-                if (!first) {
-                    back.src = D + f.f + '.webp'; back.alt = 'Luxor door in ' + f.n; back.removeAttribute('aria-hidden');
-                    back.classList.remove('off'); front.classList.add('off'); front.setAttribute('aria-hidden', 'true'); front.alt = '';
-                    var t = front; front = back; back = t;
-                }
-                document.getElementById('nl-fin').textContent = f.n;
-                document.getElementById('nl-finnote').textContent = f.note;
-                sw.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.i === i)); });
-            }
-            sw.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) pick(+b.dataset.i); });
-            pick(3, true);
 
         })();
     </script>
